@@ -61,9 +61,9 @@
                 </div>
             </div>
 
-            <!-- SELECTOR DE COLORES ESTILO PALETA PROFESIONAL -->
+            <!-- SELECTOR DE COLORES PROFESIONAL -->
             <div class="bg-stone-950 p-4 rounded-xl border border-stone-800 space-y-3">
-                <label class="text-[11px] text-amber-400 font-semibold uppercase block">🎨 Paleta de Colores de la Marca</label>
+                <label class="text-[11px] text-amber-400 font-semibold uppercase block">🎨 Paleta de Colores de la Marca (Selecciona o escribe HEX)</label>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div class="flex items-center gap-3 bg-stone-900 p-3 rounded-xl border border-stone-800">
@@ -179,7 +179,7 @@
                             </div>
                             <div class="flex items-center gap-2 border-t md:border-t-0 border-stone-800 pt-2 md:pt-0">
                                 <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}')" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition font-medium">✏️ Editar</button>
-                                <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo}')" class="px-3 py-1.5 rounded-lg font-bold transition border ${esActivo ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40' : 'bg-rose-950/40 text-rose-400 border-rose-800 hover:bg-rose-900/40'}">
+                                <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo'}')" class="px-3 py-1.5 rounded-lg font-bold transition border ${esActivo ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40' : 'bg-rose-950/40 text-rose-400 border-rose-800 hover:bg-rose-900/40'}">
                                     ${esActivo ? '🟢 Activo' : '🔴 Suspendido'}
                                 </button>
                                 ${u.rol !== 'admin' ? `<button onclick="eliminarEstudio('${u.id}', '${u.nombre_estudio}')" class="px-3 py-1.5 bg-rose-900/50 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg transition font-medium">🗑️ Eliminar</button>` : ''}
