@@ -425,8 +425,7 @@
             toast.classList.remove('hidden');
             setTimeout(() => { toast.classList.add('hidden'); }, 2500);
         }
-
-        async function iniciarSesion() {
+async function iniciarSesion() {
             const userVal = document.getElementById('login-usuario').value.trim().toLowerCase();
             const passVal = document.getElementById('pin-input').value.trim();
             const errorMsg = document.getElementById('pin-error');
@@ -437,18 +436,19 @@
                 return;
             }
 
-            const { data: usuario, error } = await supabaseClient
+            const { data: usuarios, error } = await supabaseClient
                 .from('usuarios')
                 .select('*')
                 .eq('usuario', userVal)
-                .eq('password', passVal)
-                .single();
+                .eq('password', passVal);
 
-            if (error || !usuario) {
+            if (error || !usuarios || usuarios.length === 0) {
                 errorMsg.innerText = "Usuario o PIN incorrecto";
                 errorMsg.classList.remove('hidden');
                 return;
             }
+
+            const usuario = usuarios[0];
 
             if (usuario.estado === 'suspendido') {
                 errorMsg.innerText = "⛔ Tu cuenta está suspendida por falta de pago.";
