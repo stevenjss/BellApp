@@ -12,11 +12,13 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .font-serif-luxury { font-family: 'Playfair Display', serif; }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid #444; border-radius: 8px; }
     </style>
 </head>
 <body class="bg-stone-950 text-stone-100 min-h-screen p-4 md:p-8 pb-12">
 
-    <!-- PANEL PRINCIPAL MAESTRO -->
     <div id="panel-contenido" class="max-w-3xl mx-auto space-y-6">
         
         <header class="flex justify-between items-center border-b border-stone-800 pb-4">
@@ -43,7 +45,7 @@
                     <input type="text" id="nuevo-nombre" placeholder="ej. Studio Elegance" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Usuario de Acceso</label>
+                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Usuario de Acceso (Único)</label>
                     <input type="text" id="nuevo-usuario" placeholder="ej. elegance" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
                 </div>
             </div>
@@ -59,35 +61,35 @@
                 </div>
             </div>
 
-            <!-- SELECTOR LIBRE DE PALETA DE COLORES -->
+            <!-- SELECTOR DE COLORES PROFESIONAL ESTILO PALETA -->
             <div class="bg-stone-950 p-4 rounded-xl border border-stone-800 space-y-3">
-                <label class="text-[11px] text-amber-400 font-semibold uppercase block">🎨 Paleta de Colores Inicial (Personalizable o Códigos Hex)</label>
+                <label class="text-[11px] text-amber-400 font-semibold uppercase block">🎨 Paleta de Colores de la Marca</label>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <!-- Color Primario -->
-                    <div class="flex items-center gap-2 bg-stone-900 p-2 rounded-lg border border-stone-800">
-                        <input type="color" id="color-primario-picker" value="#7C5C43" onchange="document.getElementById('color-primario-text').value = this.value" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                    <!-- Primario -->
+                    <div class="flex items-center gap-3 bg-stone-900 p-2.5 rounded-xl border border-stone-800">
+                        <input type="color" id="color-primario-picker" value="#7C5C43" onchange="document.getElementById('color-primario-text').value = this.value">
                         <div class="flex-1">
-                            <span class="text-[9px] text-stone-400 block uppercase">Primario</span>
-                            <input type="text" id="color-primario-text" value="#7C5C43" oninput="document.getElementById('color-primario-picker').value = this.value" class="w-full bg-transparent text-xs text-stone-200 font-mono focus:outline-none">
+                            <span class="text-[9px] text-stone-400 block uppercase font-bold">Primario</span>
+                            <input type="text" id="color-primario-text" value="#7C5C43" oninput="document.getElementById('color-primario-picker').value = this.value" class="w-full bg-transparent text-xs text-amber-200 font-mono focus:outline-none">
                         </div>
                     </div>
 
-                    <!-- Color Secundario -->
-                    <div class="flex items-center gap-2 bg-stone-900 p-2 rounded-lg border border-stone-800">
-                        <input type="color" id="color-secundario-picker" value="#8C6D58" onchange="document.getElementById('color-secundario-text').value = this.value" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                    <!-- Secundario -->
+                    <div class="flex items-center gap-3 bg-stone-900 p-2.5 rounded-xl border border-stone-800">
+                        <input type="color" id="color-secundario-picker" value="#8C6D58" onchange="document.getElementById('color-secundario-text').value = this.value">
                         <div class="flex-1">
-                            <span class="text-[9px] text-stone-400 block uppercase">Secundario</span>
-                            <input type="text" id="color-secundario-text" value="#8C6D58" oninput="document.getElementById('color-secundario-picker').value = this.value" class="w-full bg-transparent text-xs text-stone-200 font-mono focus:outline-none">
+                            <span class="text-[9px] text-stone-400 block uppercase font-bold">Secundario</span>
+                            <input type="text" id="color-secundario-text" value="#8C6D58" oninput="document.getElementById('color-secundario-picker').value = this.value" class="w-full bg-transparent text-xs text-amber-200 font-mono focus:outline-none">
                         </div>
                     </div>
 
-                    <!-- Color de Fondo -->
-                    <div class="flex items-center gap-2 bg-stone-900 p-2 rounded-lg border border-stone-800">
-                        <input type="color" id="color-fondo-picker" value="#FBF9F5" onchange="document.getElementById('color-fondo-text').value = this.value" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                    <!-- Fondo -->
+                    <div class="flex items-center gap-3 bg-stone-900 p-2.5 rounded-xl border border-stone-800">
+                        <input type="color" id="color-fondo-picker" value="#FBF9F5" onchange="document.getElementById('color-fondo-text').value = this.value">
                         <div class="flex-1">
-                            <span class="text-[9px] text-stone-400 block uppercase">Fondo</span>
-                            <input type="text" id="color-fondo-text" value="#FBF9F5" oninput="document.getElementById('color-fondo-picker').value = this.value" class="w-full bg-transparent text-xs text-stone-200 font-mono focus:outline-none">
+                            <span class="text-[9px] text-stone-400 block uppercase font-bold">Fondo</span>
+                            <input type="text" id="color-fondo-text" value="#FBF9F5" oninput="document.getElementById('color-fondo-picker').value = this.value" class="w-full bg-transparent text-xs text-amber-200 font-mono focus:outline-none">
                         </div>
                     </div>
                 </div>
@@ -172,9 +174,10 @@
                         </div>
                         <div class="flex items-center gap-2 border-t md:border-t-0 border-stone-800 pt-2 md:pt-0">
                             <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}')" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition font-medium">✏️ Editar</button>
-                            <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo'}')" class="px-3 py-1.5 rounded-lg font-bold transition border ${esActivo ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40' : 'bg-rose-950/40 text-rose-400 border-rose-800 hover:bg-rose-900/40'}">
+                            <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo}')" class="px-3 py-1.5 rounded-lg font-bold transition border ${esActivo ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40' : 'bg-rose-950/40 text-rose-400 border-rose-800 hover:bg-rose-900/40'}">
                                 ${esActivo ? '🟢 Activo' : '🔴 Suspendido'}
                             </button>
+                            ${u.rol !== 'admin' ? `<button onclick="eliminarEstudio('${u.id}', '${u.nombre_estudio}')" class="px-3 py-1.5 bg-rose-900/50 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg transition font-medium">🗑️ Eliminar</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -188,7 +191,6 @@
             const pass = document.getElementById('nueva-pass').value.trim();
             const vencimiento = document.getElementById('nueva-vencimiento').value;
             
-            // Obtener los colores personalizados de los inputs de texto/pickers
             const colorPrimario = document.getElementById('color-primario-text').value.trim() || '#7C5C43';
             const colorSecundario = document.getElementById('color-secundario-text').value.trim() || '#8C6D58';
             const colorFondo = document.getElementById('color-fondo-text').value.trim() || '#FBF9F5';
@@ -224,7 +226,6 @@
                 if (error) {
                     alert("Error al actualizar: " + error.message);
                 } else {
-                    // Actualizar también su configuración visual de colores
                     await supabaseClient.from('configuracion_estudio').update({
                         color_primario: colorPrimario,
                         color_secundario: colorSecundario,
@@ -249,7 +250,11 @@
                 ]).select().single();
 
                 if (error) {
-                    alert("Error al crear cuenta: " + error.message);
+                    if (error.code === '23505') {
+                        alert("⚠️ El nombre de usuario '" + user + "' ya está en uso. Elige otro.");
+                    } else {
+                        alert("Error al crear cuenta: " + error.message);
+                    }
                 } else {
                     if (nuevoUser) {
                         await supabaseClient.from('configuracion_estudio').insert([{
@@ -274,7 +279,6 @@
             document.getElementById('nueva-vencimiento').value = (vencimiento && vencimiento !== 'null') ? vencimiento : '';
             document.getElementById('edit-logo-url').value = (logoUrl && logoUrl !== 'null') ? logoUrl : '';
             
-            // Cargar los colores actuales del estudio seleccionado
             const { data: config } = await supabaseClient.from('configuracion_estudio').select('*').eq('usuario_id', id).single();
             if (config) {
                 document.getElementById('color-primario-picker').value = config.color_primario || '#7C5C43';
@@ -316,6 +320,29 @@
         async function cambiarEstado(id, nuevoEstado) {
             await supabaseClient.from('usuarios').update({ estado: nuevoEstado }).eq('id', id);
             cargarUsuarios();
+        }
+
+        // ELIMINAR ESTUDIO Y TODOS SUS DATOS RELACIONADOS
+        async function eliminarEstudio(id, nombre) {
+            if (!confirm(`¿Estás completamente seguro de eliminar el estudio "${nombre}"?\n\nSe borrarán todas sus citas, clientas, gastos y configuraciones de forma permanente.`)) {
+                return;
+            }
+
+            // Borrar datos relacionados en orden para respetar las llaves foráneas
+            await supabaseClient.from('citas').delete().eq('usuario_id', id);
+            await supabaseClient.from('clientes').delete().eq('usuario_id', id);
+            await supabaseClient.from('gastos').delete().eq('usuario_id', id);
+            await supabaseClient.from('configuracion_estudio').delete().eq('usuario_id', id);
+
+            // Finalmente borrar al usuario
+            const { error } = await supabaseClient.from('usuarios').delete().eq('id', id);
+
+            if (error) {
+                alert("Error al eliminar el estudio: " + error.message);
+            } else {
+                alert("✓ Estudio y todos sus datos relacionados fueron eliminados con éxito.");
+                cargarUsuarios();
+            }
         }
     </script>
 </body>
