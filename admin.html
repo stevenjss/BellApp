@@ -3,41 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Administrador General</title>
+    <title>BellApp - Panel Administrador Maestro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-serif-luxury { font-family: 'Playfair Display', serif; }
+    </style>
 </head>
-<body class="bg-stone-900 text-stone-100 min-h-screen p-4">
+<body class="bg-stone-950 text-stone-100 min-h-screen p-4 md:p-8 pb-12">
 
-    <div id="login-admin" class="max-w-xs mx-auto mt-20 bg-stone-800 p-6 rounded-2xl border border-stone-700 space-y-4">
-        <h1 class="text-lg font-bold text-center text-amber-400">🛡️ Panel Administrador</h1>
-        <input type="password" id="admin-pass" placeholder="PIN Administrador" class="w-full bg-stone-900 border border-stone-700 p-3 rounded-xl text-center text-white">
-        <button onclick="loginAdmin()" class="w-full bg-amber-600 hover:bg-amber-500 py-3 rounded-xl font-bold">Ingresar</button>
-        <p id="error-login" class="text-rose-400 text-xs text-center hidden">PIN Administrador incorrecto</p>
-    </div>
-
-    <div id="panel-contenido" class="hidden max-w-xl mx-auto space-y-6">
+    <!-- PANEL PRINCIPAL MAESTRO (DIRECTO SIN LOGIN DUPLICADO) -->
+    <div id="panel-contenido" class="max-w-3xl mx-auto space-y-6">
+        
         <header class="flex justify-between items-center border-b border-stone-800 pb-4">
-            <h1 class="text-xl font-bold text-amber-400">👑 Gestión de Cuentas SaaS</h1>
-            <button onclick="location.reload()" class="text-xs bg-stone-800 px-3 py-1.5 rounded-lg border border-stone-700">Cerrar Sesión</button>
+            <div>
+                <h1 class="font-serif-luxury text-2xl font-bold text-amber-400">👑 BellApp OS</h1>
+                <p class="text-xs text-stone-400">Gestión Global de Cuentas y Suscripciones</p>
+            </div>
+            <button onclick="window.location.href='index.html'" class="text-xs bg-stone-900 hover:bg-stone-800 text-stone-300 px-3.5 py-2 rounded-xl border border-stone-800 transition">← Salir al Inicio</button>
         </header>
 
-        <!-- Crear Nuevo Estudio -->
-        <div class="bg-stone-800 p-4 rounded-2xl border border-stone-700 space-y-3">
-            <h2 class="text-sm font-semibold text-stone-300">➕ Crear Nuevo Estudio / Cliente</h2>
-            <div class="grid grid-cols-2 gap-2">
-                <input type="text" id="nuevo-nombre" placeholder="Nombre Estudio (ej. Studio B)" class="bg-stone-900 border border-stone-700 p-2.5 rounded-xl text-xs">
-                <input type="text" id="nuevo-usuario" placeholder="Usuario (ej. estudio_b)" class="bg-stone-900 border border-stone-700 p-2.5 rounded-xl text-xs">
+        <!-- FORMULARIO CREAR / EDITAR CLIENTE -->
+        <div class="bg-stone-900 p-5 rounded-2xl border border-stone-800 shadow-lg space-y-4">
+            <div class="flex justify-between items-center border-b border-stone-800 pb-3">
+                <h2 id="titulo-form" class="text-sm font-bold text-amber-400 uppercase tracking-wider">➕ Crear Nuevo Estudio / Cliente</h2>
+                <button id="btn-cancelar-edicion" onclick="resetearFormulario()" class="hidden text-xs text-stone-400 hover:text-stone-200">Cancelar Edición</button>
             </div>
-            <input type="password" id="nueva-pass" placeholder="PIN / Contraseña de Acceso" class="w-full bg-stone-900 border border-stone-700 p-2.5 rounded-xl text-xs">
-            <button onclick="crearUsuario()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded-xl text-xs font-bold">Crear Cuenta de Cliente</button>
+
+            <input type="hidden" id="edit-user-id" value="">
+            <input type="hidden" id="edit-logo-url" value="">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Nombre Comercial del Estudio</label>
+                    <input type="text" id="nuevo-nombre" placeholder="ej. Studio Elegance" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Usuario de Acceso</label>
+                    <input type="text" id="nuevo-usuario" placeholder="ej. elegance" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">PIN / Contraseña</label>
+                    <input type="text" id="nueva-pass" placeholder="ej. 1234" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Fecha de Vencimiento</label>
+                    <input type="date" id="nueva-vencimiento" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-200 focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Paleta Inicial de Colores</label>
+                    <select id="nueva-paleta" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-200 focus:outline-none focus:border-amber-500">
+                        <option value="#7C5C43|#8C6D58|#FBF9F5">☕ Café Clásico</option>
+                        <option value="#8D7B68|#A8927A|#F7F5F0">🦴 Hueso / Nude</option>
+                        <option value="#9E6B7B|#B58393|#FAF4F6">🌸 Rosa Soft</option>
+                        <option value="#3A3A3A|#555555|#F0F0F0">🖤 Elegante Oscuro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Logotipo del Estudio (Subir desde teléfono o PC)</label>
+                <div class="flex items-center gap-3 bg-stone-950 p-2.5 rounded-xl border border-stone-800">
+                    <input type="file" id="input-logo-file" accept="image/*" class="text-xs text-stone-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-600 file:text-stone-950 hover:file:bg-amber-500 cursor-pointer">
+                    <span id="lbl-logo-estado" class="text-[10px] text-stone-500">Sin logo nuevo seleccionado</span>
+                </div>
+            </div>
+
+            <button onclick="guardarUsuario()" id="btn-guardar" class="w-full bg-emerald-600 hover:bg-emerald-500 text-stone-950 py-3 rounded-xl text-xs font-bold transition shadow-md">Crear Cuenta de Estudio</button>
         </div>
 
-        <!-- Lista de Usuarios -->
-        <div class="bg-stone-800 p-4 rounded-2xl border border-stone-700">
-            <h2 class="text-sm font-semibold text-stone-300 mb-3">👥 Cuentas Registradas</h2>
-            <div id="lista-usuarios" class="space-y-3"></div>
+        <!-- LISTA DE ESTUDIOS REGISTRADOS -->
+        <div class="bg-stone-900 p-5 rounded-2xl border border-stone-800 shadow-lg space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-sm font-bold text-stone-300 uppercase tracking-wider">👥 Cuentas Registradas</h2>
+                <span id="contador-usuarios" class="text-xs bg-stone-800 text-amber-400 font-bold px-2.5 py-1 rounded-full border border-stone-700">0 Registrados</span>
+            </div>
+            
+            <div id="lista-usuarios" class="space-y-3">
+                <p class="text-stone-500 text-xs text-center py-4">Cargando cuentas...</p>
+            </div>
         </div>
+
     </div>
 
     <script>
@@ -45,34 +98,58 @@
         const SUPABASE_ANON_KEY = "sb_publishable_qr02Rl-cs9BWfws_pN3fSQ_5MZ5q6F-"; 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function loginAdmin() {
-            const pass = document.getElementById('admin-pass').value;
-            if (pass === 'admin123') { // PIN de administrador
-                document.getElementById('login-admin').classList.add('hidden');
-                document.getElementById('panel-contenido').classList.remove('hidden');
-                cargarUsuarios();
-            } else {
-                document.getElementById('error-login').classList.remove('hidden');
-            }
-        }
+        // Cargar datos al entrar directamente
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarUsuarios();
+        });
 
         async function cargarUsuarios() {
-            const { data: usuarios } = await supabaseClient.from('usuarios').select('*').order('created_at', { ascending: false });
+            const { data: usuarios, error } = await supabaseClient.from('usuarios').select('*').order('created_at', { ascending: false });
             const lista = document.getElementById('lista-usuarios');
             lista.innerHTML = '';
 
-            if (!usuarios) return;
+            if (error || !usuarios || usuarios.length === 0) {
+                lista.innerHTML = `<p class="text-stone-500 text-xs text-center py-4">No hay cuentas registradas</p>`;
+                document.getElementById('contador-usuarios').innerText = '0 Registrados';
+                return;
+            }
+
+            document.getElementById('contador-usuarios').innerText = `${usuarios.length} Registrados`;
 
             usuarios.forEach(u => {
                 const esActivo = u.estado === 'activo';
+                
+                // Calcular días restantes para la cuenta regresiva
+                let badgeVencimiento = '<span class="text-stone-500">Sin fecha asignada</span>';
+                if (u.fecha_vencimiento) {
+                    const hoy = new Date();
+                    hoy.setHours(0, 0, 0, 0);
+                    const vencimiento = new Date(u.fecha_vencimiento + 'T00:00:00');
+                    const diferenciaDias = Math.ceil((vencimiento - hoy) / (1000 * 60 * 60 * 24));
+                    
+                    if (diferenciaDias < 0) {
+                        badgeVencimiento = `<span class="bg-rose-950 text-rose-400 border border-rose-800 px-2 py-0.5 rounded font-bold">Vencido (${Math.abs(diferenciaDias)}d atrás)</span>`;
+                    } else if (diferenciaDias <= 5) {
+                        badgeVencimiento = `<span class="bg-amber-950 text-amber-400 border border-amber-800 px-2 py-0.5 rounded font-bold">Vence en ${diferenciaDias} días ⚠️</span>`;
+                    } else {
+                        badgeVencimiento = `<span class="bg-stone-800 text-stone-300 px-2 py-0.5 rounded">Vence en ${diferenciaDias} días</span>`;
+                    }
+                }
+
                 lista.innerHTML += `
-                    <div class="bg-stone-900 p-3 rounded-xl border border-stone-800 flex justify-between items-center text-xs">
-                        <div>
-                            <p class="font-bold text-white">${u.nombre_estudio} <span class="text-[10px] text-amber-400 font-normal">(${u.rol})</span></p>
-                            <p class="text-stone-400">Usuario: <span class="text-stone-200">${u.usuario}</span> | PIN: ${u.password}</p>
+                    <div class="bg-stone-950 p-4 rounded-xl border border-stone-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                ${u.logo_url ? `<img src="${u.logo_url}" class="w-6 h-6 rounded-full object-cover border border-stone-700">` : '✨'}
+                                <p class="font-bold text-amber-400 text-sm">${u.nombre_estudio}</p>
+                                <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${u.rol === 'admin' ? 'bg-purple-900/50 text-purple-300 border border-purple-800' : 'bg-stone-800 text-stone-400'}">${u.rol}</span>
+                            </div>
+                            <p class="text-stone-400">Usuario: <span class="text-stone-200 font-mono font-bold">${u.usuario}</span> | PIN: <span class="text-stone-200 font-mono font-bold">${u.password}</span></p>
+                            <p class="text-stone-400">Estado de Pago: ${badgeVencimiento}</p>
                         </div>
-                        <div>
-                            <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo'}')" class="px-3 py-1.5 rounded-lg font-bold ${esActivo ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">
+                        <div class="flex items-center gap-2 border-t md:border-t-0 border-stone-800 pt-2 md:pt-0">
+                            <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}')" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition font-medium">✏️ Editar</button>
+                            <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo'}')" class="px-3 py-1.5 rounded-lg font-bold transition border ${esActivo ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40' : 'bg-rose-950/40 text-rose-400 border-rose-800 hover:bg-rose-900/40'}">
                                 ${esActivo ? '🟢 Activo' : '🔴 Suspendido'}
                             </button>
                         </div>
@@ -81,29 +158,116 @@
             });
         }
 
-        async function crearUsuario() {
+        async function guardarUsuario() {
+            const editId = document.getElementById('edit-user-id').value;
             const nombre = document.getElementById('nuevo-nombre').value.trim();
-            const user = document.getElementById('nuevo-usuario').value.trim();
+            const user = document.getElementById('nuevo-usuario').value.trim().toLowerCase();
             const pass = document.getElementById('nueva-pass').value.trim();
+            const vencimiento = document.getElementById('nueva-vencimiento').value;
+            const paletaVal = document.getElementById('nueva-paleta').value.split('|');
+            const fileInput = document.getElementById('input-logo-file');
+            let logoUrl = document.getElementById('edit-logo-url').value;
 
             if (!nombre || !user || !pass) {
-                alert("Completa todos los campos");
+                alert("Completa nombre, usuario y PIN");
                 return;
             }
 
-            const { error } = await supabaseClient.from('usuarios').insert([
-                { nombre_estudio: nombre, usuario: user, password: pass, rol: 'cliente', estado: 'activo' }
-            ]);
-
-            if (error) {
-                alert("Error al crear cuenta: " + error.message);
-            } else {
-                document.getElementById('nuevo-nombre').value = '';
-                document.getElementById('nuevo-usuario').value = '';
-                document.getElementById('nueva-pass').value = '';
-                cargarUsuarios();
-                alert("✓ Cuenta creada con éxito");
+            // Subida de logo a Supabase Storage si se selecciona archivo
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const fileName = `logo_${Date.now()}_${file.name}`;
+                const { error: uploadError } = await supabaseClient.storage.from('fotos-estudio').upload(fileName, file);
+                
+                if (!uploadError) {
+                    const { data: publicUrlData } = supabaseClient.storage.from('fotos-estudio').getPublicUrl(fileName);
+                    logoUrl = publicUrlData.publicUrl;
+                }
             }
+
+            if (editId) {
+                // Editar cuenta existente
+                const { error } = await supabaseClient.from('usuarios').update({
+                    nombre_estudio: nombre,
+                    usuario: user,
+                    password: pass,
+                    fecha_vencimiento: vencimiento || null,
+                    logo_url: logoUrl || null
+                }).eq('id', editId);
+
+                if (error) {
+                    alert("Error al actualizar: " + error.message);
+                } else {
+                    alert("✓ Estudio actualizado correctamente");
+                    resetearFormulario();
+                    cargarUsuarios();
+                }
+            } else {
+                // Crear nueva cuenta
+                const { data: nuevoUser, error } = await supabaseClient.from('usuarios').insert([
+                    { 
+                        nombre_estudio: nombre, 
+                        usuario: user, 
+                        password: pass, 
+                        rol: 'cliente', 
+                        estado: 'activo',
+                        fecha_vencimiento: vencimiento || null,
+                        logo_url: logoUrl || null
+                    }
+                ]).select().single();
+
+                if (error) {
+                    alert("Error al crear cuenta: " + error.message);
+                } else {
+                    if (nuevoUser) {
+                        await supabaseClient.from('configuracion_estudio').insert([{
+                            usuario_id: nuevoUser.id,
+                            color_primario: paletaVal[0],
+                            color_secundario: paletaVal[1],
+                            color_fondo: paletaVal[2]
+                        }]);
+                    }
+                    alert("✓ Nuevo Estudio creado con éxito");
+                    resetearFormulario();
+                    cargarUsuarios();
+                }
+            }
+        }
+
+        function prepararEdicion(id, nombre, usuario, pass, vencimiento, logoUrl) {
+            document.getElementById('edit-user-id').value = id;
+            document.getElementById('nuevo-nombre').value = nombre;
+            document.getElementById('nuevo-usuario').value = usuario;
+            document.getElementById('nueva-pass').value = pass;
+            document.getElementById('nueva-vencimiento').value = (vencimiento && vencimiento !== 'null') ? vencimiento : '';
+            document.getElementById('edit-logo-url').value = (logoUrl && logoUrl !== 'null') ? logoUrl : '';
+            
+            if (logoUrl && logoUrl !== 'null') {
+                document.getElementById('lbl-logo-estado').innerText = "✓ Logo actual guardado";
+            } else {
+                document.getElementById('lbl-logo-estado').innerText = "Sin logo guardado";
+            }
+
+            document.getElementById('titulo-form').innerText = "✏️ Editar Estudio / Cliente";
+            document.getElementById('btn-guardar').innerText = "Guardar Cambios del Estudio";
+            document.getElementById('btn-guardar').className = "w-full bg-amber-600 hover:bg-amber-500 text-stone-950 py-3 rounded-xl text-xs font-bold transition shadow-md";
+            document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
+        }
+
+        function resetearFormulario() {
+            document.getElementById('edit-user-id').value = '';
+            document.getElementById('nuevo-nombre').value = '';
+            document.getElementById('nuevo-usuario').value = '';
+            document.getElementById('nueva-pass').value = '';
+            document.getElementById('nueva-vencimiento').value = '';
+            document.getElementById('edit-logo-url').value = '';
+            document.getElementById('input-logo-file').value = '';
+            document.getElementById('lbl-logo-estado').innerText = "Sin logo nuevo seleccionado";
+            
+            document.getElementById('titulo-form').innerText = "➕ Crear Nuevo Estudio / Cliente";
+            document.getElementById('btn-guardar').innerText = "Crear Cuenta de Estudio";
+            document.getElementById('btn-guardar').className = "w-full bg-emerald-600 hover:bg-emerald-500 text-stone-950 py-3 rounded-xl text-xs font-bold transition shadow-md";
+            document.getElementById('btn-cancelar-edicion').classList.add('hidden');
         }
 
         async function cambiarEstado(id, nuevoEstado) {
