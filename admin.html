@@ -12,7 +12,7 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .font-serif-luxury { font-family: 'Playfair Display', serif; }
-        input[type="color"] { -webkit-appearance: none; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; background: transparent; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: 1px solid #444; border-radius: 8px; }
     </style>
@@ -23,7 +23,8 @@
         
         <header class="flex justify-between items-center border-b border-stone-800 pb-4">
             <div>
-                <h1 class="font-serif-luxury text-2xl font-bold text-amber-400">👑 BellApp OS</h1>
+                <!-- Sin corona como pediste -->
+                <h1 class="font-serif-luxury text-2xl font-bold text-amber-400">BellApp OS</h1>
                 <p class="text-xs text-stone-400">Gestión Global de Cuentas y Suscripciones</p>
             </div>
             <button onclick="window.location.href='index.html'" class="text-xs bg-stone-900 hover:bg-stone-800 text-stone-300 px-3.5 py-2 rounded-xl border border-stone-800 transition">← Salir al Inicio</button>
@@ -61,12 +62,11 @@
                 </div>
             </div>
 
-            <!-- SELECTOR DE COLORES PROFESIONAL ESTILO PALETA -->
+            <!-- SELECTOR DE COLORES PROFESIONAL -->
             <div class="bg-stone-950 p-4 rounded-xl border border-stone-800 space-y-3">
                 <label class="text-[11px] text-amber-400 font-semibold uppercase block">🎨 Paleta de Colores de la Marca</label>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <!-- Primario -->
                     <div class="flex items-center gap-3 bg-stone-900 p-2.5 rounded-xl border border-stone-800">
                         <input type="color" id="color-primario-picker" value="#7C5C43" onchange="document.getElementById('color-primario-text').value = this.value">
                         <div class="flex-1">
@@ -75,7 +75,6 @@
                         </div>
                     </div>
 
-                    <!-- Secundario -->
                     <div class="flex items-center gap-3 bg-stone-900 p-2.5 rounded-xl border border-stone-800">
                         <input type="color" id="color-secundario-picker" value="#8C6D58" onchange="document.getElementById('color-secundario-text').value = this.value">
                         <div class="flex-1">
@@ -84,7 +83,6 @@
                         </div>
                     </div>
 
-                    <!-- Fondo -->
                     <div class="flex items-center gap-3 bg-stone-900 p-2.5 rounded-xl border border-stone-800">
                         <input type="color" id="color-fondo-picker" value="#FBF9F5" onchange="document.getElementById('color-fondo-text').value = this.value">
                         <div class="flex-1">
@@ -114,7 +112,7 @@
             </div>
             
             <div id="lista-usuarios" class="space-y-3">
-                <p class="text-stone-500 text-xs text-center py-4">Cargando cuentas...</p>
+                <p class="text-stone-400 text-xs text-center py-4">Cargando cuentas...</p>
             </div>
         </div>
 
@@ -130,58 +128,69 @@
         });
 
         async function cargarUsuarios() {
-            const { data: usuarios, error } = await supabaseClient.from('usuarios').select('*').order('created_at', { ascending: false });
             const lista = document.getElementById('lista-usuarios');
-            lista.innerHTML = '';
-
-            if (error || !usuarios || usuarios.length === 0) {
-                lista.innerHTML = `<p class="text-stone-500 text-xs text-center py-4">No hay cuentas registradas</p>`;
-                document.getElementById('contador-usuarios').innerText = '0 Registrados';
-                return;
-            }
-
-            document.getElementById('contador-usuarios').innerText = `${usuarios.length} Registrados`;
-
-            usuarios.forEach(u => {
-                const esActivo = u.estado === 'activo';
+            
+            try {
+                const { data: usuarios, error } = await supabaseClient.from('usuarios').select('*').order('created_at', { ascending: false });
                 
-                let badgeVencimiento = '<span class="text-stone-500">Sin fecha asignada</span>';
-                if (u.fecha_vencimiento) {
-                    const hoy = new Date();
-                    hoy.setHours(0, 0, 0, 0);
-                    const vencimiento = new Date(u.fecha_vencimiento + 'T00:00:00');
-                    const diferenciaDias = Math.ceil((vencimiento - hoy) / (1000 * 60 * 60 * 24));
-                    
-                    if (diferenciaDias < 0) {
-                        badgeVencimiento = `<span class="bg-rose-950 text-rose-400 border border-rose-800 px-2 py-0.5 rounded font-bold">Vencido (${Math.abs(diferenciaDias)}d atrás)</span>`;
-                    } else if (diferenciaDias <= 5) {
-                        badgeVencimiento = `<span class="bg-amber-950 text-amber-400 border border-amber-800 px-2 py-0.5 rounded font-bold">Vence en ${diferenciaDias} días ⚠️</span>`;
-                    } else {
-                        badgeVencimiento = `<span class="bg-stone-800 text-stone-300 px-2 py-0.5 rounded">Vence en ${diferenciaDias} días</span>`;
-                    }
+                if (error) {
+                    lista.innerHTML = `<p class="text-rose-400 text-xs text-center py-4">Error al cargar: ${error.message}</p>`;
+                    document.getElementById('contador-usuarios').innerText = '0 Registrados';
+                    return;
                 }
 
-                lista.innerHTML += `
-                    <div class="bg-stone-950 p-4 rounded-xl border border-stone-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
-                        <div class="space-y-1">
-                            <div class="flex items-center gap-2">
-                                ${u.logo_url ? `<img src="${u.logo_url}" class="w-6 h-6 rounded-full object-cover border border-stone-700">` : '✨'}
-                                <p class="font-bold text-amber-400 text-sm">${u.nombre_estudio}</p>
-                                <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${u.rol === 'admin' ? 'bg-purple-900/50 text-purple-300 border border-purple-800' : 'bg-stone-800 text-stone-400'}">${u.rol}</span>
+                if (!usuarios || usuarios.length === 0) {
+                    lista.innerHTML = `<p class="text-stone-500 text-xs text-center py-4">No hay cuentas registradas</p>`;
+                    document.getElementById('contador-usuarios').innerText = '0 Registrados';
+                    return;
+                }
+
+                document.getElementById('contador-usuarios').innerText = `${usuarios.length} Registrados`;
+                lista.innerHTML = '';
+
+                usuarios.forEach(u => {
+                    const esActivo = u.estado === 'activo';
+                    
+                    let badgeVencimiento = '<span class="text-stone-500">Sin fecha asignada</span>';
+                    if (u.fecha_vencimiento) {
+                        const hoy = new Date();
+                        hoy.setHours(0, 0, 0, 0);
+                        const vencimiento = new Date(u.fecha_vencimiento + 'T00:00:00');
+                        const diferenciaDias = Math.ceil((vencimiento - hoy) / (1000 * 60 * 60 * 24));
+                        
+                        if (diferenciaDias < 0) {
+                            badgeVencimiento = `<span class="bg-rose-950 text-rose-400 border border-rose-800 px-2 py-0.5 rounded font-bold">Vencido (${Math.abs(diferenciaDias)}d atrás)</span>`;
+                        } else if (diferenciaDias <= 5) {
+                            badgeVencimiento = `<span class="bg-amber-950 text-amber-400 border border-amber-800 px-2 py-0.5 rounded font-bold">Vence en ${diferenciaDias} días ⚠️</span>`;
+                        } else {
+                            badgeVencimiento = `<span class="bg-stone-800 text-stone-300 px-2 py-0.5 rounded">Vence en ${diferenciaDias} días</span>`;
+                        }
+                    }
+
+                    lista.innerHTML += `
+                        <div class="bg-stone-950 p-4 rounded-xl border border-stone-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    ${u.logo_url ? `<img src="${u.logo_url}" class="w-6 h-6 rounded-full object-cover border border-stone-700">` : '✨'}
+                                    <p class="font-bold text-amber-400 text-sm">${u.nombre_estudio}</p>
+                                    <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${u.rol === 'admin' ? 'bg-purple-900/50 text-purple-300 border border-purple-800' : 'bg-stone-800 text-stone-400'}">${u.rol}</span>
+                                </div>
+                                <p class="text-stone-400">Usuario: <span class="text-stone-200 font-mono font-bold">${u.usuario}</span> | PIN: <span class="text-stone-200 font-mono font-bold">${u.password}</span></p>
+                                <p class="text-stone-400">Suscripción: ${badgeVencimiento}</p>
                             </div>
-                            <p class="text-stone-400">Usuario: <span class="text-stone-200 font-mono font-bold">${u.usuario}</span> | PIN: <span class="text-stone-200 font-mono font-bold">${u.password}</span></p>
-                            <p class="text-stone-400">Suscripción: ${badgeVencimiento}</p>
+                            <div class="flex items-center gap-2 border-t md:border-t-0 border-stone-800 pt-2 md:pt-0">
+                                <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}')" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition font-medium">✏️ Editar</button>
+                                <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo}')" class="px-3 py-1.5 rounded-lg font-bold transition border ${esActivo ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40' : 'bg-rose-950/40 text-rose-400 border-rose-800 hover:bg-rose-900/40'}">
+                                    ${esActivo ? '🟢 Activo' : '🔴 Suspendido'}
+                                </button>
+                                ${u.rol !== 'admin' ? `<button onclick="eliminarEstudio('${u.id}', '${u.nombre_estudio}')" class="px-3 py-1.5 bg-rose-900/50 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg transition font-medium">🗑️ Eliminar</button>` : ''}
+                            </div>
                         </div>
-                        <div class="flex items-center gap-2 border-t md:border-t-0 border-stone-800 pt-2 md:pt-0">
-                            <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}')" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition font-medium">✏️ Editar</button>
-                            <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo}')" class="px-3 py-1.5 rounded-lg font-bold transition border ${esActivo ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40' : 'bg-rose-950/40 text-rose-400 border-rose-800 hover:bg-rose-900/40'}">
-                                ${esActivo ? '🟢 Activo' : '🔴 Suspendido'}
-                            </button>
-                            ${u.rol !== 'admin' ? `<button onclick="eliminarEstudio('${u.id}', '${u.nombre_estudio}')" class="px-3 py-1.5 bg-rose-900/50 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg transition font-medium">🗑️ Eliminar</button>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            } catch (err) {
+                lista.innerHTML = `<p class="text-rose-400 text-xs text-center py-4">Error de conexión: ${err.message}</p>`;
+            }
         }
 
         async function guardarUsuario() {
@@ -322,19 +331,16 @@
             cargarUsuarios();
         }
 
-        // ELIMINAR ESTUDIO Y TODOS SUS DATOS RELACIONADOS
         async function eliminarEstudio(id, nombre) {
             if (!confirm(`¿Estás completamente seguro de eliminar el estudio "${nombre}"?\n\nSe borrarán todas sus citas, clientas, gastos y configuraciones de forma permanente.`)) {
                 return;
             }
 
-            // Borrar datos relacionados en orden para respetar las llaves foráneas
             await supabaseClient.from('citas').delete().eq('usuario_id', id);
             await supabaseClient.from('clientes').delete().eq('usuario_id', id);
             await supabaseClient.from('gastos').delete().eq('usuario_id', id);
             await supabaseClient.from('configuracion_estudio').delete().eq('usuario_id', id);
 
-            // Finalmente borrar al usuario
             const { error } = await supabaseClient.from('usuarios').delete().eq('id', id);
 
             if (error) {
