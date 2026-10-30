@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BellApp - Gestión de Salón</title>
+    <title>BellApp - Panel del Estudio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,77 +14,77 @@
         .font-serif-luxury { font-family: 'Playfair Display', serif; }
     </style>
 </head>
-<body class="bg-stone-950 text-stone-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-stone-950 text-stone-100 min-h-screen p-4 md:p-8 flex items-center justify-center">
 
-    <!-- CONTENEDOR DE NOTIFICACIONES FLOTANTES (TOAST) -->
+    <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2"></div>
 
-    <!-- PANTALLA DE LOGIN -->
+    <!-- PANTALLA DE LOGIN ORIGINAL -->
     <div id="pantalla-login" class="max-w-md w-full bg-stone-900 p-8 rounded-3xl border border-stone-800 shadow-2xl space-y-6">
         <div class="text-center space-y-2">
             <h1 class="font-serif-luxury text-3xl font-bold text-amber-400">BellApp</h1>
-            <p class="text-xs text-stone-400 uppercase tracking-widest">Plataforma de Gestión Profesional</p>
+            <p class="text-xs text-stone-400 uppercase tracking-widest">Acceso a tu Estudio</p>
         </div>
 
         <div class="space-y-4">
             <div>
-                <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Usuario del Estudio</label>
+                <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Usuario</label>
                 <input type="text" id="login-usuario" placeholder="ej. betsy" class="w-full bg-stone-950 border border-stone-800 p-3 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
             </div>
             <div>
                 <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">PIN / Contraseña</label>
                 <input type="password" id="login-pass" placeholder="••••" class="w-full bg-stone-950 border border-stone-800 p-3 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
             </div>
-            <button onclick="iniciarSesion()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 py-3 rounded-xl text-xs font-bold transition shadow-md">Ingresar al Sistema</button>
+            <button onclick="iniciarSesion()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 py-3 rounded-xl text-xs font-bold transition shadow-md">Ingresar</button>
         </div>
     </div>
 
-    <!-- APLICACIÓN PRINCIPAL (OCULTA HASTA LOGUEARSE) -->
-    <div id="app-principal" class="max-w-md w-full bg-white text-stone-900 p-6 rounded-3xl shadow-2xl space-y-5 hidden">
+    <!-- APLICACIÓN PRINCIPAL (MANTIENE SU DISEÑO ORIGINAL) -->
+    <div id="app-principal" class="max-w-md w-full bg-stone-900 text-stone-100 p-6 rounded-3xl border border-stone-800 shadow-2xl space-y-6 hidden">
         
-        <header class="flex justify-between items-center border-b pb-4">
+        <header class="flex justify-between items-center border-b border-stone-800 pb-4">
             <div>
-                <h2 id="app-titulo-estudio" class="font-serif-luxury text-xl font-bold text-stone-900">Estudio</h2>
-                <p class="text-[10px] text-stone-500 uppercase">Panel de Control & Cobros</p>
+                <h2 id="app-titulo-estudio" class="font-serif-luxury text-xl font-bold text-amber-400">Estudio</h2>
+                <p class="text-[10px] text-stone-400 uppercase">Panel de Control</p>
             </div>
             <div class="flex items-center gap-2">
-                <button id="btn-admin-maestro" onclick="window.location.href='admin.html'" class="hidden text-[10px] bg-purple-100 text-purple-800 font-bold px-2.5 py-1.5 rounded-lg border border-purple-200">👑 Admin</button>
-                <button onclick="cerrarSesion()" class="text-[10px] bg-stone-100 text-stone-600 hover:bg-stone-200 font-bold px-2.5 py-1.5 rounded-lg">Cerrar Sesión</button>
+                <button id="btn-admin-maestro" onclick="window.location.href='admin.html'" class="hidden text-[10px] bg-purple-950 text-purple-300 font-bold px-2.5 py-1.5 rounded-lg border border-purple-800">👑 Admin</button>
+                <button onclick="cerrarSesion()" class="text-[10px] bg-stone-800 text-stone-300 hover:bg-stone-700 font-bold px-2.5 py-1.5 rounded-lg">Salir</button>
             </div>
         </header>
 
-        <!-- SECCIÓN DE REGISTRAR COBRO -->
+        <!-- SECCIÓN DE REGISTRAR COBRO (CON EL NUEVO BOTÓN INTEGRADO) -->
         <div class="space-y-4">
-            <h3 class="text-xs font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
+            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                 <span>📄</span> Registrar Cobro
             </h3>
 
             <div>
-                <label class="text-[11px] text-stone-500 font-semibold uppercase block mb-1">Buscar Clienta:</label>
-                <input type="text" id="input-buscar-clienta" placeholder="Escribe para buscar clienta..." class="w-full bg-stone-50 border border-stone-200 p-2.5 rounded-xl text-xs focus:outline-none focus:border-amber-600">
+                <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Buscar Clienta:</label>
+                <input type="text" id="input-buscar-clienta" placeholder="Escribe para buscar clienta..." class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
             </div>
 
-            <!-- SERVICIOS REALIZADOS CON BOTÓN DE GESTIÓN INTEGRADO -->
+            <!-- TOCA LOS SERVICIOS REALIZADOS + NUEVO BOTÓN DE GESTIÓN -->
             <div>
                 <div class="flex justify-between items-center mb-1.5">
-                    <label class="text-[11px] text-stone-500 font-semibold uppercase">Toca los servicios realizados:</label>
-                    <button onclick="abrirModalServicios()" class="text-[10px] bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-lg border border-amber-200 transition flex items-center gap-1 shadow-sm">
+                    <label class="text-[11px] text-stone-400 font-semibold uppercase">Toca los servicios realizados:</label>
+                    <button onclick="abrirModalServicios()" class="text-[10px] bg-amber-950/60 hover:bg-amber-900/60 text-amber-300 font-bold px-2 py-1 rounded-lg border border-amber-800/60 transition flex items-center gap-1">
                         ➕ Añade nuevos servicios
                     </button>
                 </div>
                 <div id="lista-servicios-cobro" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                    <!-- Se cargan dinámicamente desde la BD del estudio -->
+                    <!-- Se cargan dinámicamente de la base de datos -->
                 </div>
             </div>
 
             <!-- TOTAL A COBRAR -->
-            <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 flex justify-between items-center">
-                <span class="text-xs font-bold text-stone-600 uppercase">TOTAL A COBRAR:</span>
-                <span id="label-total-cobrar" class="font-serif-luxury text-xl font-bold text-stone-900">$0.00</span>
+            <div class="bg-stone-950 p-4 rounded-2xl border border-stone-800 flex justify-between items-center">
+                <span class="text-xs font-bold text-stone-400 uppercase">TOTAL A COBRAR:</span>
+                <span id="label-total-cobrar" class="font-serif-luxury text-xl font-bold text-amber-400">$0.00</span>
             </div>
 
             <div>
-                <select id="select-metodo-pago" class="w-full bg-stone-50 border border-stone-200 p-2.5 rounded-xl text-xs font-medium focus:outline-none">
+                <select id="select-metodo-pago" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-200 focus:outline-none">
                     <option value="Efectivo">💵 Efectivo</option>
                     <option value="Transferencia">📱 Transferencia</option>
                     <option value="Tarjeta">💳 Tarjeta</option>
@@ -92,42 +92,42 @@
             </div>
 
             <div>
-                <textarea id="input-nota-cobro" placeholder="Nota opcional..." rows="2" class="w-full bg-stone-50 border border-stone-200 p-2.5 rounded-xl text-xs focus:outline-none"></textarea>
+                <textarea id="input-nota-cobro" placeholder="Nota opcional..." rows="2" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none"></textarea>
             </div>
 
-            <button onclick="guardarCitaCobro()" class="w-full bg-stone-800 hover:bg-stone-900 text-white py-3 rounded-xl text-xs font-bold transition shadow-md">Guardar y Cerrar Cita</button>
+            <button onclick="guardarCitaCobro()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-stone-950 py-3 rounded-xl text-xs font-bold transition shadow-md">Guardar y Cerrar Cita</button>
         </div>
     </div>
 
-    <!-- MODAL GESTIÓN DE SERVICIOS -->
-    <div id="modal-servicios" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-stone-800 text-sm uppercase tracking-wider">🛠️ Gestionar Catálogo de Servicios</h3>
-                <button onclick="cerrarModalServicios()" class="text-stone-400 hover:text-stone-600 font-bold text-base">✕</button>
+    <!-- MODAL GESTIÓN DE SERVICIOS (PARA EDITAR, ELIMINAR O AÑADIR) -->
+    <div id="modal-servicios" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-stone-900 border border-stone-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto text-stone-100">
+            <div class="flex justify-between items-center border-b border-stone-800 pb-3">
+                <h3 class="font-bold text-amber-400 text-sm uppercase tracking-wider">🛠️ Gestionar Catálogo de Servicios</h3>
+                <button onclick="cerrarModalServicios()" class="text-stone-400 hover:text-stone-200 font-bold text-base">✕</button>
             </div>
 
             <div class="space-y-2">
-                <label class="text-[11px] font-bold text-stone-500 uppercase block">Servicios Actuales (Editar o Eliminar)</label>
+                <label class="text-[11px] font-bold text-stone-400 uppercase block">Servicios Actuales</label>
                 <div id="container-servicios-editar" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    <!-- Se cargan inputs editables -->
+                    <!-- Inputs editables -->
                 </div>
             </div>
 
-            <hr class="border-stone-200">
+            <hr class="border-stone-800">
 
-            <div class="space-y-3 bg-stone-50 p-4 rounded-2xl border border-stone-200">
-                <label class="text-[11px] font-bold text-amber-900 uppercase block">➕ Añadir Nuevo Servicio</label>
+            <div class="space-y-3 bg-stone-950 p-4 rounded-2xl border border-stone-800">
+                <label class="text-[11px] font-bold text-amber-400 uppercase block">➕ Añadir Nuevo Servicio</label>
                 <div>
-                    <input type="text" id="nuevo-nombre-servicio" placeholder="Nombre (ej. Limpieza facial)" class="w-full bg-white border border-stone-300 p-2.5 rounded-xl text-xs focus:outline-none focus:border-amber-600">
+                    <input type="text" id="nuevo-nombre-servicio" placeholder="Nombre (ej. Limpieza facial)" class="w-full bg-stone-900 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <input type="number" step="0.01" id="nuevo-precio-servicio" placeholder="Precio ($)" class="w-full bg-white border border-stone-300 p-2.5 rounded-xl text-xs focus:outline-none focus:border-amber-600 font-mono">
+                    <input type="number" step="0.01" id="nuevo-precio-servicio" placeholder="Precio ($)" class="w-full bg-stone-900 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500 font-mono">
                 </div>
-                <button onclick="crearNuevoServicio()" class="w-full bg-amber-700 hover:bg-amber-800 text-white py-2.5 rounded-xl text-xs font-bold transition shadow-sm">Guardar Nuevo Servicio</button>
+                <button onclick="crearNuevoServicio()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 py-2.5 rounded-xl text-xs font-bold transition">Guardar Nuevo Servicio</button>
             </div>
 
-            <button onclick="cerrarModalServicios()" class="w-full bg-stone-200 hover:bg-stone-300 text-stone-700 py-2.5 rounded-xl text-xs font-bold transition">Cerrar y Actualizar</button>
+            <button onclick="cerrarModalServicios()" class="w-full bg-stone-800 hover:bg-stone-700 text-stone-300 py-2.5 rounded-xl text-xs font-bold transition">Cerrar y Actualizar</button>
         </div>
     </div>
 
@@ -218,15 +218,15 @@
             container.innerHTML = '';
 
             if (serviciosEstudio.length === 0) {
-                container.innerHTML = `<p class="text-[11px] text-stone-400 col-span-2 py-3 text-center italic">Sin servicios. Haz clic en "Añade nuevos servicios".</p>`;
+                container.innerHTML = `<p class="text-[11px] text-stone-500 col-span-2 py-3 text-center italic">Sin servicios. Haz clic en "Añade nuevos servicios".</p>`;
                 return;
             }
 
             serviciosEstudio.forEach(s => {
                 container.innerHTML += `
-                    <button type="button" onclick="seleccionarServicio('${s.id}', '${s.nombre_servicio}', ${s.precio})" class="p-2.5 rounded-xl border border-stone-200 hover:border-amber-600 bg-stone-50 hover:bg-amber-50/50 text-left transition flex justify-between items-center group">
-                        <span class="text-xs text-stone-700 font-medium group-hover:text-amber-900">${s.nombre_servicio}</span>
-                        <span class="text-xs font-bold text-amber-700">$${Number(s.precio).toFixed(2)}</span>
+                    <button type="button" onclick="seleccionarServicio('${s.id}', '${s.nombre_servicio}', ${s.precio})" class="p-2.5 rounded-xl border border-stone-800 hover:border-amber-500 bg-stone-950 hover:bg-stone-900 text-left transition flex justify-between items-center group">
+                        <span class="text-xs text-stone-300 font-medium group-hover:text-amber-300">${s.nombre_servicio}</span>
+                        <span class="text-xs font-bold text-amber-400">$${Number(s.precio).toFixed(2)}</span>
                     </button>
                 `;
             });
@@ -260,17 +260,17 @@
             container.innerHTML = '';
 
             if (serviciosEstudio.length === 0) {
-                container.innerHTML = `<p class="text-xs text-stone-400 text-center py-2">Sin servicios registrados en tu cuenta.</p>`;
+                container.innerHTML = `<p class="text-xs text-stone-500 text-center py-2">Sin servicios registrados.</p>`;
                 return;
             }
 
             serviciosEstudio.forEach(s => {
                 container.innerHTML += `
-                    <div class="flex items-center gap-2 bg-stone-50 p-2 rounded-xl border border-stone-200">
-                        <input type="text" id="edit-nombre-${s.id}" value="${s.nombre_servicio}" class="flex-1 bg-white border border-stone-300 p-1.5 rounded-lg text-xs">
-                        <input type="number" step="0.01" id="edit-precio-${s.id}" value="${s.precio}" class="w-20 bg-white border border-stone-300 p-1.5 rounded-lg text-xs font-mono">
-                        <button onclick="guardarEdicionServicio('${s.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Guardar">💾</button>
-                        <button onclick="eliminarServicio('${s.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Eliminar">🗑️</button>
+                    <div class="flex items-center gap-2 bg-stone-950 p-2 rounded-xl border border-stone-800">
+                        <input type="text" id="edit-nombre-${s.id}" value="${s.nombre_servicio}" class="flex-1 bg-stone-900 border border-stone-800 p-1.5 rounded-lg text-xs text-stone-100">
+                        <input type="number" step="0.01" id="edit-precio-${s.id}" value="${s.precio}" class="w-20 bg-stone-900 border border-stone-800 p-1.5 rounded-lg text-xs font-mono text-stone-100">
+                        <button onclick="guardarEdicionServicio('${s.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-stone-950 px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Guardar">💾</button>
+                        <button onclick="eliminarServicio('${s.id}')" class="bg-rose-600 hover:bg-rose-500 text-stone-950 px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Eliminar">🗑️</button>
                     </div>
                 `;
             });
