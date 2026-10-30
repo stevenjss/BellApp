@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador General</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-stone-900 text-stone-100 min-h-screen p-4">
+
+    <div id="login-admin" class="max-w-xs mx-auto mt-20 bg-stone-800 p-6 rounded-2xl border border-stone-700 space-y-4">
+        <h1 class="text-lg font-bold text-center text-amber-400">🛡️ Panel Administrador</h1>
+        <input type="password" id="admin-pass" placeholder="PIN Administrador" class="w-full bg-stone-900 border border-stone-700 p-3 rounded-xl text-center text-white">
+        <button onclick="loginAdmin()" class="w-full bg-amber-600 hover:bg-amber-500 py-3 rounded-xl font-bold">Ingresar</button>
+        <p id="error-login" class="text-rose-400 text-xs text-center hidden">PIN Administrador incorrecto</p>
+    </div>
+
+    <div id="panel-contenido" class="hidden max-w-xl mx-auto space-y-6">
+        <header class="flex justify-between items-center border-b border-stone-800 pb-4">
+            <h1 class="text-xl font-bold text-amber-400">👑 Gestión de Cuentas SaaS</h1>
+            <button onclick="location.reload()" class="text-xs bg-stone-800 px-3 py-1.5 rounded-lg border border-stone-700">Cerrar Sesión</button>
+        </header>
+
+        <!-- Crear Nuevo Estudio -->
+        <div class="bg-stone-800 p-4 rounded-2xl border border-stone-700 space-y-3">
+            <h2 class="text-sm font-semibold text-stone-300">➕ Crear Nuevo Estudio / Cliente</h2>
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="nuevo-nombre" placeholder="Nombre Estudio (ej. Studio B)" class="bg-stone-900 border border-stone-700 p-2.5 rounded-xl text-xs">
+                <input type="text" id="nuevo-usuario" placeholder="Usuario (ej. estudio_b)" class="bg-stone-900 border border-stone-700 p-2.5 rounded-xl text-xs">
+            </div>
+            <input type="password" id="nueva-pass" placeholder="PIN / Contraseña de Acceso" class="w-full bg-stone-900 border border-stone-700 p-2.5 rounded-xl text-xs">
+            <button onclick="crearUsuario()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded-xl text-xs font-bold">Crear Cuenta de Cliente</button>
+        </div>
+
+        <!-- Lista de Usuarios -->
+        <div class="bg-stone-800 p-4 rounded-2xl border border-stone-700">
+            <h2 class="text-sm font-semibold text-stone-300 mb-3">👥 Cuentas Registradas</h2>
+            <div id="lista-usuarios" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://udddoohrdhmekrwstcnu.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_qr02Rl-cs9BWfws_pN3fSQ_5MZ5q6F-"; 
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loginAdmin() {
+            const pass = document.getElementById('admin-pass').value;
+            if (pass === 'admin123') { // PIN de administrador
+                document.getElementById('login-admin').classList.add('hidden');
+                document.getElementById('panel-contenido').classList.remove('hidden');
+                cargarUsuarios();
+            } else {
+                document.getElementById('error-login').classList.remove('hidden');
+            }
+        }
+
+        async function cargarUsuarios() {
+            const { data: usuarios } = await supabaseClient.from('usuarios').select('*').order('created_at', { ascending: false });
+            const lista = document.getElementById('lista-usuarios');
+            lista.innerHTML = '';
+
+            if (!usuarios) return;
+
+            usuarios.forEach(u => {
+                const esActivo = u.estado === 'activo';
+                lista.innerHTML += `
+                    <div class="bg-stone-900 p-3 rounded-xl border border-stone-800 flex justify-between items-center text-xs">
+                        <div>
+                            <p class="font-bold text-white">${u.nombre_estudio} <span class="text-[10px] text-amber-400 font-normal">(${u.rol})</span></p>
+                            <p class="text-stone-400">Usuario: <span class="text-stone-200">${u.usuario}</span> | PIN: ${u.password}</p>
+                        </div>
+                        <div>
+                            <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo'}')" class="px-3 py-1.5 rounded-lg font-bold ${esActivo ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">
+                                ${esActivo ? '🟢 Activo' : '🔴 Suspendido'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function crearUsuario() {
+            const nombre = document.getElementById('nuevo-nombre').value.trim();
+            const user = document.getElementById('nuevo-usuario').value.trim();
+            const pass = document.getElementById('nueva-pass').value.trim();
+
+            if (!nombre || !user || !pass) {
+                alert("Completa todos los campos");
+                return;
+            }
+
+            const { error } = await supabaseClient.from('usuarios').insert([
+                { nombre_estudio: nombre, usuario: user, password: pass, rol: 'cliente', estado: 'activo' }
+            ]);
+
+            if (error) {
+                alert("Error al crear cuenta: " + error.message);
+            } else {
+                document.getElementById('nuevo-nombre').value = '';
+                document.getElementById('nuevo-usuario').value = '';
+                document.getElementById('nueva-pass').value = '';
+                cargarUsuarios();
+                alert("✓ Cuenta creada con éxito");
+            }
+        }
+
+        async function cambiarEstado(id, nuevoEstado) {
+            await supabaseClient.from('usuarios').update({ estado: nuevoEstado }).eq('id', id);
+            cargarUsuarios();
+        }
+    </script>
+</body>
+</html>
