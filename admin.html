@@ -16,7 +16,7 @@
 </head>
 <body class="bg-stone-950 text-stone-100 min-h-screen p-4 md:p-8 pb-12">
 
-    <!-- PANEL PRINCIPAL MAESTRO (DIRECTO SIN LOGIN DUPLICADO) -->
+    <!-- PANEL PRINCIPAL MAESTRO -->
     <div id="panel-contenido" class="max-w-3xl mx-auto space-y-6">
         
         <header class="flex justify-between items-center border-b border-stone-800 pb-4">
@@ -48,23 +48,48 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                     <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">PIN / Contraseña</label>
                     <input type="text" id="nueva-pass" placeholder="ej. 1234" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Fecha de Vencimiento</label>
+                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Fecha de Vencimiento (Suscripción)</label>
                     <input type="date" id="nueva-vencimiento" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-200 focus:outline-none focus:border-amber-500">
                 </div>
-                <div>
-                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Paleta Inicial de Colores</label>
-                    <select id="nueva-paleta" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-200 focus:outline-none focus:border-amber-500">
-                        <option value="#7C5C43|#8C6D58|#FBF9F5">☕ Café Clásico</option>
-                        <option value="#8D7B68|#A8927A|#F7F5F0">🦴 Hueso / Nude</option>
-                        <option value="#9E6B7B|#B58393|#FAF4F6">🌸 Rosa Soft</option>
-                        <option value="#3A3A3A|#555555|#F0F0F0">🖤 Elegante Oscuro</option>
-                    </select>
+            </div>
+
+            <!-- SELECTOR LIBRE DE PALETA DE COLORES -->
+            <div class="bg-stone-950 p-4 rounded-xl border border-stone-800 space-y-3">
+                <label class="text-[11px] text-amber-400 font-semibold uppercase block">🎨 Paleta de Colores Inicial (Personalizable o Códigos Hex)</label>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <!-- Color Primario -->
+                    <div class="flex items-center gap-2 bg-stone-900 p-2 rounded-lg border border-stone-800">
+                        <input type="color" id="color-primario-picker" value="#7C5C43" onchange="document.getElementById('color-primario-text').value = this.value" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                        <div class="flex-1">
+                            <span class="text-[9px] text-stone-400 block uppercase">Primario</span>
+                            <input type="text" id="color-primario-text" value="#7C5C43" oninput="document.getElementById('color-primario-picker').value = this.value" class="w-full bg-transparent text-xs text-stone-200 font-mono focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Color Secundario -->
+                    <div class="flex items-center gap-2 bg-stone-900 p-2 rounded-lg border border-stone-800">
+                        <input type="color" id="color-secundario-picker" value="#8C6D58" onchange="document.getElementById('color-secundario-text').value = this.value" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                        <div class="flex-1">
+                            <span class="text-[9px] text-stone-400 block uppercase">Secundario</span>
+                            <input type="text" id="color-secundario-text" value="#8C6D58" oninput="document.getElementById('color-secundario-picker').value = this.value" class="w-full bg-transparent text-xs text-stone-200 font-mono focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Color de Fondo -->
+                    <div class="flex items-center gap-2 bg-stone-900 p-2 rounded-lg border border-stone-800">
+                        <input type="color" id="color-fondo-picker" value="#FBF9F5" onchange="document.getElementById('color-fondo-text').value = this.value" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                        <div class="flex-1">
+                            <span class="text-[9px] text-stone-400 block uppercase">Fondo</span>
+                            <input type="text" id="color-fondo-text" value="#FBF9F5" oninput="document.getElementById('color-fondo-picker').value = this.value" class="w-full bg-transparent text-xs text-stone-200 font-mono focus:outline-none">
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -98,7 +123,6 @@
         const SUPABASE_ANON_KEY = "sb_publishable_qr02Rl-cs9BWfws_pN3fSQ_5MZ5q6F-"; 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Cargar datos al entrar directamente
         document.addEventListener('DOMContentLoaded', () => {
             cargarUsuarios();
         });
@@ -119,7 +143,6 @@
             usuarios.forEach(u => {
                 const esActivo = u.estado === 'activo';
                 
-                // Calcular días restantes para la cuenta regresiva
                 let badgeVencimiento = '<span class="text-stone-500">Sin fecha asignada</span>';
                 if (u.fecha_vencimiento) {
                     const hoy = new Date();
@@ -145,7 +168,7 @@
                                 <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${u.rol === 'admin' ? 'bg-purple-900/50 text-purple-300 border border-purple-800' : 'bg-stone-800 text-stone-400'}">${u.rol}</span>
                             </div>
                             <p class="text-stone-400">Usuario: <span class="text-stone-200 font-mono font-bold">${u.usuario}</span> | PIN: <span class="text-stone-200 font-mono font-bold">${u.password}</span></p>
-                            <p class="text-stone-400">Estado de Pago: ${badgeVencimiento}</p>
+                            <p class="text-stone-400">Suscripción: ${badgeVencimiento}</p>
                         </div>
                         <div class="flex items-center gap-2 border-t md:border-t-0 border-stone-800 pt-2 md:pt-0">
                             <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}')" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition font-medium">✏️ Editar</button>
@@ -164,7 +187,12 @@
             const user = document.getElementById('nuevo-usuario').value.trim().toLowerCase();
             const pass = document.getElementById('nueva-pass').value.trim();
             const vencimiento = document.getElementById('nueva-vencimiento').value;
-            const paletaVal = document.getElementById('nueva-paleta').value.split('|');
+            
+            // Obtener los colores personalizados de los inputs de texto/pickers
+            const colorPrimario = document.getElementById('color-primario-text').value.trim() || '#7C5C43';
+            const colorSecundario = document.getElementById('color-secundario-text').value.trim() || '#8C6D58';
+            const colorFondo = document.getElementById('color-fondo-text').value.trim() || '#FBF9F5';
+
             const fileInput = document.getElementById('input-logo-file');
             let logoUrl = document.getElementById('edit-logo-url').value;
 
@@ -173,7 +201,6 @@
                 return;
             }
 
-            // Subida de logo a Supabase Storage si se selecciona archivo
             if (fileInput.files && fileInput.files[0]) {
                 const file = fileInput.files[0];
                 const fileName = `logo_${Date.now()}_${file.name}`;
@@ -186,7 +213,6 @@
             }
 
             if (editId) {
-                // Editar cuenta existente
                 const { error } = await supabaseClient.from('usuarios').update({
                     nombre_estudio: nombre,
                     usuario: user,
@@ -198,12 +224,18 @@
                 if (error) {
                     alert("Error al actualizar: " + error.message);
                 } else {
+                    // Actualizar también su configuración visual de colores
+                    await supabaseClient.from('configuracion_estudio').update({
+                        color_primario: colorPrimario,
+                        color_secundario: colorSecundario,
+                        color_fondo: colorFondo
+                    }).eq('usuario_id', editId);
+
                     alert("✓ Estudio actualizado correctamente");
                     resetearFormulario();
                     cargarUsuarios();
                 }
             } else {
-                // Crear nueva cuenta
                 const { data: nuevoUser, error } = await supabaseClient.from('usuarios').insert([
                     { 
                         nombre_estudio: nombre, 
@@ -222,9 +254,9 @@
                     if (nuevoUser) {
                         await supabaseClient.from('configuracion_estudio').insert([{
                             usuario_id: nuevoUser.id,
-                            color_primario: paletaVal[0],
-                            color_secundario: paletaVal[1],
-                            color_fondo: paletaVal[2]
+                            color_primario: colorPrimario,
+                            color_secundario: colorSecundario,
+                            color_fondo: colorFondo
                         }]);
                     }
                     alert("✓ Nuevo Estudio creado con éxito");
@@ -234,7 +266,7 @@
             }
         }
 
-        function prepararEdicion(id, nombre, usuario, pass, vencimiento, logoUrl) {
+        async function prepararEdicion(id, nombre, usuario, pass, vencimiento, logoUrl) {
             document.getElementById('edit-user-id').value = id;
             document.getElementById('nuevo-nombre').value = nombre;
             document.getElementById('nuevo-usuario').value = usuario;
@@ -242,6 +274,17 @@
             document.getElementById('nueva-vencimiento').value = (vencimiento && vencimiento !== 'null') ? vencimiento : '';
             document.getElementById('edit-logo-url').value = (logoUrl && logoUrl !== 'null') ? logoUrl : '';
             
+            // Cargar los colores actuales del estudio seleccionado
+            const { data: config } = await supabaseClient.from('configuracion_estudio').select('*').eq('usuario_id', id).single();
+            if (config) {
+                document.getElementById('color-primario-picker').value = config.color_primario || '#7C5C43';
+                document.getElementById('color-primario-text').value = config.color_primario || '#7C5C43';
+                document.getElementById('color-secundario-picker').value = config.color_secundario || '#8C6D58';
+                document.getElementById('color-secundario-text').value = config.color_secundario || '#8C6D58';
+                document.getElementById('color-fondo-picker').value = config.color_fondo || '#FBF9F5';
+                document.getElementById('color-fondo-text').value = config.color_fondo || '#FBF9F5';
+            }
+
             if (logoUrl && logoUrl !== 'null') {
                 document.getElementById('lbl-logo-estado').innerText = "✓ Logo actual guardado";
             } else {
