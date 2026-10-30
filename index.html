@@ -3,374 +3,984 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BellApp - Panel del Estudio</title>
+    <title>BellApp</title>
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .font-serif-luxury { font-family: 'Playfair Display', serif; }
+        :root {
+            --color-primario: #7C5C43;
+            --color-secundario: #8C6D58;
+            --color-fondo: #FBF9F5;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--color-fondo);
+            transition: background-color 0.3s ease;
+        }
+        .font-serif-luxury {
+            font-family: 'Playfair Display', serif;
+        }
+
+        #bg-overlay {
+            position: fixed;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.15;
+            transition: opacity 0.3s ease, background-image 0.3s ease;
+        }
+
+        .btn-dinamico-primario {
+            background-color: var(--color-primario) !important;
+            color: #ffffff !important;
+        }
+        .btn-dinamico-secundario {
+            background-color: var(--color-secundario) !important;
+            color: #ffffff !important;
+        }
+        .texto-dinamico-primario {
+            color: var(--color-primario) !important;
+        }
     </style>
 </head>
-<body class="bg-stone-950 text-stone-100 min-h-screen p-4 md:p-8 flex items-center justify-center">
+<body class="text-stone-800 pb-20">
 
-    <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2"></div>
+    <div id="bg-overlay"></div>
 
-    <!-- PANTALLA DE LOGIN ORIGINAL -->
-    <div id="pantalla-login" class="max-w-md w-full bg-stone-900 p-8 rounded-3xl border border-stone-800 shadow-2xl space-y-6">
-        <div class="text-center space-y-2">
-            <h1 class="font-serif-luxury text-3xl font-bold text-amber-400">BellApp</h1>
-            <p class="text-xs text-stone-400 uppercase tracking-widest">Acceso a tu Estudio</p>
-        </div>
-
-        <div class="space-y-4">
-            <div>
-                <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Usuario</label>
-                <input type="text" id="login-usuario" placeholder="ej. betsy" class="w-full bg-stone-950 border border-stone-800 p-3 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
-            </div>
-            <div>
-                <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">PIN / Contraseña</label>
-                <input type="password" id="login-pass" placeholder="••••" class="w-full bg-stone-950 border border-stone-800 p-3 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
-            </div>
-            <button onclick="iniciarSesion()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 py-3 rounded-xl text-xs font-bold transition shadow-md">Ingresar</button>
-        </div>
+    <!-- BANNER TOAST -->
+    <div id="toast-notificacion" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden bg-[#5C4231] text-white text-xs px-5 py-3 rounded-xl shadow-lg border border-[#8C6D58] transition-all flex items-center gap-2">
+        <span id="toast-mensaje">Operación realizada con éxito</span>
     </div>
 
-    <!-- APLICACIÓN PRINCIPAL (MANTIENE SU DISEÑO ORIGINAL) -->
-    <div id="app-principal" class="max-w-md w-full bg-stone-900 text-stone-100 p-6 rounded-3xl border border-stone-800 shadow-2xl space-y-6 hidden">
-        
-        <header class="flex justify-between items-center border-b border-stone-800 pb-4">
+    <!-- ALERTA CITA -->
+    <div id="alerta-cita-proxima" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden bg-amber-800 text-white text-xs px-6 py-4 rounded-2xl shadow-2xl border-2 border-amber-500 transition-all flex flex-col gap-2 max-w-xs text-center animate-bounce">
+        <div class="flex items-center justify-center gap-2 font-bold text-sm">
+            <span>⏰ ¡CITA PRÓXIMA EN 15 MINUTOS!</span>
+        </div>
+        <p id="alerta-cita-detalle" class="text-amber-100 text-xs"></p>
+        <button onclick="cerrarAlertaCita()" class="mt-1 bg-white text-amber-900 font-bold py-1 px-3 rounded-lg text-[11px] self-center">Entendido</button>
+    </div>
+
+    <!-- PANTALLA LOGIN UNIVERSAL: BELLAPP -->
+    <div id="pin-screen" class="fixed inset-0 bg-[#FBF9F5] z-50 flex flex-col items-center justify-center p-6">
+        <div class="flex flex-col items-center mb-6">
+            <div class="w-16 h-16 rounded-2xl border border-[#D8C8BC] flex items-center justify-center mb-3 bg-white shadow-sm">
+                <span class="font-serif-luxury text-2xl font-bold tracking-tight text-[#7C5C43]">B✨</span>
+            </div>
+            <h1 class="font-serif-luxury text-2xl font-semibold text-[#5C4231] tracking-wide text-center">BellApp</h1>
+            <p class="text-[10px] uppercase tracking-[0.3em] text-[#A38874] mt-1 font-medium">Beauty Platform OS</p>
+        </div>
+
+        <div class="w-full max-w-xs space-y-3">
             <div>
-                <h2 id="app-titulo-estudio" class="font-serif-luxury text-xl font-bold text-amber-400">Estudio</h2>
-                <p class="text-[10px] text-stone-400 uppercase">Panel de Control</p>
+                <label class="text-[11px] uppercase tracking-wider font-semibold text-stone-500 block mb-1">Usuario</label>
+                <input type="text" id="login-usuario" placeholder="Ingresa tu usuario" class="w-full text-center text-sm border border-[#D8C8BC] bg-white rounded-xl p-3 focus:outline-none focus:border-[#8C6D58] shadow-xs text-[#5C4231]">
+            </div>
+            <div>
+                <label class="text-[11px] uppercase tracking-wider font-semibold text-stone-500 block mb-1">PIN / Contraseña</label>
+                <input type="password" id="pin-input" maxlength="10" onkeyup="if(event.key === 'Enter') iniciarSesion()" class="w-full text-center text-2xl tracking-widest border border-[#D8C8BC] bg-white rounded-xl p-2.5 focus:outline-none focus:border-[#8C6D58] shadow-xs text-[#5C4231]" placeholder="••••">
+            </div>
+            <button type="button" onclick="iniciarSesion()" class="w-full bg-[#8C6D58] hover:bg-[#745844] text-white font-medium py-3 rounded-xl shadow-md active:scale-95 transition text-sm tracking-wide mt-2">Ingresar al Sistema</button>
+        </div>
+        
+        <p id="pin-error" class="text-amber-800 text-xs mt-4 hidden bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 text-center"></p>
+    </div>
+
+    <!-- APP PRINCIPAL -->
+    <div id="app-content" class="hidden">
+        
+        <header id="header-app" class="bg-[#7C5C43] text-white p-4 shadow-sm sticky top-0 z-40 flex justify-between items-center border-b border-[#694D36]">
+            <div class="flex items-center gap-3">
+                <div id="header-logo-container" class="w-9 h-9 rounded-full border border-[#D8C8BC] flex items-center justify-center bg-[#5C4231] overflow-hidden">
+                    <span id="header-logo-iniciales" class="font-serif-luxury text-xs font-semibold tracking-widest text-[#F2EAE1]">BM</span>
+                </div>
+                <div>
+                    <h1 id="header-nombre-estudio" class="font-serif-luxury text-base font-medium tracking-wide leading-none">Estudio</h1>
+                    <p class="text-[9px] uppercase tracking-[0.2em] text-[#D8C8BC] mt-0.5">Powered by BellApp</p>
+                </div>
             </div>
             <div class="flex items-center gap-2">
-                <button id="btn-admin-maestro" onclick="window.location.href='admin.html'" class="hidden text-[10px] bg-purple-950 text-purple-300 font-bold px-2.5 py-1.5 rounded-lg border border-purple-800">👑 Admin</button>
-                <button onclick="cerrarSesion()" class="text-[10px] bg-stone-800 text-stone-300 hover:bg-stone-700 font-bold px-2.5 py-1.5 rounded-lg">Salir</button>
+                <button onclick="abrirModalPersonalizacion()" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[11px] px-2.5 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs">
+                    <span>🎨 Tema</span>
+                </button>
+                <button onclick="solicitarPermisoNotificaciones()" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[11px] px-2.5 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs">
+                    <span>🔔 Alertas</span>
+                </button>
             </div>
         </header>
 
-        <!-- SECCIÓN DE REGISTRAR COBRO (CON EL NUEVO BOTÓN INTEGRADO) -->
-        <div class="space-y-4">
-            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                <span>📄</span> Registrar Cobro
-            </h3>
-
-            <div>
-                <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Buscar Clienta:</label>
-                <input type="text" id="input-buscar-clienta" placeholder="Escribe para buscar clienta..." class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
-            </div>
-
-            <!-- TOCA LOS SERVICIOS REALIZADOS + NUEVO BOTÓN DE GESTIÓN -->
-            <div>
-                <div class="flex justify-between items-center mb-1.5">
-                    <label class="text-[11px] text-stone-400 font-semibold uppercase">Toca los servicios realizados:</label>
-                    <button onclick="abrirModalServicios()" class="text-[10px] bg-amber-950/60 hover:bg-amber-900/60 text-amber-300 font-bold px-2 py-1 rounded-lg border border-amber-800/60 transition flex items-center gap-1">
-                        ➕ Añade nuevos servicios
-                    </button>
+        <main class="p-4 max-w-md mx-auto">
+            
+            <!-- VISTA AGENDA -->
+            <section id="seccion-agenda" class="space-y-4">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
+                    <h2 class="text-xs font-semibold text-[#8C6D58] uppercase tracking-wider mb-3">Balance del Mes (Profit)</h2>
+                    <div class="grid grid-cols-3 gap-2 text-center mb-1">
+                        <div class="bg-[#FBF9F5] p-2.5 rounded-xl border border-[#EFE7DE]">
+                            <p class="text-[10px] text-stone-500 font-medium">Ventas</p>
+                            <p id="lbl-ingresos-mes" class="text-base font-semibold text-[#7C5C43] font-serif-luxury">$0.00</p>
+                        </div>
+                        <div class="bg-[#FBF9F5] p-2.5 rounded-xl border border-[#EFE7DE]">
+                            <p class="text-[10px] text-stone-500 font-medium">Gastos</p>
+                            <p id="lbl-gastos-mes" class="text-base font-semibold text-stone-600 font-serif-luxury">$0.00</p>
+                        </div>
+                        <div class="bg-[#F4EFE6] p-2.5 rounded-xl border border-[#D8C8BC]">
+                            <p class="text-[10px] text-[#7C5C43] font-bold uppercase">Profit 💼</p>
+                            <p id="lbl-profit-mes" class="text-base font-bold text-[#5C4231] font-serif-luxury">$0.00</p>
+                        </div>
+                    </div>
                 </div>
-                <div id="lista-servicios-cobro" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                    <!-- Se cargan dinámicamente de la base de datos -->
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="abrirSeccionAgendarNueva()" class="btn-dinamico-primario hover:opacity-90 py-3 rounded-xl font-medium shadow-sm text-center text-xs transition">🗓️ Agendar Cita</button>
+                    <button onclick="cambiarSeccion('cobrar')" class="btn-dinamico-secundario hover:opacity-90 py-3 rounded-xl font-medium shadow-sm text-center text-xs transition">🧾 Cobro Rápido</button>
                 </div>
-            </div>
 
-            <!-- TOTAL A COBRAR -->
-            <div class="bg-stone-950 p-4 rounded-2xl border border-stone-800 flex justify-between items-center">
-                <span class="text-xs font-bold text-stone-400 uppercase">TOTAL A COBRAR:</span>
-                <span id="label-total-cobrar" class="font-serif-luxury text-xl font-bold text-amber-400">$0.00</span>
-            </div>
-
-            <div>
-                <select id="select-metodo-pago" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-200 focus:outline-none">
-                    <option value="Efectivo">💵 Efectivo</option>
-                    <option value="Transferencia">📱 Transferencia</option>
-                    <option value="Tarjeta">💳 Tarjeta</option>
-                </select>
-            </div>
-
-            <div>
-                <textarea id="input-nota-cobro" placeholder="Nota opcional..." rows="2" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none"></textarea>
-            </div>
-
-            <button onclick="guardarCitaCobro()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-stone-950 py-3 rounded-xl text-xs font-bold transition shadow-md">Guardar y Cerrar Cita</button>
-        </div>
-    </div>
-
-    <!-- MODAL GESTIÓN DE SERVICIOS (PARA EDITAR, ELIMINAR O AÑADIR) -->
-    <div id="modal-servicios" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-stone-900 border border-stone-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto text-stone-100">
-            <div class="flex justify-between items-center border-b border-stone-800 pb-3">
-                <h3 class="font-bold text-amber-400 text-sm uppercase tracking-wider">🛠️ Gestionar Catálogo de Servicios</h3>
-                <button onclick="cerrarModalServicios()" class="text-stone-400 hover:text-stone-200 font-bold text-base">✕</button>
-            </div>
-
-            <div class="space-y-2">
-                <label class="text-[11px] font-bold text-stone-400 uppercase block">Servicios Actuales</label>
-                <div id="container-servicios-editar" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    <!-- Inputs editables -->
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-sm font-semibold text-[#5C4231] font-serif-luxury">📅 Próximas Citas (Ordenadas por Hora)</h3>
+                        <span class="text-[10px] bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full font-medium">⏱️ Cronológico</span>
+                    </div>
+                    <div id="lista-citas-pendientes" class="space-y-3">
+                        <p class="text-stone-400 text-xs text-center py-3">Sin citas pendientes por atender</p>
+                    </div>
                 </div>
-            </div>
+            </section>
 
-            <hr class="border-stone-800">
+            <!-- VISTA HISTORIAL -->
+            <section id="seccion-historial" class="hidden space-y-4">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
+                    <h2 class="text-base font-semibold text-[#5C4231] mb-3 font-serif-luxury">📜 Historial de Citas Atendidas</h2>
+                    <input type="text" id="buscar-historial" onkeyup="filtrarHistorial()" placeholder="Buscar clienta o servicio..." class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 text-sm bg-[#FBF9F5] text-stone-700 focus:outline-none focus:border-[#8C6D58]">
+                    <div id="lista-citas-atendidas" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                        <p class="text-stone-400 text-xs text-center py-4">No hay historial de citas cobradas</p>
+                    </div>
+                </div>
+            </section>
 
-            <div class="space-y-3 bg-stone-950 p-4 rounded-2xl border border-stone-800">
-                <label class="text-[11px] font-bold text-amber-400 uppercase block">➕ Añadir Nuevo Servicio</label>
+            <!-- VISTA FOTOS -->
+            <section id="seccion-fotos" class="hidden space-y-4">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-base font-semibold text-[#5C4231] font-serif-luxury">📸 Fotos Antes / Después</h2>
+                        <button onclick="cambiarSeccion('agenda')" class="text-xs text-[#7C5C43] underline font-medium">← Volver</button>
+                    </div>
+                    <p id="fotos-info-cita" class="text-xs text-stone-500 mb-4 bg-[#FBF9F5] p-2.5 rounded-xl border border-[#EFE7DE]"></p>
+                    
+                    <input type="hidden" id="foto-cita-id">
+
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="border border-dashed border-[#D8C8BC] p-3 rounded-xl text-center bg-[#FBF9F5]">
+                            <p class="text-xs font-semibold text-[#7C5C43] uppercase mb-2">Foto Antes</p>
+                            <div id="preview-antes" class="h-32 bg-white rounded-lg border border-[#EFE7DE] flex items-center justify-center mb-2 overflow-hidden">
+                                <span class="text-stone-400 text-[11px]">Sin imagen</span>
+                            </div>
+                            <input type="file" id="input-foto-antes" accept="image/*" class="hidden" onchange="subirFotoServicio('antes', this)">
+                            <button onclick="document.getElementById('input-foto-antes').click()" class="w-full btn-dinamico-secundario text-xs py-2 rounded-lg">Subir Antes</button>
+                        </div>
+
+                        <div class="border border-dashed border-[#D8C8BC] p-3 rounded-xl text-center bg-[#FBF9F5]">
+                            <p class="text-xs font-semibold text-[#7C5C43] uppercase mb-2">Foto Después</p>
+                            <div id="preview-despues" class="h-32 bg-white rounded-lg border border-[#EFE7DE] flex items-center justify-center mb-2 overflow-hidden">
+                                <span class="text-stone-400 text-[11px]">Sin imagen</span>
+                            </div>
+                            <input type="file" id="input-foto-despues" accept="image/*" class="hidden" onchange="subirFotoServicio('despues', this)">
+                            <button onclick="document.getElementById('input-foto-despues').click()" class="w-full btn-dinamico-primario text-xs py-2 rounded-lg">Subir Después</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA AGENDAR -->
+            <section id="seccion-agendar" class="hidden space-y-4">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
+                    <h2 id="titulo-modo-agenda" class="text-base font-semibold text-[#5C4231] mb-3 font-serif-luxury">📅 Programar Cita</h2>
+                    
+                    <input type="hidden" id="editar-cita-id" value="">
+
+                    <label class="block text-xs font-medium text-stone-600 mb-1">Buscar Clienta:</label>
+                    <input type="text" id="agendar-buscar-cliente" onkeyup="filtrarClientesEnAutocomplete('agendar')" placeholder="Escribe el nombre de la clienta..." class="w-full border border-[#D8C8BC] p-3 rounded-xl bg-[#FBF9F5] text-sm text-stone-700 focus:outline-none focus:border-[#8C6D58]">
+                    <input type="hidden" id="agendar-cliente-id">
+                    <div id="agendar-lista-sugerencias" class="hidden border border-[#D8C8BC] bg-white rounded-xl shadow-md max-h-36 overflow-y-auto mb-3 text-sm text-stone-700"></div>
+
+                    <div class="grid grid-cols-2 gap-2 mb-3 mt-3">
+                        <div>
+                            <label class="block text-xs font-medium text-stone-600 mb-1">Fecha:</label>
+                            <input type="date" id="agendar-fecha" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-[#FBF9F5] text-stone-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-stone-600 mb-1">Hora:</label>
+                            <input type="time" id="agendar-hora" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-[#FBF9F5] text-stone-700">
+                        </div>
+                    </div>
+
+                    <div class="border-t border-[#EFE7DE] pt-3 mb-3">
+                        <p class="text-xs font-medium text-stone-500 mb-2.5 uppercase tracking-wider">Servicios Solicitados:</p>
+                        <div id="agendar-botones-servicios" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto mb-3 pr-1"></div>
+                    </div>
+
+                    <div class="bg-[#F9F5F0] p-3 rounded-xl mb-3 flex justify-between items-center border border-[#E8DDD1]">
+                        <span class="text-xs font-semibold text-[#7C5C43] uppercase tracking-wider">ESTIMADO:</span>
+                        <span id="agendar-total" class="text-xl font-semibold text-[#5C4231] font-serif-luxury">$0.00</span>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick="guardarCitaAgendada()" class="flex-1 btn-dinamico-primario hover:opacity-90 text-white py-3.5 rounded-xl font-medium shadow-md transition text-sm">Guardar Cambios</button>
+                        <button onclick="cambiarSeccion('agenda')" class="px-4 bg-stone-200 text-stone-700 py-3.5 rounded-xl font-medium text-xs">Cancelar</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA COBRO -->
+            <section id="seccion-cobrar" class="hidden space-y-4">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
+                    <h2 class="text-base font-semibold text-[#5C4231] mb-3 font-serif-luxury">🧾 Registrar Cobro</h2>
+                    
+                    <label class="block text-xs font-medium text-stone-600 mb-1">Buscar Clienta:</label>
+                    <input type="text" id="cobro-buscar-cliente" onkeyup="filtrarClientesEnAutocomplete('cobro')" placeholder="Escribe para buscar clienta..." class="w-full border border-[#D8C8BC] p-3 rounded-xl bg-[#FBF9F5] text-sm text-stone-700 focus:outline-none focus:border-[#8C6D58]">
+                    <input type="hidden" id="cobro-cliente-id">
+                    <div id="cobro-lista-sugerencias" class="hidden border border-[#D8C8BC] bg-white rounded-xl shadow-md max-h-36 overflow-y-auto mb-3 text-sm text-stone-700"></div>
+
+                    <div class="border-t border-[#EFE7DE] pt-3 mb-3 mt-3">
+                        <p class="text-xs font-medium text-stone-500 mb-2.5 uppercase tracking-wider">Toca los servicios realizados:</p>
+                        <div id="botones-servicios" class="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto mb-3 pr-1"></div>
+                    </div>
+
+                    <div class="bg-[#F9F5F0] p-3.5 rounded-xl mb-3 flex justify-between items-center border border-[#E8DDD1]">
+                        <span class="text-xs font-semibold text-[#7C5C43] uppercase tracking-wider">TOTAL A COBRAR:</span>
+                        <span id="cobro-total" class="text-2xl font-semibold text-[#5C4231] font-serif-luxury">$0.00</span>
+                    </div>
+
+                    <select id="metodo-pago" class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 bg-[#FBF9F5] text-sm text-stone-700">
+                        <option value="efectivo">💵 Efectivo</option>
+                        <option value="transferencia">🏦 Transferencia</option>
+                        <option value="tarjeta">💳 Tarjeta</option>
+                        <option value="otro">Otro</option>
+                    </select>
+
+                    <textarea id="nota-servicio" placeholder="Nota opcional..." class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 text-sm bg-[#FBF9F5] text-stone-700"></textarea>
+
+                    <button onclick="guardarCobro()" class="w-full btn-dinamico-primario hover:opacity-90 text-white py-3.5 rounded-xl font-medium shadow-md transition text-sm">Guardar y Cerrar Cita</button>
+                </div>
+            </section>
+
+            <!-- VISTA CLIENTAS -->
+            <section id="seccion-clientes" class="hidden space-y-4">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-base font-semibold text-[#5C4231] font-serif-luxury">👩 Clientas</h2>
+                        <button onclick="toggleFormularioCliente()" id="btn-nuevo-cliente" class="btn-dinamico-secundario text-white px-3.5 py-1.5 rounded-lg text-xs font-medium transition">＋ Nueva Clienta</button>
+                    </div>
+
+                    <div id="form-nuevo-cliente" class="hidden bg-[#FBF9F5] p-4 rounded-xl border border-[#D8C8BC] mb-4 space-y-3">
+                        <h3 class="text-xs font-semibold text-[#7C5C43] uppercase tracking-wider">Registrar Clienta</h3>
+                        <input type="text" id="input-nombre-cliente" placeholder="Nombre completo" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-white text-stone-700 focus:outline-none focus:border-[#8C6D58]">
+                        <input type="tel" id="input-telefono-cliente" placeholder="Teléfono (opcional)" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-white text-stone-700 focus:outline-none focus:border-[#8C6D58]">
+                        <div class="flex gap-2 pt-1">
+                            <button onclick="guardarNuevoCliente()" class="flex-1 btn-dinamico-primario text-white py-2.5 rounded-xl text-xs font-medium shadow-sm">Guardar Clienta</button>
+                            <button onclick="toggleFormularioCliente()" class="px-4 bg-stone-200 text-stone-700 py-2.5 rounded-xl text-xs font-medium">Cancelar</button>
+                        </div>
+                    </div>
+
+                    <input type="text" id="buscar-cliente" onkeyup="filtrarListaClientes()" placeholder="Buscar clienta..." class="w-full border border-[#D8C8BC] p-2.5 rounded-xl mb-3 text-sm bg-[#FBF9F5] focus:outline-none focus:border-[#8C6D58]">
+                    <div id="lista-clientes" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
+                </div>
+            </section>
+
+            <!-- VISTA GASTOS -->
+            <section id="seccion-gastos" class="hidden space-y-4">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE] mb-4">
+                    <h2 class="text-base font-semibold text-[#5C4231] mb-3 font-serif-luxury">💰 Registrar Gasto</h2>
+                    <input type="text" id="gasto-concepto" placeholder="Concepto (ej. Cera, Comida)" class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 text-sm bg-[#FBF9F5]">
+                    <select id="gasto-categoria" class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 bg-[#FBF9F5] text-sm text-stone-700">
+                        <option value="materiales">Materiales / Útiles</option>
+                        <option value="alimentacion">Comida</option>
+                        <option value="golosinas">Golosinas</option>
+                        <option value="otros">Otros</option>
+                    </select>
+                    <input type="number" id="gasto-monto" placeholder="Monto ($)" class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 text-sm bg-[#FBF9F5]">
+                    <button onclick="guardarGasto()" class="w-full btn-dinamico-primario text-white py-3.5 rounded-xl font-medium shadow-md transition text-sm">Registrar Gasto</button>
+                </div>
+
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
+                    <h3 class="text-sm font-semibold text-[#5C4231] mb-3 font-serif-luxury">Historial de Gastos</h3>
+                    <div id="lista-gastos" class="space-y-2">
+                        <p class="text-stone-400 text-xs text-center py-4">No hay gastos registrados</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- MODAL PERSONALIZACIÓN -->
+        <div id="modal-personalizacion" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-[#D8C8BC] space-y-4">
+                <div class="flex justify-between items-center border-b border-stone-100 pb-2">
+                    <h3 class="font-serif-luxury font-semibold text-[#5C4231] text-base">🎨 Personalizar Apariencia</h3>
+                    <button onclick="cerrarModalPersonalizacion()" class="text-stone-400 hover:text-stone-700 font-bold">✕</button>
+                </div>
+
                 <div>
-                    <input type="text" id="nuevo-nombre-servicio" placeholder="Nombre (ej. Limpieza facial)" class="w-full bg-stone-900 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                    <label class="text-xs font-semibold text-stone-600 block mb-2">Paleta de Colores:</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="seleccionarPaleta('#7C5C43', '#8C6D58', '#FBF9F5')" class="p-2 border rounded-xl text-left text-xs bg-[#FBF9F5] border-[#7C5C43] font-medium">Café Clásico</button>
+                        <button onclick="seleccionarPaleta('#8D7B68', '#A8927A', '#F7F5F0')" class="p-2 border rounded-xl text-left text-xs bg-[#F7F5F0] border-[#8D7B68] font-medium">Hueso / Nude</button>
+                        <button onclick="seleccionarPaleta('#9E6B7B', '#B58393', '#FAF4F6')" class="p-2 border rounded-xl text-left text-xs bg-[#FAF4F6] border-[#9E6B7B] font-medium">Rosa Soft</button>
+                        <button onclick="seleccionarPaleta('#3A3A3A', '#555555', '#F0F0F0')" class="p-2 border rounded-xl text-left text-xs bg-[#F0F0F0] border-[#3A3A3A] font-medium">Elegante Oscuro</button>
+                    </div>
                 </div>
-                <div>
-                    <input type="number" step="0.01" id="nuevo-precio-servicio" placeholder="Precio ($)" class="w-full bg-stone-900 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500 font-mono">
-                </div>
-                <button onclick="crearNuevoServicio()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 py-2.5 rounded-xl text-xs font-bold transition">Guardar Nuevo Servicio</button>
-            </div>
 
-            <button onclick="cerrarModalServicios()" class="w-full bg-stone-800 hover:bg-stone-700 text-stone-300 py-2.5 rounded-xl text-xs font-bold transition">Cerrar y Actualizar</button>
+                <div>
+                    <label class="text-xs font-semibold text-stone-600 block mb-1">Imagen de Fondo (Desde tu Celular):</label>
+                    <input type="file" id="input-archivo-fondo" accept="image/*" class="hidden" onchange="subirFondoCelular(this)">
+                    <div class="flex gap-2 items-center">
+                        <button onclick="document.getElementById('input-archivo-fondo').click()" class="flex-1 bg-stone-100 border border-[#D8C8BC] text-stone-700 py-2 rounded-xl text-xs font-medium">📁 Seleccionar Imagen</button>
+                        <button onclick="quitarFondo()" class="px-3 bg-rose-50 text-rose-700 border border-rose-200 py-2 rounded-xl text-xs font-medium">Quitar</button>
+                    </div>
+                    <input type="hidden" id="input-url-fondo" value="">
+                    <p id="lbl-estado-fondo" class="text-[10px] text-stone-400 mt-1">Ninguna imagen seleccionada</p>
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-stone-600 block mb-1">Transparencia del Fondo:</label>
+                    <input type="range" id="input-opacidad-fondo" min="0.05" max="0.5" step="0.05" value="0.15" class="w-full accent-[#7C5C43]">
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="guardarPersonalizacion()" class="flex-1 btn-dinamico-primario text-white py-2.5 rounded-xl text-xs font-medium">Guardar para el Estudio</button>
+                    <button onclick="cerrarModalPersonalizacion()" class="px-3 bg-stone-100 text-stone-600 py-2.5 rounded-xl text-xs font-medium">Cancelar</button>
+                </div>
+            </div>
         </div>
+
+        <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-[#EFE7DE] flex justify-around p-2.5 shadow-lg max-w-md mx-auto z-40">
+            <button onclick="cambiarSeccion('agenda')" class="flex flex-col items-center text-xs texto-dinamico-primario font-medium">📅 Agenda</button>
+            <button onclick="cambiarSeccion('historial')" class="flex flex-col items-center text-xs text-stone-500">📜 Historial</button>
+            <button onclick="cambiarSeccion('cobrar')" class="flex flex-col items-center text-xs text-stone-500">🧾 Cobrar</button>
+            <button onclick="cambiarSeccion('clientes')" class="flex flex-col items-center text-xs text-stone-500">👩 Clientas</button>
+            <button onclick="cambiarSeccion('gastos')" class="flex flex-col items-center text-xs text-stone-500">💰 Gastos</button>
+        </nav>
     </div>
 
     <script>
         const SUPABASE_URL = "https://udddoohrdhmekrwstcnu.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_qr02Rl-cs9BWfws_pN3fSQ_5MZ5q6F-"; 
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let usuarioActual = null;
-        let serviciosEstudio = [];
-        let servicioSeleccionado = null;
+        let supabaseClient = null;
+        let usuarioSesion = null;
+        let listaClientesCache = [];
+        let citasNotificadas = new Set();
+        let temaTemporal = { primario: '#7C5C43', secundario: '#8C6D58', fondo: '#FBF9F5' };
 
-        function mostrarToast(mensaje, esError = false) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `pointer-events-auto px-4 py-3 rounded-xl text-xs font-bold shadow-2xl transition-all duration-300 transform translate-y-2 opacity-0 ${esError ? 'bg-rose-600 text-white border border-rose-500' : 'bg-emerald-500 text-stone-950 border border-emerald-400'}`;
-            toast.innerText = mensaje;
-            
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
-            setTimeout(() => {
-                toast.classList.add('translate-y-2', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
+        try {
+            if (window.supabase) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch (e) {
+            console.error("Error al inicializar Supabase:", e);
         }
 
-        async function iniciarSesion() {
-            const user = document.getElementById('login-usuario').value.trim().toLowerCase();
-            const pass = document.getElementById('login-pass').value.trim();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
+        }
 
-            if (!user || !pass) {
-                mostrarToast("Completa usuario y contraseña", true);
+        const SERVICIOS_DISPONIBLES = [
+            { id: 1, nombre: "Depilación de cejas", precio: 5.00 },
+            { id: 2, nombre: "Depilación de bigote", precio: 3.00 },
+            { id: 3, nombre: "Depilación de patillas", precio: 3.00 },
+            { id: 4, nombre: "Depilación de rostro completo", precio: 14.00 },
+            { id: 5, nombre: "Depilación de axilas", precio: 5.00 },
+            { id: 6, nombre: "Depilación de brazos completos", precio: 12.00 },
+            { id: 7, nombre: "Depilación de medios brazos", precio: 8.00 },
+            { id: 8, nombre: "Depilación de bikini completo", precio: 20.00 },
+            { id: 9, nombre: "Depilación de bikini normal", precio: 15.00 },
+            { id: 10, nombre: "Depilación de piernas completas", precio: 20.00 },
+            { id: 11, nombre: "Depilación de medias piernas", precio: 12.00 },
+            { id: 12, nombre: "Lifting efecto natural", precio: 20.00 },
+            { id: 13, nombre: "Lifting efecto rímel", precio: 25.00 },
+            { id: 14, nombre: "Laminado de cejas", precio: 15.00 },
+            { id: 15, nombre: "Brow henna", precio: 10.00 },
+            { id: 16, nombre: "Limpieza facial", precio: 35.00 },
+            { id: 17, nombre: "Micropigmentación de labios", precio: 80.00 },
+            { id: 18, nombre: "Microblading", precio: 80.00 },
+            { id: 19, nombre: "Micropigmentación efecto polvo", precio: 80.00 }
+        ];
+
+        let serviciosSeleccionadosCobro = [];
+        let serviciosSeleccionadosAgendar = [];
+
+        function mostrarNotificacion(mensaje) {
+            const toast = document.getElementById('toast-notificacion');
+            const toastMsg = document.getElementById('toast-mensaje');
+            toastMsg.innerText = mensaje;
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.add('hidden'); }, 2500);
+        }
+async function iniciarSesion() {
+            const userVal = document.getElementById('login-usuario').value.trim().toLowerCase();
+            const passVal = document.getElementById('pin-input').value.trim();
+            const errorMsg = document.getElementById('pin-error');
+
+            if (!userVal || !passVal) {
+                errorMsg.innerText = "Ingresa usuario y PIN";
+                errorMsg.classList.remove('hidden');
                 return;
             }
 
-            const { data: usuario, error } = await supabaseClient
+            const { data: usuarios, error } = await supabaseClient
                 .from('usuarios')
                 .select('*')
-                .ilike('usuario', user)
-                .eq('password', pass)
+                .eq('usuario', userVal)
+                .eq('password', passVal);
+
+            if (error || !usuarios || usuarios.length === 0) {
+                errorMsg.innerText = "Usuario o PIN incorrecto";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            const usuario = usuarios[0];
+
+            if (usuario.estado === 'suspendido') {
+                errorMsg.innerText = "⛔ Tu cuenta está suspendida por falta de pago.";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            // SI ES ADMINISTRADOR, REDIRIGIR AL PANEL ADMIN
+            if (usuario.rol === 'admin') {
+                window.location.href = 'admin.html';
+                return;
+            }
+
+            // SI ES ESTUDIO NORMAL, CARGAR SU APP
+            usuarioSesion = usuario;
+            document.getElementById('pin-screen').classList.add('hidden');
+            document.getElementById('app-content').classList.remove('hidden');
+
+            document.getElementById('header-nombre-estudio').innerText = usuario.nombre_estudio;
+            
+            if (usuario.logo_url) {
+                document.getElementById('header-logo-container').innerHTML = `<img src="${usuario.logo_url}" class="w-full h-full object-cover">`;
+            } else {
+                const iniciales = usuario.nombre_estudio.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+                document.getElementById('header-logo-iniciales').innerText = iniciales;
+            }
+
+            await cargarTemaEstudio();
+            await cargarDatosIniciales();
+        }
+
+        async function cargarTemaEstudio() {
+            if (!usuarioSesion) return;
+
+            const { data: config } = await supabaseClient
+                .from('configuracion_estudio')
+                .select('*')
+                .eq('usuario_id', usuarioSesion.id)
                 .single();
 
-            if (error || !usuario) {
-                mostrarToast("Usuario o PIN incorrectos", true);
-                return;
-            }
-
-            if (usuario.estado !== 'activo') {
-                mostrarToast("⚠️ Tu cuenta se encuentra suspendida.", true);
-                return;
-            }
-
-            usuarioActual = usuario;
-            sessionStorage.setItem('bellapp_user', JSON.stringify(usuario));
-            aplicarConfiguracionEstudio(usuario);
-        }
-
-        async function aplicarConfiguracionEstudio(usuario) {
-            document.getElementById('pantalla-login').classList.add('hidden');
-            document.getElementById('app-principal').classList.remove('hidden');
-            document.getElementById('app-titulo-estudio').innerText = usuario.nombre_estudio;
-
-            if (usuario.rol === 'admin') {
-                document.getElementById('btn-admin-maestro').classList.remove('hidden');
-            }
-
-            await cargarServiciosEstudio();
-        }
-
-        async function cargarServiciosEstudio() {
-            if (!usuarioActual) return;
-
-            const { data: servicios, error } = await supabaseClient
-                .from('servicios')
-                .select('*')
-                .eq('usuario_id', usuarioActual.id)
-                .order('created_at', { ascending: true });
-
-            if (!error) {
-                serviciosEstudio = servicios || [];
-                renderizarBotonesServiciosCobro();
+            if (config) {
+                aplicarEstilosVisuales(config.color_primario, config.color_secundario, config.color_fondo, config.url_fondo, config.opacidad_fondo);
+                document.getElementById('input-url-fondo').value = config.url_fondo || '';
+                document.getElementById('input-opacidad-fondo').value = config.opacidad_fondo || 0.15;
+                if (config.url_fondo) {
+                    document.getElementById('lbl-estado-fondo').innerText = "✓ Imagen de fondo activa";
+                }
             }
         }
 
-        function renderizarBotonesServiciosCobro() {
-            const container = document.getElementById('lista-servicios-cobro');
-            if (!container) return;
-            container.innerHTML = '';
+        function aplicarEstilosVisuales(primario, secundario, fondo, urlFondo, opacidad) {
+            document.documentElement.style.setProperty('--color-primario', primario || '#7C5C43');
+            document.documentElement.style.setProperty('--color-secundario', secundario || '#8C6D58');
+            document.documentElement.style.setProperty('--color-fondo', fondo || '#FBF9F5');
 
-            if (serviciosEstudio.length === 0) {
-                container.innerHTML = `<p class="text-[11px] text-stone-500 col-span-2 py-3 text-center italic">Sin servicios. Haz clic en "Añade nuevos servicios".</p>`;
+            document.getElementById('header-app').style.backgroundColor = primario || '#7C5C43';
+
+            const bgOverlay = document.getElementById('bg-overlay');
+            if (urlFondo && urlFondo.trim() !== "") {
+                bgOverlay.style.backgroundImage = `url('${urlFondo}')`;
+                bgOverlay.style.opacity = opacidad || 0.15;
+            } else {
+                bgOverlay.style.backgroundImage = 'none';
+            }
+
+            temaTemporal = { primario, secundario, fondo };
+        }
+
+        function abrirModalPersonalizacion() {
+            document.getElementById('modal-personalizacion').classList.remove('hidden');
+        }
+
+        function cerrarModalPersonalizacion() {
+            document.getElementById('modal-personalizacion').classList.add('hidden');
+        }
+
+        function seleccionarPaleta(p, s, f) {
+            temaTemporal = { primario: p, secundario: s, fondo: f };
+            mostrarNotificacion("Paleta seleccionada. Haz clic en Guardar.");
+        }
+
+        async function subirFondoCelular(inputElement) {
+            const file = inputElement.files[0];
+            if (!file) return;
+
+            mostrarNotificacion("Subiendo imagen de fondo...");
+            const fileName = `fondo_${usuarioSesion.id}_${Date.now()}.jpg`;
+            const { error } = await supabaseClient.storage.from('fotos-estudio').upload(fileName, file);
+
+            if (error) {
+                mostrarNotificacion("Error al subir imagen");
                 return;
             }
 
-            serviciosEstudio.forEach(s => {
-                container.innerHTML += `
-                    <button type="button" onclick="seleccionarServicio('${s.id}', '${s.nombre_servicio}', ${s.precio})" class="p-2.5 rounded-xl border border-stone-800 hover:border-amber-500 bg-stone-950 hover:bg-stone-900 text-left transition flex justify-between items-center group">
-                        <span class="text-xs text-stone-300 font-medium group-hover:text-amber-300">${s.nombre_servicio}</span>
-                        <span class="text-xs font-bold text-amber-400">$${Number(s.precio).toFixed(2)}</span>
-                    </button>
-                `;
+            const { data: publicUrlData } = supabaseClient.storage.from('fotos-estudio').getPublicUrl(fileName);
+            document.getElementById('input-url-fondo').value = publicUrlData.publicUrl;
+            document.getElementById('lbl-estado-fondo').innerText = "✓ Imagen cargada con éxito";
+            mostrarNotificacion("✓ Imagen lista. Guarda los cambios.");
+        }
+
+        function quitarFondo() {
+            document.getElementById('input-url-fondo').value = '';
+            document.getElementById('lbl-estado-fondo').innerText = "Sin imagen seleccionada";
+            mostrarNotificacion("Fondo removido. Guarda para aplicar.");
+        }
+
+        async function guardarPersonalizacion() {
+            if (!usuarioSesion) return;
+
+            const urlFondo = document.getElementById('input-url-fondo').value;
+            const opacidad = document.getElementById('input-opacidad-fondo').value;
+
+            const { error } = await supabaseClient
+                .from('configuracion_estudio')
+                .upsert({
+                    usuario_id: usuarioSesion.id,
+                    color_primario: temaTemporal.primario,
+                    color_secundario: temaTemporal.secundario,
+                    color_fondo: temaTemporal.fondo,
+                    url_fondo: urlFondo,
+                    opacidad_fondo: Number(opacidad)
+                }, { onConflict: 'usuario_id' });
+
+            if (error) {
+                mostrarNotificacion("Error al guardar diseño");
+                console.error(error);
+            } else {
+                aplicarEstilosVisuales(temaTemporal.primario, temaTemporal.secundario, temaTemporal.fondo, urlFondo, opacidad);
+                cerrarModalPersonalizacion();
+                mostrarNotificacion("✓ Apariencia actualizada en todo el estudio");
+            }
+        }
+
+        function solicitarPermisoNotificaciones() {
+            if (!("Notification" in window)) return;
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") mostrarNotificacion("✓ Alertas activadas");
             });
         }
 
-        function seleccionarServicio(id, nombre, precio) {
-            servicioSeleccionado = { id, nombre, precio };
-            document.getElementById('label-total-cobrar').innerText = `$${Number(precio).toFixed(2)}`;
-            mostrarToast(`Seleccionado: ${nombre}`);
-        }
+        function cambiarSeccion(seccion) {
+            document.getElementById('seccion-agenda').classList.add('hidden');
+            document.getElementById('seccion-historial').classList.add('hidden');
+            document.getElementById('seccion-agendar').classList.add('hidden');
+            document.getElementById('seccion-cobrar').classList.add('hidden');
+            document.getElementById('seccion-clientes').classList.add('hidden');
+            document.getElementById('seccion-gastos').classList.add('hidden');
+            document.getElementById('seccion-fotos').classList.add('hidden');
 
-        function abrirModalServicios() {
-            const modal = document.getElementById('modal-servicios');
-            if (modal) {
-                modal.classList.remove('hidden');
-                renderizarServiciosEditableModal();
+            if (seccion === 'agenda') {
+                document.getElementById('seccion-agenda').classList.remove('hidden');
+                cargarCitasYResumen();
+            } else if (seccion === 'historial') {
+                document.getElementById('seccion-historial').classList.remove('hidden');
+                cargarHistorialCitas();
+            } else if (seccion === 'agendar') {
+                document.getElementById('seccion-agendar').classList.remove('hidden');
+            } else if (seccion === 'cobrar') {
+                document.getElementById('seccion-cobrar').classList.remove('hidden');
+                inicializarCalculadora();
+            } else if (seccion === 'clientes') {
+                document.getElementById('seccion-clientes').classList.remove('hidden');
+                cargarClientes();
+            } else if (seccion === 'gastos') {
+                document.getElementById('seccion-gastos').classList.remove('hidden');
+                cargarGastos();
+            } else if (seccion === 'fotos') {
+                document.getElementById('seccion-fotos').classList.remove('hidden');
             }
         }
 
-        function cerrarModalServicios() {
-            const modal = document.getElementById('modal-servicios');
-            if (modal) {
-                modal.classList.add('hidden');
-                cargarServiciosEstudio();
-            }
+        async function cargarDatosIniciales() {
+            await obtenerClientesGlobales();
+            await cargarCitasYResumen();
         }
 
-        function renderizarServiciosEditableModal() {
-            const container = document.getElementById('container-servicios-editar');
-            if (!container) return;
-            container.innerHTML = '';
+        async function obtenerClientesGlobales() {
+            if (!supabaseClient || !usuarioSesion) return;
+            const { data } = await supabaseClient.from('clientes').select('id, nombre, telefono').eq('usuario_id', usuarioSesion.id).order('nombre');
+            if (data) listaClientesCache = data;
+        }
 
-            if (serviciosEstudio.length === 0) {
-                container.innerHTML = `<p class="text-xs text-stone-500 text-center py-2">Sin servicios registrados.</p>`;
+        async function cargarCitasYResumen() {
+            if (!supabaseClient || !usuarioSesion) return;
+
+            const { data: citas } = await supabaseClient
+                .from('citas')
+                .select('*, clientes(nombre)')
+                .eq('usuario_id', usuarioSesion.id)
+                .order('fecha', { ascending: true })
+                .order('hora', { ascending: true });
+
+            const { data: gastos } = await supabaseClient
+                .from('gastos')
+                .select('*')
+                .eq('usuario_id', usuarioSesion.id);
+
+            let totalIngresosMes = 0;
+            let totalGastosMes = 0;
+            const listaPendientesHtml = document.getElementById('lista-citas-pendientes');
+            listaPendientesHtml.innerHTML = '';
+            let hayPendientes = false;
+
+            if (citas) {
+                citas.forEach(cita => {
+                    const nombreCliente = cita.clientes ? cita.clientes.nombre : 'Cliente general';
+                    if (cita.estado === 'pendiente') {
+                        hayPendientes = true;
+                        listaPendientesHtml.innerHTML += `
+                            <div class="border-b border-[#EFE7DE] pb-3 mb-2 flex justify-between items-center">
+                                <div>
+                                    <p class="font-semibold text-stone-800 text-sm">${nombreCliente} — <span class="texto-dinamico-primario font-bold">$${cita.total}</span></p>
+                                    <p class="text-xs text-stone-500 font-medium">📅 ${cita.fecha} | ⏰ <span class="text-stone-800 font-bold">${cita.hora || '10:00'}</span></p>
+                                    <p class="text-xs text-stone-500 mt-0.5">${cita.servicios}</p>
+                                    <div class="flex items-center gap-2 mt-1.5">
+                                        <span class="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">PENDIENTE</span>
+                                        <button onclick="abrirSeccionFotos('${cita.id}', '${nombreCliente}', '${cita.servicios}')" class="text-[10px] bg-[#FBF9F5] border border-[#D8C8BC] text-[#7C5C43] px-2 py-0.5 rounded-md font-medium">📷 Fotos</button>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <button onclick="marcarComoCobrada('${cita.id}')" class="btn-dinamico-primario text-white text-[10px] px-2.5 py-1 rounded-md shadow-xs transition text-center font-medium">Cobrar</button>
+                                    <button onclick="prepararEdicionCita('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${cita.fecha}', '${cita.hora || '10:00'}', '${encodeURIComponent(cita.servicios)}')" class="btn-dinamico-secundario text-white text-[10px] px-2.5 py-1 rounded-md transition text-center font-medium">Editar</button>
+                                    <button onclick="eliminarCita('${cita.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-0.5 rounded-md transition text-center font-medium">Eliminar</button>
+                                </div>
+                            </div>
+                        `;
+                    } else if (cita.estado === 'atendida') {
+                        totalIngresosMes += Number(cita.total);
+                    }
+                });
+            }
+
+            if (!hayPendientes) listaPendientesHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-3">Sin citas pendientes por atender</p>`;
+            if (gastos) gastos.forEach(g => totalGastosMes += Number(g.monto));
+
+            document.getElementById('lbl-ingresos-mes').innerText = `$${totalIngresosMes.toFixed(2)}`;
+            document.getElementById('lbl-gastos-mes').innerText = `$${totalGastosMes.toFixed(2)}`;
+            document.getElementById('lbl-profit-mes').innerText = `$${(totalIngresosMes - totalGastosMes).toFixed(2)}`;
+        }
+
+        async function marcarComoCobrada(citaId) {
+            await supabaseClient.from('citas').update({ estado: 'atendida', metodo_pago: 'efectivo' }).eq('id', citaId);
+            cargarCitasYResumen();
+            mostrarNotificacion("✓ Cita cobrada");
+        }
+
+        async function eliminarCita(citaId) {
+            if (!confirm("¿Deseas eliminar esta cita?")) return;
+            await supabaseClient.from('citas').delete().eq('id', citaId);
+            cargarCitasYResumen();
+            mostrarNotificacion("✓ Cita eliminada");
+        }
+
+        async function abrirSeccionAgendarNueva() {
+            document.getElementById('editar-cita-id').value = '';
+            cambiarSeccion('agendar');
+            await inicializarFormularioAgendar();
+        }
+
+        async function prepararEdicionCita(citaId, clienteId, clienteNombre, fecha, hora, serviciosEncoded) {
+            document.getElementById('editar-cita-id').value = citaId;
+            cambiarSeccion('agendar');
+            await inicializarFormularioAgendar();
+
+            document.getElementById('titulo-modo-agenda').innerText = "✏️ Editar Cita";
+            document.getElementById('agendar-buscar-cliente').value = clienteNombre;
+            document.getElementById('agendar-cliente-id').value = clienteId;
+            document.getElementById('agendar-fecha').value = fecha;
+            document.getElementById('agendar-hora').value = hora;
+
+            const serviciosActualesStr = decodeURIComponent(serviciosEncoded);
+            serviciosSeleccionadosAgendar = [];
+            document.querySelectorAll('#agendar-botones-servicios button').forEach(btn => {
+                const nombreServicio = btn.getAttribute('data-nombre');
+                const precioServicio = Number(btn.getAttribute('data-precio'));
+                if (serviciosActualesStr.includes(nombreServicio)) {
+                    serviciosSeleccionadosAgendar.push({ nombre: nombreServicio, precio: precioServicio });
+                    btn.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
+                }
+            });
+            actualizarTotalAgendar();
+        }
+
+        async function cargarHistorialCitas() {
+            const { data: citas } = await supabaseClient.from('citas').select('*, clientes(nombre)').eq('usuario_id', usuarioSesion.id).eq('estado', 'atendida').order('fecha', { ascending: false });
+            const listaAtendidasHtml = document.getElementById('lista-citas-atendidas');
+            listaAtendidasHtml.innerHTML = '';
+            if (!citas || citas.length === 0) {
+                listaAtendidasHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay historial</p>`;
                 return;
             }
-
-            serviciosEstudio.forEach(s => {
-                container.innerHTML += `
-                    <div class="flex items-center gap-2 bg-stone-950 p-2 rounded-xl border border-stone-800">
-                        <input type="text" id="edit-nombre-${s.id}" value="${s.nombre_servicio}" class="flex-1 bg-stone-900 border border-stone-800 p-1.5 rounded-lg text-xs text-stone-100">
-                        <input type="number" step="0.01" id="edit-precio-${s.id}" value="${s.precio}" class="w-20 bg-stone-900 border border-stone-800 p-1.5 rounded-lg text-xs font-mono text-stone-100">
-                        <button onclick="guardarEdicionServicio('${s.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-stone-950 px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Guardar">💾</button>
-                        <button onclick="eliminarServicio('${s.id}')" class="bg-rose-600 hover:bg-rose-500 text-stone-950 px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Eliminar">🗑️</button>
+            citas.forEach(cita => {
+                const nombreCliente = cita.clientes ? cita.clientes.nombre : 'Cliente general';
+                listaAtendidasHtml.innerHTML += `
+                    <div class="item-historial border-b border-[#EFE7DE] pb-3 mb-2 flex justify-between items-center" data-texto="${nombreCliente.toLowerCase()} ${cita.servicios.toLowerCase()} ${cita.fecha}">
+                        <div>
+                            <p class="font-semibold text-stone-800 text-sm">${nombreCliente} — <span class="texto-dinamico-primario font-bold">$${cita.total}</span></p>
+                            <p class="text-xs text-stone-500">${cita.fecha} | ${cita.servicios}</p>
+                            <button onclick="abrirSeccionFotos('${cita.id}', '${nombreCliente}', '${cita.servicios}')" class="text-[10px] bg-[#FBF9F5] border border-[#D8C8BC] text-[#7C5C43] px-2 py-0.5 rounded-md font-medium mt-1">📷 Fotos</button>
+                        </div>
                     </div>
                 `;
             });
         }
 
-        async function guardarEdicionServicio(id) {
-            const nuevoNombre = document.getElementById(`edit-nombre-${id}`).value.trim();
-            const nuevoPrecio = document.getElementById(`edit-precio-${id}`).value;
+        function filtrarHistorial() {
+            const textoFiltro = document.getElementById('buscar-historial').value.toLowerCase();
+            document.querySelectorAll('.item-historial').forEach(item => {
+                item.style.display = item.getAttribute('data-texto').includes(textoFiltro) ? 'flex' : 'none';
+            });
+        }
 
-            if (!nuevoNombre || !nuevoPrecio) {
-                mostrarToast("Completa ambos campos", true);
-                return;
+        async function abrirSeccionFotos(citaId, clienteNombre, servicios) {
+            document.getElementById('foto-cita-id').value = citaId;
+            document.getElementById('fotos-info-cita').innerText = `Clienta: ${clienteNombre} | ${servicios}`;
+            cambiarSeccion('fotos');
+            const { data } = await supabaseClient.from('citas').select('foto_antes, foto_despues').eq('id', citaId).single();
+            if (data) {
+                document.getElementById('preview-antes').innerHTML = data.foto_antes ? `<img src="${data.foto_antes}" class="w-full h-full object-cover rounded-lg">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
+                document.getElementById('preview-despues').innerHTML = data.foto_despues ? `<img src="${data.foto_despues}" class="w-full h-full object-cover rounded-lg">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
             }
+        }
 
-            const { error } = await supabaseClient.from('servicios').update({
-                nombre_servicio: nuevoNombre,
-                precio: parseFloat(nuevoPrecio)
-            }).eq('id', id);
+        async function subirFotoServicio(tipo, inputElement) {
+            const file = inputElement.files[0];
+            if (!file) return;
+            const citaId = document.getElementById('foto-cita-id').value;
+            mostrarNotificacion("Subiendo imagen...");
+            const fileName = `cita_${citaId}_${tipo}_${Date.now()}.jpg`;
+            await supabaseClient.storage.from('fotos-estudio').upload(fileName, file);
+            const { data: publicUrlData } = supabaseClient.storage.from('fotos-estudio').getPublicUrl(fileName);
+            await supabaseClient.from('citas').update(tipo === 'antes' ? { foto_antes: publicUrlData.publicUrl } : { foto_despues: publicUrlData.publicUrl }).eq('id', citaId);
+            mostrarNotificacion("✓ Foto guardada");
+            abrirSeccionFotos(citaId, document.getElementById('fotos-info-cita').innerText.split('|')[0].replace('Clienta:', '').trim(), '');
+        }
 
-            if (error) {
-                mostrarToast("Error al actualizar: " + error.message, true);
+        function filtrarClientesEnAutocomplete(modo) {
+            const query = document.getElementById(`${modo}-buscar-cliente`).value.toLowerCase().trim();
+            const listaSugerencias = document.getElementById(`${modo}-lista-sugerencias`);
+            document.getElementById(`${modo}-cliente-id`).value = "";
+            if (!query) { listaSugerencias.classList.add('hidden'); return; }
+            const resultados = listaClientesCache.filter(c => c.nombre.toLowerCase().includes(query));
+            listaSugerencias.innerHTML = resultados.length === 0 ? `<div class="p-3 text-stone-400 text-xs">No encontrada</div>` : '';
+            resultados.forEach(c => {
+                listaSugerencias.innerHTML += `<div onclick="seleccionarClienteAutocomplete('${modo}', '${c.id}', '${c.nombre}')" class="p-2.5 hover:bg-[#F2EAE1] cursor-pointer border-b border-[#EFE7DE] font-medium">${c.nombre}</div>`;
+            });
+            listaSugerencias.classList.remove('hidden');
+        }
+
+        function seleccionarClienteAutocomplete(modo, id, nombre) {
+            document.getElementById(`${modo}-buscar-cliente`).value = nombre;
+            document.getElementById(`${modo}-cliente-id`).value = id;
+            document.getElementById(`${modo}-lista-sugerencias`).classList.add('hidden');
+        }
+
+        async function inicializarFormularioAgendar() {
+            await obtenerClientesGlobales();
+            if (!document.getElementById('editar-cita-id').value) {
+                document.getElementById('titulo-modo-agenda').innerText = "📅 Programar Cita";
+                document.getElementById('agendar-buscar-cliente').value = '';
+                document.getElementById('agendar-cliente-id').value = '';
+                document.getElementById('agendar-fecha').value = new Date().toISOString().split('T')[0];
+                document.getElementById('agendar-hora').value = '';
+                serviciosSeleccionadosAgendar = [];
+            }
+            const contenedorBotones = document.getElementById('agendar-botones-servicios');
+            contenedorBotones.innerHTML = '';
+            SERVICIOS_DISPONIBLES.forEach(s => {
+                contenedorBotones.innerHTML += `
+                    <button type="button" data-nombre="${s.nombre}" data-precio="${s.precio}" onclick="toggleServicioAgendar('${s.nombre}', ${s.precio}, this)" class="p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs">
+                        <span>${s.nombre}</span><span class="font-bold text-[#7C5C43]">$${s.precio}</span>
+                    </button>
+                `;
+            });
+            actualizarTotalAgendar();
+        }
+
+        function toggleServicioAgendar(nombre, precio, btnElement) {
+            const index = serviciosSeleccionadosAgendar.findIndex(s => s.nombre === nombre);
+            if (index > -1) {
+                serviciosSeleccionadosAgendar.splice(index, 1);
+                btnElement.className = "p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs";
             } else {
-                mostrarToast("✓ Servicio actualizado");
-                await cargarServiciosEstudio();
-                renderizarServiciosEditableModal();
+                serviciosSeleccionadosAgendar.push({ nombre, precio });
+                btnElement.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
             }
+            actualizarTotalAgendar();
         }
 
-        async function eliminarServicio(id) {
-            if (!confirm("¿Estás seguro de eliminar este servicio?")) return;
+        function actualizarTotalAgendar() {
+            let suma = 0;
+            serviciosSeleccionadosAgendar.forEach(s => suma += s.precio);
+            document.getElementById('agendar-total').innerText = `$${suma.toFixed(2)}`;
+        }
 
-            const { error } = await supabaseClient.from('servicios').delete().eq('id', id);
-            if (error) {
-                mostrarToast("Error al eliminar: " + error.message, true);
+        async function guardarCitaAgendada() {
+            const citaId = document.getElementById('editar-cita-id').value;
+            const clienteId = document.getElementById('agendar-cliente-id').value;
+            const fecha = document.getElementById('agendar-fecha').value;
+            const hora = document.getElementById('agendar-hora').value;
+            let suma = 0;
+            serviciosSeleccionadosAgendar.forEach(s => suma += s.precio);
+
+            if (!clienteId || !fecha || serviciosSeleccionadosAgendar.length === 0) {
+                mostrarNotificacion("Faltan datos obligatorios");
+                return;
+            }
+
+            const nombresServicios = serviciosSeleccionadosAgendar.map(s => s.nombre).join(', ');
+            if (citaId) {
+                await supabaseClient.from('citas').update({ cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma }).eq('id', citaId);
+                mostrarNotificacion("✓ Cita actualizada");
             } else {
-                mostrarToast("✓ Servicio eliminado");
-                await cargarServiciosEstudio();
-                renderizarServiciosEditableModal();
+                await supabaseClient.from('citas').insert([{ usuario_id: usuarioSesion.id, cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma, metodo_pago: 'pendiente', estado: 'pendiente' }]);
+                mostrarNotificacion("✓ Cita agendada");
             }
+            cambiarSeccion('agenda');
         }
 
-        async function crearNuevoServicio() {
-            const nombre = document.getElementById('nuevo-nombre-servicio').value.trim();
-            const precio = document.getElementById('nuevo-precio-servicio').value;
+        async function inicializarCalculadora() {
+            await obtenerClientesGlobales();
+            document.getElementById('cobro-buscar-cliente').value = '';
+            document.getElementById('cobro-cliente-id').value = '';
+            const contenedorBotones = document.getElementById('botones-servicios');
+            contenedorBotones.innerHTML = '';
+            serviciosSeleccionadosCobro = [];
+            actualizarTotalCobro();
+            SERVICIOS_DISPONIBLES.forEach(s => {
+                contenedorBotones.innerHTML += `
+                    <button type="button" onclick="toggleServicioCobro('${s.nombre}', ${s.precio}, this)" class="p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs">
+                        <span>${s.nombre}</span><span class="font-bold text-[#7C5C43]">$${s.precio}</span>
+                    </button>
+                `;
+            });
+        }
 
-            if (!nombre || !precio || !usuarioActual) {
-                mostrarToast("Ingresa nombre y precio válidos", true);
-                return;
-            }
-
-            const { error } = await supabaseClient.from('servicios').insert([{
-                usuario_id: usuarioActual.id,
-                nombre_servicio: nombre,
-                precio: parseFloat(precio)
-            }]);
-
-            if (error) {
-                mostrarToast("Error al crear servicio: " + error.message, true);
+        function toggleServicioCobro(nombre, precio, btnElement) {
+            const index = serviciosSeleccionadosCobro.findIndex(s => s.nombre === nombre);
+            if (index > -1) {
+                serviciosSeleccionadosCobro.splice(index, 1);
+                btnElement.className = "p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs";
             } else {
-                document.getElementById('nuevo-nombre-servicio').value = '';
-                document.getElementById('nuevo-precio-servicio').value = '';
-                mostrarToast("✓ Servicio añadido con éxito");
-                await cargarServiciosEstudio();
-                renderizarServiciosEditableModal();
+                serviciosSeleccionadosCobro.push({ nombre, precio });
+                btnElement.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
             }
+            actualizarTotalCobro();
         }
 
-        async function guardarCitaCobro() {
-            const clienta = document.getElementById('input-buscar-clienta').value.trim();
-            if (!clienta) {
-                mostrarToast("Escribe el nombre de la clienta", true);
+        function actualizarTotalCobro() {
+            let suma = 0;
+            serviciosSeleccionadosCobro.forEach(s => suma += s.precio);
+            document.getElementById('cobro-total').innerText = `$${suma.toFixed(2)}`;
+        }
+
+        async function guardarCobro() {
+            const clienteId = document.getElementById('cobro-cliente-id').value;
+            const metodoPago = document.getElementById('metodo-pago').value;
+            const nota = document.getElementById('nota-servicio').value;
+            let suma = 0;
+            serviciosSeleccionadosCobro.forEach(s => suma += s.precio);
+
+            if (!clienteId || serviciosSeleccionadosCobro.length === 0) {
+                mostrarNotificacion("Selecciona clienta y servicio");
                 return;
             }
-            if (!servicioSeleccionado) {
-                mostrarToast("Selecciona un servicio", true);
-                return;
-            }
 
-            mostrarToast(`✓ Cobro registrado para ${clienta}`);
-            document.getElementById('input-buscar-clienta').value = '';
-            document.getElementById('input-nota-cobro').value = '';
-            document.getElementById('label-total-cobrar').innerText = '$0.00';
-            servicioSeleccionado = null;
+            await supabaseClient.from('citas').insert([{ usuario_id: usuarioSesion.id, cliente_id: clienteId, fecha: new Date().toISOString().split('T')[0], hora: new Date().toTimeString().split(' ')[0], servicios: serviciosSeleccionadosCobro.map(s => s.nombre).join(', '), total: suma, metodo_pago: metodoPago, estado: 'atendida', nota_servicio: nota }]);
+            mostrarNotificacion("✓ Cobro guardado");
+            cambiarSeccion('agenda');
         }
 
-        function cerrarSesion() {
-            sessionStorage.removeItem('bellapp_user');
-            usuarioActual = null;
-            document.getElementById('app-principal').classList.add('hidden');
-            document.getElementById('pantalla-login').classList.remove('hidden');
-            mostrarToast("Sesión cerrada");
+        async function guardarGasto() {
+            const concepto = document.getElementById('gasto-concepto').value.trim();
+            const categoria = document.getElementById('gasto-categoria').value;
+            const monto = document.getElementById('gasto-monto').value;
+            if (!concepto || !monto) { mostrarNotificacion("Completa los campos"); return; }
+            await supabaseClient.from('gastos').insert([{ usuario_id: usuarioSesion.id, fecha: new Date().toISOString().split('T')[0], concepto, categoria, monto: Number(monto), metodo_pago: 'efectivo' }]);
+            document.getElementById('gasto-concepto').value = '';
+            document.getElementById('gasto-monto').value = '';
+            cargarGastos();
+            mostrarNotificacion("✓ Gasto guardado");
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const guardado = sessionStorage.getItem('bellapp_user');
-            if (guardado) {
-                usuarioActual = JSON.parse(guardado);
-                aplicarConfiguracionEstudio(usuarioActual);
-            }
-        });
+        async function cargarGastos() {
+            const { data: gastos } = await supabaseClient.from('gastos').select('*').eq('usuario_id', usuarioSesion.id).order('fecha', { ascending: false });
+            const listaGastosHtml = document.getElementById('lista-gastos');
+            listaGastosHtml.innerHTML = '';
+            if (!gastos || gastos.length === 0) { listaGastosHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay gastos</p>`; return; }
+            gastos.forEach(g => {
+                listaGastosHtml.innerHTML += `
+                    <div class="border-b border-[#EFE7DE] pb-2.5 mb-2 flex justify-between items-center text-xs">
+                        <div><p class="font-semibold text-stone-800">${g.concepto} <span class="text-[10px] text-stone-500">(${g.categoria})</span></p><p class="text-[10px] text-stone-400">${g.fecha}</p></div>
+                        <span class="font-bold text-stone-700 text-sm">-$${Number(g.monto).toFixed(2)}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleFormularioCliente() {
+            const form = document.getElementById('form-nuevo-cliente');
+            form.classList.toggle('hidden');
+        }
+
+        async function cargarClientes() {
+            await obtenerClientesGlobales();
+            renderizarListaClientes(listaClientesCache);
+        }
+
+        function renderizarListaClientes(clientes) {
+            const lista = document.getElementById('lista-clientes');
+            lista.innerHTML = clientes.length === 0 ? `<p class="text-stone-400 text-xs text-center py-4">No hay clientas</p>` : '';
+            clientes.forEach(c => {
+                lista.innerHTML += `<div class="border border-[#EFE7DE] p-3 flex justify-between items-center bg-[#FBF9F5] rounded-xl mb-2"><p class="font-semibold text-stone-800 text-sm">${c.nombre}</p><p class="text-xs text-stone-500">📞 ${c.telefono || 'Sin teléfono'}</p></div>`;
+            });
+        }
+
+        function filtrarListaClientes() {
+            const texto = document.getElementById('buscar-cliente').value.toLowerCase().trim();
+            renderizarListaClientes(listaClientesCache.filter(c => c.nombre.toLowerCase().includes(texto)));
+        }
+
+        async function guardarNuevoCliente() {
+            const nombre = document.getElementById('input-nombre-cliente').value.trim();
+            const telefono = document.getElementById('input-telefono-cliente').value.trim();
+            if (!nombre) { mostrarNotificacion("Ingresa el nombre"); return; }
+            await supabaseClient.from('clientes').insert([{ usuario_id: usuarioSesion.id, nombre, telefono }]);
+            document.getElementById('input-nombre-cliente').value = '';
+            document.getElementById('input-telefono-cliente').value = '';
+            toggleFormularioCliente();
+            cargarClientes();
+            mostrarNotificacion("✓ Clienta guardada");
+        }
     </script>
 </body>
 </html>
