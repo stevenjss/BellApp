@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es"> 
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -738,6 +738,7 @@
             await inicializarFormularioAgendar();
         }
 
+        // CORRECCIÓN EXACTA PARA EDICIÓN DE CITAS Y SELECCIÓN DE SERVICIOS
         async function prepararEdicionCita(citaId, clienteId, clienteNombre, fecha, hora, serviciosEncoded) {
             document.getElementById('editar-cita-id').value = citaId;
             cambiarSeccion('agendar');
@@ -749,14 +750,21 @@
             document.getElementById('agendar-fecha').value = fecha;
             document.getElementById('agendar-hora').value = hora;
 
+            // Separar de forma exacta la lista de nombres de servicios guardados
             const serviciosActualesStr = decodeURIComponent(serviciosEncoded);
+            const listaServiciosGuardados = serviciosActualesStr.split(',').map(s => s.trim());
+            
             serviciosSeleccionadosAgendar = [];
             document.querySelectorAll('#agendar-botones-servicios button').forEach(btn => {
                 const nombreServicio = btn.getAttribute('data-nombre');
                 const precioServicio = Number(btn.getAttribute('data-precio'));
-                if (serviciosActualesStr.includes(nombreServicio)) {
+                
+                // Comparación de coincidencia exacta para evitar confusiones entre "PRUEBA" y "PRUEBA 2"
+                if (listaServiciosGuardados.includes(nombreServicio)) {
                     serviciosSeleccionadosAgendar.push({ nombre: nombreServicio, precio: precioServicio });
                     btn.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
+                } else {
+                    btn.className = "p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs";
                 }
             });
             actualizarTotalAgendar();
@@ -960,7 +968,7 @@
             const modal = document.getElementById('modal-servicios');
             if (modal) {
                 modal.classList.add('hidden');
-                inicializarCalculadora(); // Recargar en la vista de cobro actualizada
+                inicializarCalculadora();
             }
         }
 
