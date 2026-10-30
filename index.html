@@ -726,10 +726,9 @@
         }
 
         async function eliminarCita(citaId) {
-            if (!confirm("¿Deseas eliminar esta cita?")) return;
             await supabaseClient.from('citas').delete().eq('id', citaId);
             cargarCitasYResumen();
-            mostrarNotificacion("✓ Cita eliminada");
+            mostrarNotificacion("✓ Cita eliminada al instante");
         }
 
         async function abrirSeccionAgendarNueva() {
@@ -738,7 +737,6 @@
             await inicializarFormularioAgendar();
         }
 
-        // CORRECCIÓN EXACTA PARA EDICIÓN DE CITAS Y SELECCIÓN DE SERVICIOS
         async function prepararEdicionCita(citaId, clienteId, clienteNombre, fecha, hora, serviciosEncoded) {
             document.getElementById('editar-cita-id').value = citaId;
             cambiarSeccion('agendar');
@@ -750,7 +748,6 @@
             document.getElementById('agendar-fecha').value = fecha;
             document.getElementById('agendar-hora').value = hora;
 
-            // Separar de forma exacta la lista de nombres de servicios guardados
             const serviciosActualesStr = decodeURIComponent(serviciosEncoded);
             const listaServiciosGuardados = serviciosActualesStr.split(',').map(s => s.trim());
             
@@ -759,7 +756,6 @@
                 const nombreServicio = btn.getAttribute('data-nombre');
                 const precioServicio = Number(btn.getAttribute('data-precio'));
                 
-                // Comparación de coincidencia exacta para evitar confusiones entre "PRUEBA" y "PRUEBA 2"
                 if (listaServiciosGuardados.includes(nombreServicio)) {
                     serviciosSeleccionadosAgendar.push({ nombre: nombreServicio, precio: precioServicio });
                     btn.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
@@ -905,10 +901,10 @@
             const nombresServicios = serviciosSeleccionadosAgendar.map(s => s.nombre).join(', ');
             if (citaId) {
                 await supabaseClient.from('citas').update({ cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma }).eq('id', citaId);
-                mostrarNotificacion("✓ Cita actualizada");
+                mostrarNotificacion("✓ Cita actualizada al instante");
             } else {
                 await supabaseClient.from('citas').insert([{ usuario_id: usuarioSesion.id, cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma, metodo_pago: 'pendiente', estado: 'pendiente' }]);
-                mostrarNotificacion("✓ Cita agendada");
+                mostrarNotificacion("✓ Cita agendada al instante");
             }
             cambiarSeccion('agenda');
         }
@@ -988,7 +984,7 @@
                         <input type="text" id="edit-nombre-${s.id}" value="${s.nombre_servicio}" class="flex-1 bg-white border border-stone-300 p-1.5 rounded-lg text-xs">
                         <input type="number" step="0.01" id="edit-precio-${s.id}" value="${s.precio}" class="w-20 bg-white border border-stone-300 p-1.5 rounded-lg text-xs font-mono">
                         <button onclick="guardarEdicionServicio('${s.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Guardar">💾</button>
-                        <button onclick="eliminarServicio('${s.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Eliminar">🗑️</button>
+                        <button onclick="eliminarServicioDirecto('${s.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Eliminar">🗑️</button>
                     </div>
                 `;
             });
@@ -999,7 +995,7 @@
             const nuevoPrecio = document.getElementById(`edit-precio-${id}`).value;
 
             if (!nuevoNombre || !nuevoPrecio) {
-                mostrarToast("Completa ambos campos");
+                mostrarNotificacion("Completa ambos campos");
                 return;
             }
 
@@ -1009,22 +1005,20 @@
             }).eq('id', id);
 
             if (error) {
-                mostrarToast("Error al actualizar");
+                mostrarNotificacion("Error al actualizar");
             } else {
-                mostrarToast("✓ Servicio actualizado");
+                mostrarNotificacion("✓ Servicio actualizado al instante");
                 await cargarServiciosBaseDatos();
                 renderizarServiciosEditableModal();
             }
         }
 
-        async function eliminarServicio(id) {
-            if (!confirm("¿Estás seguro de eliminar este servicio?")) return;
-
+        async function eliminarServicioDirecto(id) {
             const { error } = await supabaseClient.from('servicios').delete().eq('id', id);
             if (error) {
-                mostrarToast("Error al eliminar");
+                mostrarNotificacion("Error al eliminar");
             } else {
-                mostrarToast("✓ Servicio eliminado");
+                mostrarNotificacion("✓ Servicio eliminado al instante");
                 await cargarServiciosBaseDatos();
                 renderizarServiciosEditableModal();
             }
@@ -1035,7 +1029,7 @@
             const precio = document.getElementById('nuevo-precio-servicio').value;
 
             if (!nombre || !precio || !usuarioSesion) {
-                mostrarToast("Ingresa nombre y precio válidos");
+                mostrarNotificacion("Ingresa nombre y precio válidos");
                 return;
             }
 
@@ -1046,11 +1040,11 @@
             }]);
 
             if (error) {
-                mostrarToast("Error al crear servicio");
+                mostrarNotificacion("Error al crear servicio");
             } else {
                 document.getElementById('nuevo-nombre-servicio').value = '';
                 document.getElementById('nuevo-precio-servicio').value = '';
-                mostrarToast("✓ Servicio añadido con éxito");
+                mostrarNotificacion("✓ Servicio añadido al instante");
                 await cargarServiciosBaseDatos();
                 renderizarServiciosEditableModal();
             }
