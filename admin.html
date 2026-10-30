@@ -12,9 +12,16 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .font-serif-luxury { font-family: 'Playfair Display', serif; }
-        input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; background: transparent; }
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            background: transparent;
+        }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: 1px solid #444; border-radius: 10px; }
+        input[type="color"]::-webkit-color-swatch { border: none; }
     </style>
 </head>
 <body class="bg-stone-950 text-stone-100 min-h-screen p-4 md:p-8 pb-12">
@@ -61,34 +68,39 @@
                 </div>
             </div>
 
-            <!-- SELECTOR DE COLORES PROFESIONAL -->
-            <div class="bg-stone-950 p-4 rounded-xl border border-stone-800 space-y-3">
-                <label class="text-[11px] text-amber-400 font-semibold uppercase block">🎨 Paleta de Colores de la Marca (Selecciona o escribe HEX)</label>
+            <!-- SELECTOR DE COLORES ESTILO TARJETA PROFESIONAL (COMO LA REFERENCIA) -->
+            <div class="space-y-2">
+                <label class="text-[11px] text-amber-400 font-semibold uppercase tracking-wider block">🎨 PALETA DE COLORES DE LA MARCA (SELECCIONA O ESCRIBE HEX)</label>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div class="flex items-center gap-3 bg-stone-900 p-3 rounded-xl border border-stone-800">
-                        <input type="color" id="color-primario-picker" value="#7C5C43" onchange="document.getElementById('color-primario-text').value = this.value">
-                        <div class="flex-1">
-                            <span class="text-[9px] text-stone-400 block uppercase font-bold tracking-wider">Primario</span>
-                            <input type="text" id="color-primario-text" value="#7C5C43" oninput="document.getElementById('color-primario-picker').value = this.value" class="w-full bg-transparent text-xs text-amber-200 font-mono focus:outline-none">
+                    
+                    <!-- Tarjeta Primario -->
+                    <div id="card-primario" class="rounded-xl p-3 flex flex-col justify-between shadow-md transition" style="background-color: #7C5C43; min-height: 80px;">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold text-white uppercase tracking-wider bg-black/30 px-2 py-0.5 rounded">Primario</span>
+                            <input type="color" id="color-primario-picker" value="#7C5C43" onchange="actualizarTarjetaColor('primario', this.value)" class="w-6 h-6 opacity-80 hover:opacity-150">
                         </div>
+                        <input type="text" id="color-primario-text" value="#7C5C43" oninput="actualizarTextoColor('primario', this.value)" class="bg-transparent text-sm text-white font-mono font-bold focus:outline-none mt-2 uppercase">
                     </div>
 
-                    <div class="flex items-center gap-3 bg-stone-900 p-3 rounded-xl border border-stone-800">
-                        <input type="color" id="color-secundario-picker" value="#8C6D58" onchange="document.getElementById('color-secundario-text').value = this.value">
-                        <div class="flex-1">
-                            <span class="text-[9px] text-stone-400 block uppercase font-bold tracking-wider">Secundario</span>
-                            <input type="text" id="color-secundario-text" value="#8C6D58" oninput="document.getElementById('color-secundario-picker').value = this.value" class="w-full bg-transparent text-xs text-amber-200 font-mono focus:outline-none">
+                    <!-- Tarjeta Secundario -->
+                    <div id="card-secundario" class="rounded-xl p-3 flex flex-col justify-between shadow-md transition" style="background-color: #8C6D58; min-height: 80px;">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold text-white uppercase tracking-wider bg-black/30 px-2 py-0.5 rounded">Secundario</span>
+                            <input type="color" id="color-secundario-picker" value="#8C6D58" onchange="actualizarTarjetaColor('secundario', this.value)" class="w-6 h-6 opacity-80 hover:opacity-100">
                         </div>
+                        <input type="text" id="color-secundario-text" value="#8C6D58" oninput="actualizarTextoColor('secundario', this.value)" class="bg-transparent text-sm text-white font-mono font-bold focus:outline-none mt-2 uppercase">
                     </div>
 
-                    <div class="flex items-center gap-3 bg-stone-900 p-3 rounded-xl border border-stone-800">
-                        <input type="color" id="color-fondo-picker" value="#FBF9F5" onchange="document.getElementById('color-fondo-text').value = this.value">
-                        <div class="flex-1">
-                            <span class="text-[9px] text-stone-400 block uppercase font-bold tracking-wider">Fondo</span>
-                            <input type="text" id="color-fondo-text" value="#FBF9F5" oninput="document.getElementById('color-fondo-picker').value = this.value" class="w-full bg-transparent text-xs text-amber-200 font-mono focus:outline-none">
+                    <!-- Tarjeta Fondo -->
+                    <div id="card-fondo" class="rounded-xl p-3 flex flex-col justify-between shadow-md transition border border-stone-700" style="background-color: #FBF9F5; min-height: 80px;">
+                        <div class="flex justify-between items-center">
+                            <span id="label-fondo" class="text-[10px] font-bold text-stone-800 uppercase tracking-wider bg-white/60 px-2 py-0.5 rounded">Fondo</span>
+                            <input type="color" id="color-fondo-picker" value="#FBF9F5" onchange="actualizarTarjetaColor('fondo', this.value)" class="w-6 h-6 opacity-80 hover:opacity-100">
                         </div>
+                        <input type="text" id="color-fondo-text" value="#FBF9F5" oninput="actualizarTextoColor('fondo', this.value)" class="bg-transparent text-sm text-stone-900 font-mono font-bold focus:outline-none mt-2 uppercase">
                     </div>
+
                 </div>
             </div>
 
@@ -125,6 +137,43 @@
         document.addEventListener('DOMContentLoaded', () => {
             cargarUsuarios();
         });
+
+        // Funciones para sincronizar el selector visual de tarjetas con los códigos HEX
+        function actualizarTarjetaColor(tipo, colorHex) {
+            document.getElementById(`color-${tipo}-text`).value = colorHex;
+            const tarjeta = document.getElementById(`card-${tipo}`);
+            tarjeta.style.backgroundColor = colorHex;
+            
+            // Ajustar color del texto si el fondo es muy claro u oscuro
+            if (tipo === 'fondo') {
+                const isLight = esColorClaro(colorHex);
+                document.getElementById('color-fondo-text').className = `bg-transparent text-sm ${isLight ? 'text-stone-900' : 'text-white'} font-mono font-bold focus:outline-none mt-2 uppercase`;
+                document.getElementById('label-fondo').className = `text-[10px] font-bold ${isLight ? 'text-stone-800 bg-white/60' : 'text-white bg-black/30'} uppercase tracking-wider px-2 py-0.5 rounded`;
+            }
+        }
+
+        function actualizarTextoColor(tipo, colorHex) {
+            if (colorHex.startsWith('#') && (colorHex.length === 4 || colorHex.length === 7)) {
+                document.getElementById(`color-${tipo}-picker`).value = colorHex;
+                const tarjeta = document.getElementById(`card-${tipo}`);
+                tarjeta.style.backgroundColor = colorHex;
+
+                if (tipo === 'fondo') {
+                    const isLight = esColorClaro(colorHex);
+                    document.getElementById('color-fondo-text').className = `bg-transparent text-sm ${isLight ? 'text-stone-900' : 'text-white'} font-mono font-bold focus:outline-none mt-2 uppercase`;
+                    document.getElementById('label-fondo').className = `text-[10px] font-bold ${isLight ? 'text-stone-800 bg-white/60' : 'text-white bg-black/30'} uppercase tracking-wider px-2 py-0.5 rounded`;
+                }
+            }
+        }
+
+        function esColorClaro(colorHex) {
+            const hex = colorHex.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            return brightness > 155;
+        }
 
         async function cargarUsuarios() {
             const lista = document.getElementById('lista-usuarios');
@@ -289,12 +338,9 @@
             
             const { data: config } = await supabaseClient.from('configuracion_estudio').select('*').eq('usuario_id', id).single();
             if (config) {
-                document.getElementById('color-primario-picker').value = config.color_primario || '#7C5C43';
-                document.getElementById('color-primario-text').value = config.color_primario || '#7C5C43';
-                document.getElementById('color-secundario-picker').value = config.color_secundario || '#8C6D58';
-                document.getElementById('color-secundario-text').value = config.color_secundario || '#8C6D58';
-                document.getElementById('color-fondo-picker').value = config.color_fondo || '#FBF9F5';
-                document.getElementById('color-fondo-text').value = config.color_fondo || '#FBF9F5';
+                actualizarTarjetaColor('primario', config.color_primario || '#7C5C43');
+                actualizarTarjetaColor('secundario', config.color_secundario || '#8C6D58');
+                actualizarTarjetaColor('fondo', config.color_fondo || '#FBF9F5');
             }
 
             if (logoUrl && logoUrl !== 'null') {
@@ -319,6 +365,10 @@
             document.getElementById('input-logo-file').value = '';
             document.getElementById('lbl-logo-estado').innerText = "Sin logo nuevo seleccionado";
             
+            actualizarTarjetaColor('primario', '#7C5C43');
+            actualizarTarjetaColor('secundario', '#8C6D58');
+            actualizarTarjetaColor('fondo', '#FBF9F5');
+
             document.getElementById('titulo-form').innerText = "➕ Crear Nuevo Estudio / Cliente";
             document.getElementById('btn-guardar').innerText = "Crear Cuenta de Estudio";
             document.getElementById('btn-guardar').className = "w-full bg-emerald-600 hover:bg-emerald-500 text-stone-950 py-3 rounded-xl text-xs font-bold transition shadow-md";
