@@ -26,6 +26,9 @@
 </head>
 <body class="bg-stone-950 text-stone-100 min-h-screen p-4 md:p-8 pb-12">
 
+    <!-- CONTENEDOR DE NOTIFICACIONES FLOTANTES (TOAST) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2"></div>
+
     <div id="panel-contenido" class="max-w-3xl mx-auto space-y-6">
         
         <header class="flex justify-between items-center border-b border-stone-800 pb-4">
@@ -45,6 +48,10 @@
 
             <input type="hidden" id="edit-user-id" value="">
             <input type="hidden" id="edit-logo-url" value="">
+            
+            <!-- Campos ocultos de configuración base -->
+            <input type="hidden" id="color-fondo-text" value="#FFFFFF">
+            <input type="hidden" id="color-secundario-text" value="#5A412F">
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
@@ -68,37 +75,31 @@
                 </div>
             </div>
 
-            <!-- SELECTOR DE COLORES ESTILO TARJETA PROFESIONAL (COMO LA REFERENCIA) -->
+            <!-- SELECTOR DE COLOR PRINCIPAL -->
             <div class="space-y-2">
-                <label class="text-[11px] text-amber-400 font-semibold uppercase tracking-wider block">🎨 PALETA DE COLORES DE LA MARCA (SELECCIONA O ESCRIBE HEX)</label>
+                <label class="text-[11px] text-amber-400 font-semibold uppercase tracking-wider block">🎨 COLOR PRINCIPAL DE LA MARCA (FONDO BLANCO FIJO)</label>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     
                     <!-- Tarjeta Primario -->
-                    <div id="card-primario" class="rounded-xl p-3 flex flex-col justify-between shadow-md transition" style="background-color: #7C5C43; min-height: 80px;">
+                    <div id="card-primario" class="rounded-xl p-4 flex flex-col justify-between shadow-md transition" style="background-color: #7C5C43; min-height: 90px;">
                         <div class="flex justify-between items-center">
-                            <span class="text-[10px] font-bold text-white uppercase tracking-wider bg-black/30 px-2 py-0.5 rounded">Primario</span>
-                            <input type="color" id="color-primario-picker" value="#7C5C43" onchange="actualizarTarjetaColor('primario', this.value)" class="w-6 h-6 opacity-80 hover:opacity-150">
+                            <span class="text-[10px] font-bold text-white uppercase tracking-wider bg-black/30 px-2.5 py-1 rounded">Color Principal</span>
+                            <input type="color" id="color-primario-picker" value="#7C5C43" onchange="actualizarColorPrimario(this.value)" class="w-7 h-7 opacity-80 hover:opacity-100">
                         </div>
-                        <input type="text" id="color-primario-text" value="#7C5C43" oninput="actualizarTextoColor('primario', this.value)" class="bg-transparent text-sm text-white font-mono font-bold focus:outline-none mt-2 uppercase">
+                        <input type="text" id="color-primario-text" value="#7C5C43" oninput="actualizarTextoPrimario(this.value)" class="bg-transparent text-base text-white font-mono font-bold focus:outline-none mt-2 uppercase">
                     </div>
 
-                    <!-- Tarjeta Secundario -->
-                    <div id="card-secundario" class="rounded-xl p-3 flex flex-col justify-between shadow-md transition" style="background-color: #8C6D58; min-height: 80px;">
+                    <!-- Vista Previa Automática -->
+                    <div class="bg-white border border-stone-300 rounded-xl p-4 flex flex-col justify-between shadow-md" style="min-height: 90px;">
                         <div class="flex justify-between items-center">
-                            <span class="text-[10px] font-bold text-white uppercase tracking-wider bg-black/30 px-2 py-0.5 rounded">Secundario</span>
-                            <input type="color" id="color-secundario-picker" value="#8C6D58" onchange="actualizarTarjetaColor('secundario', this.value)" class="w-6 h-6 opacity-80 hover:opacity-100">
+                            <span class="text-[10px] font-bold text-stone-700 uppercase tracking-wider bg-stone-100 px-2.5 py-1 rounded border border-stone-200">Fondo & Secundario (Automático)</span>
+                            <div id="preview-secundario" class="w-6 h-6 rounded-full border border-stone-300 shadow-inner" style="background-color: #5A412F;"></div>
                         </div>
-                        <input type="text" id="color-secundario-text" value="#8C6D58" oninput="actualizarTextoColor('secundario', this.value)" class="bg-transparent text-sm text-white font-mono font-bold focus:outline-none mt-2 uppercase">
-                    </div>
-
-                    <!-- Tarjeta Fondo -->
-                    <div id="card-fondo" class="rounded-xl p-3 flex flex-col justify-between shadow-md transition border border-stone-700" style="background-color: #FBF9F5; min-height: 80px;">
-                        <div class="flex justify-between items-center">
-                            <span id="label-fondo" class="text-[10px] font-bold text-stone-800 uppercase tracking-wider bg-white/60 px-2 py-0.5 rounded">Fondo</span>
-                            <input type="color" id="color-fondo-picker" value="#FBF9F5" onchange="actualizarTarjetaColor('fondo', this.value)" class="w-6 h-6 opacity-80 hover:opacity-100">
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-xs text-stone-600 font-medium">Fondo: <strong class="text-stone-900 font-mono">#FFFFFF</strong></span>
+                            <span id="label-sec-hex" class="text-xs text-stone-500 font-mono">Sec: #5A412F</span>
                         </div>
-                        <input type="text" id="color-fondo-text" value="#FBF9F5" oninput="actualizarTextoColor('fondo', this.value)" class="bg-transparent text-sm text-stone-900 font-mono font-bold focus:outline-none mt-2 uppercase">
                     </div>
 
                 </div>
@@ -136,43 +137,61 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             cargarUsuarios();
+            actualizarColorPrimario("#7C5C43");
         });
 
-        // Funciones para sincronizar el selector visual de tarjetas con los códigos HEX
-        function actualizarTarjetaColor(tipo, colorHex) {
-            document.getElementById(`color-${tipo}-text`).value = colorHex;
-            const tarjeta = document.getElementById(`card-${tipo}`);
-            tarjeta.style.backgroundColor = colorHex;
+        function mostrarToast(mensaje, esError = false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl text-xs font-bold shadow-2xl transition-all duration-300 transform translate-y-2 opacity-0 ${esError ? 'bg-rose-600 text-white border border-rose-500' : 'bg-emerald-500 text-stone-950 border border-emerald-400'}`;
+            toast.innerText = mensaje;
             
-            // Ajustar color del texto si el fondo es muy claro u oscuro
-            if (tipo === 'fondo') {
-                const isLight = esColorClaro(colorHex);
-                document.getElementById('color-fondo-text').className = `bg-transparent text-sm ${isLight ? 'text-stone-900' : 'text-white'} font-mono font-bold focus:outline-none mt-2 uppercase`;
-                document.getElementById('label-fondo').className = `text-[10px] font-bold ${isLight ? 'text-stone-800 bg-white/60' : 'text-white bg-black/30'} uppercase tracking-wider px-2 py-0.5 rounded`;
-            }
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
         }
 
-        function actualizarTextoColor(tipo, colorHex) {
+        function calcularColorSecundario(hex) {
+            let color = hex.replace('#', '');
+            if (color.length === 3) {
+                color = color.split('').map(c => c + c).join('');
+            }
+            let num = parseInt(color, 16);
+            let r = (num >> 16) - 30;
+            let g = ((num >> 8) & 0x00FF) - 30;
+            let b = (num & 0x0000FF) - 30;
+            
+            r = r < 0 ? 0 : r;
+            g = g < 0 ? 0 : g;
+            b = b < 0 ? 0 : b;
+            
+            return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+        }
+
+        function actualizarColorPrimario(colorHex) {
+            document.getElementById('color-primario-text').value = colorHex;
+            document.getElementById('card-primario').style.backgroundColor = colorHex;
+            document.getElementById('color-primario-picker').value = colorHex;
+
+            const secundarioDerivado = calcularColorSecundario(colorHex);
+            document.getElementById('color-secundario-text').value = secundarioDerivado;
+            document.getElementById('color-fondo-text').value = '#FFFFFF';
+            
+            document.getElementById('preview-secundario').style.backgroundColor = secundarioDerivado;
+            document.getElementById('label-sec-hex').innerText = `Sec: ${secundarioDerivado}`;
+        }
+
+        function actualizarTextoPrimario(colorHex) {
             if (colorHex.startsWith('#') && (colorHex.length === 4 || colorHex.length === 7)) {
-                document.getElementById(`color-${tipo}-picker`).value = colorHex;
-                const tarjeta = document.getElementById(`card-${tipo}`);
-                tarjeta.style.backgroundColor = colorHex;
-
-                if (tipo === 'fondo') {
-                    const isLight = esColorClaro(colorHex);
-                    document.getElementById('color-fondo-text').className = `bg-transparent text-sm ${isLight ? 'text-stone-900' : 'text-white'} font-mono font-bold focus:outline-none mt-2 uppercase`;
-                    document.getElementById('label-fondo').className = `text-[10px] font-bold ${isLight ? 'text-stone-800 bg-white/60' : 'text-white bg-black/30'} uppercase tracking-wider px-2 py-0.5 rounded`;
-                }
+                actualizarColorPrimario(colorHex);
             }
-        }
-
-        function esColorClaro(colorHex) {
-            const hex = colorHex.replace('#', '');
-            const r = parseInt(hex.substring(0, 2), 16);
-            const g = parseInt(hex.substring(2, 4), 16);
-            const b = parseInt(hex.substring(4, 6), 16);
-            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-            return brightness > 155;
         }
 
         async function cargarUsuarios() {
@@ -249,14 +268,14 @@
             const vencimiento = document.getElementById('nueva-vencimiento').value;
             
             const colorPrimario = document.getElementById('color-primario-text').value.trim() || '#7C5C43';
-            const colorSecundario = document.getElementById('color-secundario-text').value.trim() || '#8C6D58';
-            const colorFondo = document.getElementById('color-fondo-text').value.trim() || '#FBF9F5';
+            const colorSecundario = document.getElementById('color-secundario-text').value.trim() || '#5A412F';
+            const colorFondo = '#FFFFFF';
 
             const fileInput = document.getElementById('input-logo-file');
             let logoUrl = document.getElementById('edit-logo-url').value;
 
             if (!nombre || !user || !pass) {
-                alert("Completa nombre, usuario y PIN");
+                mostrarToast("Completa nombre, usuario y PIN", true);
                 return;
             }
 
@@ -281,7 +300,7 @@
                 }).eq('id', editId);
 
                 if (error) {
-                    alert("Error al actualizar: " + error.message);
+                    mostrarToast("Error al actualizar: " + error.message, true);
                 } else {
                     await supabaseClient.from('configuracion_estudio').update({
                         color_primario: colorPrimario,
@@ -289,7 +308,7 @@
                         color_fondo: colorFondo
                     }).eq('usuario_id', editId);
 
-                    alert("✓ Estudio actualizado correctamente");
+                    mostrarToast("✓ Estudio actualizado correctamente");
                     resetearFormulario();
                     cargarUsuarios();
                 }
@@ -308,9 +327,9 @@
 
                 if (error) {
                     if (error.code === '23505') {
-                        alert("⚠️ El nombre de usuario '" + user + "' ya está en uso. Elige otro.");
+                        mostrarToast("⚠️ El usuario '" + user + "' ya está en uso.", true);
                     } else {
-                        alert("Error al crear cuenta: " + error.message);
+                        mostrarToast("Error al crear cuenta: " + error.message, true);
                     }
                 } else {
                     if (nuevoUser) {
@@ -321,7 +340,7 @@
                             color_fondo: colorFondo
                         }]);
                     }
-                    alert("✓ Nuevo Estudio creado con éxito");
+                    mostrarToast("✓ Nuevo Estudio creado con éxito");
                     resetearFormulario();
                     cargarUsuarios();
                 }
@@ -338,9 +357,7 @@
             
             const { data: config } = await supabaseClient.from('configuracion_estudio').select('*').eq('usuario_id', id).single();
             if (config) {
-                actualizarTarjetaColor('primario', config.color_primario || '#7C5C43');
-                actualizarTarjetaColor('secundario', config.color_secundario || '#8C6D58');
-                actualizarTarjetaColor('fondo', config.color_fondo || '#FBF9F5');
+                actualizarColorPrimario(config.color_primario || '#7C5C43');
             }
 
             if (logoUrl && logoUrl !== 'null') {
@@ -365,9 +382,7 @@
             document.getElementById('input-logo-file').value = '';
             document.getElementById('lbl-logo-estado').innerText = "Sin logo nuevo seleccionado";
             
-            actualizarTarjetaColor('primario', '#7C5C43');
-            actualizarTarjetaColor('secundario', '#8C6D58');
-            actualizarTarjetaColor('fondo', '#FBF9F5');
+            actualizarColorPrimario('#7C5C43');
 
             document.getElementById('titulo-form').innerText = "➕ Crear Nuevo Estudio / Cliente";
             document.getElementById('btn-guardar').innerText = "Crear Cuenta de Estudio";
@@ -393,9 +408,9 @@
             const { error } = await supabaseClient.from('usuarios').delete().eq('id', id);
 
             if (error) {
-                alert("Error al eliminar el estudio: " + error.message);
+                mostrarToast("Error al eliminar: " + error.message, true);
             } else {
-                alert("✓ Estudio y todos sus datos relacionados fueron eliminados con éxito.");
+                mostrarToast("✓ Estudio eliminado con éxito");
                 cargarUsuarios();
             }
         }
