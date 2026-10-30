@@ -1,0 +1,9 @@
+{
+  "name": "BellApp Studio",
+  "short_name": "BellApp",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FBF9F5",
+  "theme_color": "#7C5C43",
+  "icons": []
+}
