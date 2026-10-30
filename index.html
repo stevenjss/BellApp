@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BetsyMoreta Studio</title>
-    <!-- Manifest PWA -->
     <link rel="manifest" href="manifest.json">
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Fuentes Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -31,7 +27,6 @@
             font-family: 'Playfair Display', serif;
         }
 
-        /* Capa de fondo personalizada */
         #bg-overlay {
             position: fixed;
             inset: 0;
@@ -59,15 +54,14 @@
 </head>
 <body class="text-stone-800 pb-20">
 
-    <!-- Capa para foto de fondo -->
     <div id="bg-overlay"></div>
 
-    <!-- BANNER DE NOTIFICACIÓN INTEGRADO -->
+    <!-- BANNER TOAST -->
     <div id="toast-notificacion" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden bg-[#5C4231] text-white text-xs px-5 py-3 rounded-xl shadow-lg border border-[#8C6D58] transition-all flex items-center gap-2">
         <span id="toast-mensaje">Operación realizada con éxito</span>
     </div>
 
-    <!-- BANNER DE ALERTA DE CITA PRÓXIMA (15 MINUTOS) -->
+    <!-- ALERTA CITA -->
     <div id="alerta-cita-proxima" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden bg-amber-800 text-white text-xs px-6 py-4 rounded-2xl shadow-2xl border-2 border-amber-500 transition-all flex flex-col gap-2 max-w-xs text-center animate-bounce">
         <div class="flex items-center justify-center gap-2 font-bold text-sm">
             <span>⏰ ¡CITA PRÓXIMA EN 15 MINUTOS!</span>
@@ -76,7 +70,7 @@
         <button onclick="cerrarAlertaCita()" class="mt-1 bg-white text-amber-900 font-bold py-1 px-3 rounded-lg text-[11px] self-center">Entendido</button>
     </div>
 
-    <!-- PANTALLA DE LOGIN -->
+    <!-- PANTALLA LOGIN -->
     <div id="pin-screen" class="fixed inset-0 bg-[#FBF9F5] z-50 flex flex-col items-center justify-center p-6">
         <div class="flex flex-col items-center mb-6">
             <div class="w-16 h-16 rounded-full border-2 border-[#B89B86] flex items-center justify-center mb-3 bg-white shadow-sm">
@@ -101,10 +95,9 @@
         <p id="pin-error" class="text-amber-800 text-xs mt-4 hidden bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 text-center"></p>
     </div>
 
-    <!-- APLICACIÓN PRINCIPAL -->
+    <!-- APP PRINCIPAL -->
     <div id="app-content" class="hidden">
         
-        <!-- Cabecera -->
         <header id="header-app" class="bg-[#7C5C43] text-white p-4 shadow-sm sticky top-0 z-40 flex justify-between items-center border-b border-[#694D36]">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-full border border-[#D8C8BC] flex items-center justify-center bg-[#5C4231]">
@@ -125,10 +118,9 @@
             </div>
         </header>
 
-        <!-- Contenedor Principal -->
         <main class="p-4 max-w-md mx-auto">
             
-            <!-- VISTA 1: AGENDA (PRÓXIMAS CITAS) -->
+            <!-- VISTA AGENDA -->
             <section id="seccion-agenda" class="space-y-4">
                 <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
                     <h2 class="text-xs font-semibold text-[#8C6D58] uppercase tracking-wider mb-3">Balance del Mes (Profit)</h2>
@@ -153,7 +145,6 @@
                     <button onclick="cambiarSeccion('cobrar')" class="btn-dinamico-secundario hover:opacity-90 py-3 rounded-xl font-medium shadow-sm text-center text-xs transition">🧾 Cobro Rápido</button>
                 </div>
 
-                <!-- CITAS PENDIENTES (ORDENADAS CRONOLÓGICAMENTE POR FECHA Y HORA) -->
                 <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-sm font-semibold text-[#5C4231] font-serif-luxury">📅 Próximas Citas (Ordenadas por Hora)</h3>
@@ -176,7 +167,7 @@
                 </div>
             </section>
 
-            <!-- VISTA FOTOS (ANTES Y DESPUÉS) -->
+            <!-- VISTA FOTOS -->
             <section id="seccion-fotos" class="hidden space-y-4">
                 <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
                     <div class="flex justify-between items-center mb-4">
@@ -209,7 +200,7 @@
                 </div>
             </section>
 
-            <!-- VISTA AGENDAR / EDITAR CITA -->
+            <!-- VISTA AGENDAR -->
             <section id="seccion-agendar" class="hidden space-y-4">
                 <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
                     <h2 id="titulo-modo-agenda" class="text-base font-semibold text-[#5C4231] mb-3 font-serif-luxury">📅 Programar Cita</h2>
@@ -249,7 +240,7 @@
                 </div>
             </section>
 
-            <!-- VISTA COBRO RÁPIDO -->
+            <!-- VISTA COBRO -->
             <section id="seccion-cobrar" class="hidden space-y-4">
                 <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
                     <h2 class="text-base font-semibold text-[#5C4231] mb-3 font-serif-luxury">🧾 Registrar Cobro</h2>
@@ -330,7 +321,7 @@
 
         </main>
 
-        <!-- MODAL DE PERSONALIZACIÓN DE TEMA Y FONDO -->
+        <!-- MODAL PERSONALIZACIÓN CON SUBIDA DE FOTO DESDE CELULAR -->
         <div id="modal-personalizacion" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-[#D8C8BC] space-y-4">
                 <div class="flex justify-between items-center border-b border-stone-100 pb-2">
@@ -349,8 +340,14 @@
                 </div>
 
                 <div>
-                    <label class="text-xs font-semibold text-stone-600 block mb-1">Imagen de Fondo (URL):</label>
-                    <input type="url" id="input-url-fondo" placeholder="https://ejemplo.com/foto.jpg" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-xs bg-[#FBF9F5]">
+                    <label class="text-xs font-semibold text-stone-600 block mb-1">Imagen de Fondo (Desde tu Celular):</label>
+                    <input type="file" id="input-archivo-fondo" accept="image/*" class="hidden" onchange="subirFondoCelular(this)">
+                    <div class="flex gap-2 items-center">
+                        <button onclick="document.getElementById('input-archivo-fondo').click()" class="flex-1 bg-stone-100 border border-[#D8C8BC] text-stone-700 py-2 rounded-xl text-xs font-medium">📁 Seleccionar Imagen</button>
+                        <button onclick="quitarFondo()" class="px-3 bg-rose-50 text-rose-700 border border-rose-200 py-2 rounded-xl text-xs font-medium">Quitar</button>
+                    </div>
+                    <input type="hidden" id="input-url-fondo" value="">
+                    <p id="lbl-estado-fondo" class="text-[10px] text-stone-400 mt-1">Ninguna imagen seleccionada</p>
                 </div>
 
                 <div>
@@ -365,7 +362,6 @@
             </div>
         </div>
 
-        <!-- Barra de Navegación Inferior -->
         <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-[#EFE7DE] flex justify-around p-2.5 shadow-lg max-w-md mx-auto z-40">
             <button onclick="cambiarSeccion('agenda')" class="flex flex-col items-center text-xs texto-dinamico-primario font-medium">📅 Agenda</button>
             <button onclick="cambiarSeccion('historial')" class="flex flex-col items-center text-xs text-stone-500">📜 Historial</button>
@@ -375,16 +371,14 @@
         </nav>
     </div>
 
-    <!-- SCRIPT JS -->
     <script>
         const SUPABASE_URL = "https://udddoohrdhmekrwstcnu.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_qr02Rl-cs9BWfws_pN3fSQ_5MZ5q6F-"; 
 
         let supabaseClient = null;
-        let usuarioSesion = null; // Almacenará los datos del usuario logueado
+        let usuarioSesion = null;
         let listaClientesCache = [];
         let citasNotificadas = new Set();
-
         let temaTemporal = { primario: '#7C5C43', secundario: '#8C6D58', fondo: '#FBF9F5' };
 
         try {
@@ -395,11 +389,8 @@
             console.error("Error al inicializar Supabase:", e);
         }
 
-        // Registrar Service Worker para Notificaciones PWA
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Service Worker registrado correctamente'))
-                .catch(err => console.error('Error registrando Service Worker:', err));
+            navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
         }
 
         const SERVICIOS_DISPONIBLES = [
@@ -460,13 +451,12 @@
             }
 
             if (usuario.estado === 'suspendido') {
-                errorMsg.innerText = "⛔ Tu cuenta está suspendida por falta de pago. Contacta al administrador.";
+                errorMsg.innerText = "⛔ Tu cuenta está suspendida por falta de pago.";
                 errorMsg.classList.remove('hidden');
                 return;
             }
 
             usuarioSesion = usuario;
-
             document.getElementById('pin-screen').classList.add('hidden');
             document.getElementById('app-content').classList.remove('hidden');
 
@@ -474,9 +464,8 @@
             const iniciales = usuario.nombre_estudio.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
             document.getElementById('header-logo-iniciales').innerText = iniciales;
 
-            cargarTemaEstudio();
-            cargarDatosIniciales();
-            setInterval(verificarAlertasCitas, 30000);
+            await cargarTemaEstudio();
+            await cargarDatosIniciales();
         }
 
         async function cargarTemaEstudio() {
@@ -490,6 +479,11 @@
 
             if (config) {
                 aplicarEstilosVisuales(config.color_primario, config.color_secundario, config.color_fondo, config.url_fondo, config.opacidad_fondo);
+                document.getElementById('input-url-fondo').value = config.url_fondo || '';
+                document.getElementById('input-opacidad-fondo').value = config.opacidad_fondo || 0.15;
+                if (config.url_fondo) {
+                    document.getElementById('lbl-estado-fondo').innerText = "✓ Imagen de fondo activa";
+                }
             }
         }
 
@@ -524,6 +518,31 @@
             mostrarNotificacion("Paleta seleccionada. Haz clic en Guardar.");
         }
 
+        async function subirFondoCelular(inputElement) {
+            const file = inputElement.files[0];
+            if (!file) return;
+
+            mostrarNotificacion("Subiendo imagen de fondo...");
+            const fileName = `fondo_${usuarioSesion.id}_${Date.now()}.jpg`;
+            const { error } = await supabaseClient.storage.from('fotos-estudio').upload(fileName, file);
+
+            if (error) {
+                mostrarNotificacion("Error al subir imagen");
+                return;
+            }
+
+            const { data: publicUrlData } = supabaseClient.storage.from('fotos-estudio').getPublicUrl(fileName);
+            document.getElementById('input-url-fondo').value = publicUrlData.publicUrl;
+            document.getElementById('lbl-estado-fondo').innerText = "✓ Imagen cargada con éxito";
+            mostrarNotificacion("✓ Imagen lista. Guarda los cambios.");
+        }
+
+        function quitarFondo() {
+            document.getElementById('input-url-fondo').value = '';
+            document.getElementById('lbl-estado-fondo').innerText = "Sin imagen seleccionada";
+            mostrarNotificacion("Fondo removido. Guarda para aplicar.");
+        }
+
         async function guardarPersonalizacion() {
             if (!usuarioSesion) return;
 
@@ -532,17 +551,18 @@
 
             const { error } = await supabaseClient
                 .from('configuracion_estudio')
-                .upsert([{
+                .upsert({
                     usuario_id: usuarioSesion.id,
                     color_primario: temaTemporal.primario,
                     color_secundario: temaTemporal.secundario,
                     color_fondo: temaTemporal.fondo,
                     url_fondo: urlFondo,
                     opacidad_fondo: Number(opacidad)
-                }], { onConflict: 'usuario_id' });
+                }, { onConflict: 'usuario_id' });
 
             if (error) {
                 mostrarNotificacion("Error al guardar diseño");
+                console.error(error);
             } else {
                 aplicarEstilosVisuales(temaTemporal.primario, temaTemporal.secundario, temaTemporal.fondo, urlFondo, opacidad);
                 cerrarModalPersonalizacion();
@@ -551,110 +571,10 @@
         }
 
         function solicitarPermisoNotificaciones() {
-            if (!("Notification" in window)) {
-                mostrarNotificacion("Tu navegador no soporta notificaciones");
-                return;
-            }
+            if (!("Notification" in window)) return;
             Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    mostrarNotificacion("✓ Alertas activadas con éxito");
-                } else {
-                    mostrarNotificacion("Permiso de notificaciones denegado");
-                }
+                if (permission === "granted") mostrarNotificacion("✓ Alertas activadas");
             });
-        }
-
-        function reproducirSonidoAlarma() {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc1 = audioCtx.createOscillator();
-                const gain1 = audioCtx.createGain();
-                osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-                gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-                osc1.connect(gain1);
-                gain1.connect(audioCtx.destination);
-                osc1.start();
-                osc1.stop(audioCtx.currentTime + 0.4);
-
-                setTimeout(() => {
-                    const osc2 = audioCtx.createOscillator();
-                    const gain2 = audioCtx.createGain();
-                    osc2.type = 'sine';
-                    osc2.frequency.setValueAtTime(880, audioCtx.currentTime);
-                    gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                    gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
-                    osc2.connect(gain2);
-                    gain2.connect(audioCtx.destination);
-                    osc2.start();
-                    osc2.stop(audioCtx.currentTime + 0.6);
-                }, 200);
-            } catch (e) {
-                console.log("AudioContext no disponible", e);
-            }
-        }
-
-        async function verificarAlertasCitas() {
-            if (!supabaseClient || !usuarioSesion) return;
-
-            const fechaHoy = new Date().toISOString().split('T')[0];
-            const { data: citas } = await supabaseClient
-                .from('citas')
-                .select('*, clientes(nombre)')
-                .eq('usuario_id', usuarioSesion.id)
-                .eq('estado', 'pendiente')
-                .eq('fecha', fechaHoy);
-
-            if (!citas) return;
-
-            const ahora = new Date();
-
-            citas.forEach(cita => {
-                if (citasNotificadas.has(cita.id)) return;
-                if (!cita.hora) return;
-
-                const [horas, minutos] = cita.hora.split(':').map(Number);
-                const fechaCita = new Date();
-                fechaCita.setHours(horas, minutos, 0, 0);
-
-                const difMs = fechaCita.getTime() - ahora.getTime();
-                const difMinutos = Math.round(difMs / 60000);
-
-                if (difMinutos >= 0 && difMinutos <= 15) {
-                    citasNotificadas.add(cita.id);
-                    lanzarAlertaCita(cita, difMinutos);
-                }
-            });
-        }
-
-        function lanzarAlertaCita(cita, minutosRestantes) {
-            reproducirSonidoAlarma();
-
-            const nombreCliente = cita.clientes ? cita.clientes.nombre : 'Cliente general';
-            const textoDetalle = `Clienta: ${nombreCliente}\nHora: ${cita.hora} (${minutosRestantes} min)\nServicios: ${cita.servicios}`;
-
-            document.getElementById('alerta-cita-detalle').innerText = textoDetalle;
-            document.getElementById('alerta-cita-proxima').classList.remove('hidden');
-
-            if ("Notification" in window && Notification.permission === "granted") {
-                if (navigator.serviceWorker.controller) {
-                    navigator.serviceWorker.controller.postMessage({
-                        type: 'ALERTA_CITA',
-                        title: '⏰ ¡Cita próxima en 15 minutos!',
-                        body: `${nombreCliente} - ${cita.hora} (${cita.servicios})`
-                    });
-                } else {
-                    new Notification("⏰ ¡Cita próxima en 15 minutos!", {
-                        body: `${nombreCliente} - ${cita.hora} (${cita.servicios})`,
-                        icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                    });
-                }
-            }
-        }
-
-        function cerrarAlertaCita() {
-            document.getElementById('alerta-cita-proxima').classList.add('hidden');
         }
 
         function cambiarSeccion(seccion) {
@@ -691,23 +611,18 @@
         async function cargarDatosIniciales() {
             await obtenerClientesGlobales();
             await cargarCitasYResumen();
-            verificarAlertasCitas();
         }
 
         async function obtenerClientesGlobales() {
             if (!supabaseClient || !usuarioSesion) return;
             const { data } = await supabaseClient.from('clientes').select('id, nombre, telefono').eq('usuario_id', usuarioSesion.id).order('nombre');
-            if (data) {
-                listaClientesCache = data;
-            }
+            if (data) listaClientesCache = data;
         }
 
-        // CARGA Y ORDENAMIENTO ESTRICTO DE CITAS POR FECHA Y HORA ASCENDENTE
         async function cargarCitasYResumen() {
             if (!supabaseClient || !usuarioSesion) return;
 
-            // ORDENADO: Primero por fecha ascendente, luego por hora ascendente
-            const { data: citas, error } = await supabaseClient
+            const { data: citas } = await supabaseClient
                 .from('citas')
                 .select('*, clientes(nombre)')
                 .eq('usuario_id', usuarioSesion.id)
@@ -719,11 +634,8 @@
                 .select('*')
                 .eq('usuario_id', usuarioSesion.id);
 
-            if (error) return;
-
             let totalIngresosMes = 0;
             let totalGastosMes = 0;
-
             const listaPendientesHtml = document.getElementById('lista-citas-pendientes');
             listaPendientesHtml.innerHTML = '';
             let hayPendientes = false;
@@ -731,7 +643,6 @@
             if (citas) {
                 citas.forEach(cita => {
                     const nombreCliente = cita.clientes ? cita.clientes.nombre : 'Cliente general';
-                    
                     if (cita.estado === 'pendiente') {
                         hayPendientes = true;
                         listaPendientesHtml.innerHTML += `
@@ -758,41 +669,25 @@
                 });
             }
 
-            if (!hayPendientes) {
-                listaPendientesHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-3">Sin citas pendientes por atender</p>`;
-            }
-
-            if (gastos) {
-                gastos.forEach(gasto => { totalGastosMes += Number(gasto.monto); });
-            }
-
-            const profitNeto = totalIngresosMes - totalGastosMes;
+            if (!hayPendientes) listaPendientesHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-3">Sin citas pendientes por atender</p>`;
+            if (gastos) gastos.forEach(g => totalGastosMes += Number(g.monto));
 
             document.getElementById('lbl-ingresos-mes').innerText = `$${totalIngresosMes.toFixed(2)}`;
             document.getElementById('lbl-gastos-mes').innerText = `$${totalGastosMes.toFixed(2)}`;
-            document.getElementById('lbl-profit-mes').innerText = `$${profitNeto.toFixed(2)}`;
+            document.getElementById('lbl-profit-mes').innerText = `$${(totalIngresosMes - totalGastosMes).toFixed(2)}`;
         }
 
         async function marcarComoCobrada(citaId) {
-            const { error } = await supabaseClient.from('citas').update({ estado: 'atendida', metodo_pago: 'efectivo' }).eq('id', citaId);
-            if (error) {
-                mostrarNotificacion("Error al actualizar");
-            } else {
-                mostrarNotificacion("✓ Cita cobrada y movida al historial");
-                cargarCitasYResumen();
-            }
+            await supabaseClient.from('citas').update({ estado: 'atendida', metodo_pago: 'efectivo' }).eq('id', citaId);
+            cargarCitasYResumen();
+            mostrarNotificacion("✓ Cita cobrada");
         }
 
         async function eliminarCita(citaId) {
-            if (!confirm("¿Estás segura de que deseas eliminar esta cita?")) return;
-
-            const { error } = await supabaseClient.from('citas').delete().eq('id', citaId);
-            if (error) {
-                mostrarNotificacion("Error al eliminar cita");
-            } else {
-                mostrarNotificacion("✓ Cita eliminada correctamente");
-                cargarCitasYResumen();
-            }
+            if (!confirm("¿Deseas eliminar esta cita?")) return;
+            await supabaseClient.from('citas').delete().eq('id', citaId);
+            cargarCitasYResumen();
+            mostrarNotificacion("✓ Cita eliminada");
         }
 
         async function abrirSeccionAgendarNueva() {
@@ -813,41 +708,26 @@
             document.getElementById('agendar-hora').value = hora;
 
             const serviciosActualesStr = decodeURIComponent(serviciosEncoded);
-            const botonesServicios = document.querySelectorAll('#agendar-botones-servicios button');
             serviciosSeleccionadosAgendar = [];
-
-            botonesServicios.forEach(btn => {
+            document.querySelectorAll('#agendar-botones-servicios button').forEach(btn => {
                 const nombreServicio = btn.getAttribute('data-nombre');
                 const precioServicio = Number(btn.getAttribute('data-precio'));
-
                 if (serviciosActualesStr.includes(nombreServicio)) {
                     serviciosSeleccionadosAgendar.push({ nombre: nombreServicio, precio: precioServicio });
-                    btn.classList.remove('bg-[#FBF9F5]', 'text-stone-700', 'border-[#E8DDD1]');
-                    btn.classList.add('bg-[#8C6D58]', 'text-white', 'border-[#8C6D58]');
+                    btn.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
                 }
             });
-
             actualizarTotalAgendar();
         }
 
         async function cargarHistorialCitas() {
-            if (!supabaseClient || !usuarioSesion) return;
-
-            const { data: citas, error } = await supabaseClient
-                .from('citas')
-                .select('*, clientes(nombre)')
-                .eq('usuario_id', usuarioSesion.id)
-                .eq('estado', 'atendida')
-                .order('fecha', { ascending: false });
-
+            const { data: citas } = await supabaseClient.from('citas').select('*, clientes(nombre)').eq('usuario_id', usuarioSesion.id).eq('estado', 'atendida').order('fecha', { ascending: false });
             const listaAtendidasHtml = document.getElementById('lista-citas-atendidas');
             listaAtendidasHtml.innerHTML = '';
-
-            if (error || !citas || citas.length === 0) {
-                listaAtendidasHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay historial de citas cobradas</p>`;
+            if (!citas || citas.length === 0) {
+                listaAtendidasHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay historial</p>`;
                 return;
             }
-
             citas.forEach(cita => {
                 const nombreCliente = cita.clientes ? cita.clientes.nombre : 'Cliente general';
                 listaAtendidasHtml.innerHTML += `
@@ -855,10 +735,7 @@
                         <div>
                             <p class="font-semibold text-stone-800 text-sm">${nombreCliente} — <span class="texto-dinamico-primario font-bold">$${cita.total}</span></p>
                             <p class="text-xs text-stone-500">${cita.fecha} | ${cita.servicios}</p>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">ATENDIDA</span>
-                                <button onclick="abrirSeccionFotos('${cita.id}', '${nombreCliente}', '${cita.servicios}')" class="text-[10px] bg-[#FBF9F5] border border-[#D8C8BC] text-[#7C5C43] px-2 py-0.5 rounded-md font-medium">📷 Fotos</button>
-                            </div>
+                            <button onclick="abrirSeccionFotos('${cita.id}', '${nombreCliente}', '${cita.servicios}')" class="text-[10px] bg-[#FBF9F5] border border-[#D8C8BC] text-[#7C5C43] px-2 py-0.5 rounded-md font-medium mt-1">📷 Fotos</button>
                         </div>
                     </div>
                 `;
@@ -867,95 +744,44 @@
 
         function filtrarHistorial() {
             const textoFiltro = document.getElementById('buscar-historial').value.toLowerCase();
-            const items = document.querySelectorAll('.item-historial');
-
-            items.forEach(item => {
-                const texto = item.getAttribute('data-texto');
-                if (texto.includes(textoFiltro)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
+            document.querySelectorAll('.item-historial').forEach(item => {
+                item.style.display = item.getAttribute('data-texto').includes(textoFiltro) ? 'flex' : 'none';
             });
         }
 
         async function abrirSeccionFotos(citaId, clienteNombre, servicios) {
             document.getElementById('foto-cita-id').value = citaId;
             document.getElementById('fotos-info-cita').innerText = `Clienta: ${clienteNombre} | ${servicios}`;
-            
-            document.getElementById('preview-antes').innerHTML = `<span class="text-stone-400 text-[11px]">Cargando...</span>`;
-            document.getElementById('preview-despues').innerHTML = `<span class="text-stone-400 text-[11px]">Cargando...</span>`;
-
             cambiarSeccion('fotos');
-
             const { data } = await supabaseClient.from('citas').select('foto_antes, foto_despues').eq('id', citaId).single();
-            
             if (data) {
                 document.getElementById('preview-antes').innerHTML = data.foto_antes ? `<img src="${data.foto_antes}" class="w-full h-full object-cover rounded-lg">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
                 document.getElementById('preview-despues').innerHTML = data.foto_despues ? `<img src="${data.foto_despues}" class="w-full h-full object-cover rounded-lg">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
-            } else {
-                document.getElementById('preview-antes').innerHTML = `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
-                document.getElementById('preview-despues').innerHTML = `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
             }
         }
 
         async function subirFotoServicio(tipo, inputElement) {
             const file = inputElement.files[0];
             if (!file) return;
-
             const citaId = document.getElementById('foto-cita-id').value;
             mostrarNotificacion("Subiendo imagen...");
-
             const fileName = `cita_${citaId}_${tipo}_${Date.now()}.jpg`;
-            const { error } = await supabaseClient.storage.from('fotos-estudio').upload(fileName, file);
-
-            if (error) {
-                mostrarNotificacion("Error al subir archivo");
-                return;
-            }
-
+            await supabaseClient.storage.from('fotos-estudio').upload(fileName, file);
             const { data: publicUrlData } = supabaseClient.storage.from('fotos-estudio').getPublicUrl(fileName);
-            const publicUrl = publicUrlData.publicUrl;
-
-            const updateField = tipo === 'antes' ? { foto_antes: publicUrl } : { foto_despues: publicUrl };
-            const { error: updateError } = await supabaseClient.from('citas').update(updateField).eq('id', citaId);
-
-            if (updateError) {
-                mostrarNotificacion("Error guardando BD");
-            } else {
-                mostrarNotificacion("✓ Foto guardada con éxito");
-                abrirSeccionFotos(citaId, document.getElementById('fotos-info-cita').innerText.split('|')[0].replace('Clienta:', '').trim(), '');
-            }
+            await supabaseClient.from('citas').update(tipo === 'antes' ? { foto_antes: publicUrlData.publicUrl } : { foto_despues: publicUrlData.publicUrl }).eq('id', citaId);
+            mostrarNotificacion("✓ Foto guardada");
+            abrirSeccionFotos(citaId, document.getElementById('fotos-info-cita').innerText.split('|')[0].replace('Clienta:', '').trim(), '');
         }
 
         function filtrarClientesEnAutocomplete(modo) {
-            const inputSearch = document.getElementById(`${modo}-buscar-cliente`);
+            const query = document.getElementById(`${modo}-buscar-cliente`).value.toLowerCase().trim();
             const listaSugerencias = document.getElementById(`${modo}-lista-sugerencias`);
-            const inputId = document.getElementById(`${modo}-cliente-id`);
-            const query = inputSearch.value.toLowerCase().trim();
-
-            inputId.value = ""; 
-
-            if (!query) {
-                listaSugerencias.classList.add('hidden');
-                return;
-            }
-
+            document.getElementById(`${modo}-cliente-id`).value = "";
+            if (!query) { listaSugerencias.classList.add('hidden'); return; }
             const resultados = listaClientesCache.filter(c => c.nombre.toLowerCase().includes(query));
-
-            if (resultados.length === 0) {
-                listaSugerencias.innerHTML = `<div class="p-3 text-stone-400 text-xs">No se encontró clienta</div>`;
-                listaSugerencias.classList.remove('hidden');
-                return;
-            }
-
-            listaSugerencias.innerHTML = '';
+            listaSugerencias.innerHTML = resultados.length === 0 ? `<div class="p-3 text-stone-400 text-xs">No encontrada</div>` : '';
             resultados.forEach(c => {
-                listaSugerencias.innerHTML += `
-                    <div onclick="seleccionarClienteAutocomplete('${modo}', '${c.id}', '${c.nombre}')" class="p-2.5 hover:bg-[#F2EAE1] cursor-pointer border-b border-[#EFE7DE] last:border-0 font-medium">
-                        ${c.nombre}
-                    </div>
-                `;
+                listaSugerencias.innerHTML += `<div onclick="seleccionarClienteAutocomplete('${modo}', '${c.id}', '${c.nombre}')" class="p-2.5 hover:bg-[#F2EAE1] cursor-pointer border-b border-[#EFE7DE] font-medium">${c.nombre}</div>`;
             });
             listaSugerencias.classList.remove('hidden');
         }
@@ -968,9 +794,7 @@
 
         async function inicializarFormularioAgendar() {
             await obtenerClientesGlobales();
-            
-            const idActual = document.getElementById('editar-cita-id').value;
-            if (!idActual || idActual.trim() === "") {
+            if (!document.getElementById('editar-cita-id').value) {
                 document.getElementById('titulo-modo-agenda').innerText = "📅 Programar Cita";
                 document.getElementById('agendar-buscar-cliente').value = '';
                 document.getElementById('agendar-cliente-id').value = '';
@@ -978,22 +802,12 @@
                 document.getElementById('agendar-hora').value = '';
                 serviciosSeleccionadosAgendar = [];
             }
-
-            document.getElementById('agendar-lista-sugerencias').classList.add('hidden');
-
             const contenedorBotones = document.getElementById('agendar-botones-servicios');
             contenedorBotones.innerHTML = '';
-
             SERVICIOS_DISPONIBLES.forEach(s => {
-                const estaSeleccionado = serviciosSeleccionadosAgendar.some(item => item.nombre === s.nombre);
-                const clasesBtn = estaSeleccionado 
-                    ? "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs"
-                    : "p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs";
-
                 contenedorBotones.innerHTML += `
-                    <button type="button" data-nombre="${s.nombre}" data-precio="${s.precio}" onclick="toggleServicioAgendar('${s.nombre}', ${s.precio}, this)" class="${clasesBtn}">
-                        <span>${s.nombre}</span>
-                        <span class="font-bold text-[#7C5C43]">$${s.precio}</span>
+                    <button type="button" data-nombre="${s.nombre}" data-precio="${s.precio}" onclick="toggleServicioAgendar('${s.nombre}', ${s.precio}, this)" class="p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs">
+                        <span>${s.nombre}</span><span class="font-bold text-[#7C5C43]">$${s.precio}</span>
                     </button>
                 `;
             });
@@ -1004,12 +818,10 @@
             const index = serviciosSeleccionadosAgendar.findIndex(s => s.nombre === nombre);
             if (index > -1) {
                 serviciosSeleccionadosAgendar.splice(index, 1);
-                btnElement.classList.remove('btn-dinamico-secundario');
-                btnElement.classList.add('bg-[#FBF9F5]', 'text-stone-700', 'border-[#E8DDD1]');
+                btnElement.className = "p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs";
             } else {
                 serviciosSeleccionadosAgendar.push({ nombre, precio });
-                btnElement.classList.remove('bg-[#FBF9F5]', 'text-stone-700', 'border-[#E8DDD1]');
-                btnElement.classList.add('btn-dinamico-secundario');
+                btnElement.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
             }
             actualizarTotalAgendar();
         }
@@ -1025,63 +837,37 @@
             const clienteId = document.getElementById('agendar-cliente-id').value;
             const fecha = document.getElementById('agendar-fecha').value;
             const hora = document.getElementById('agendar-hora').value;
-            
             let suma = 0;
             serviciosSeleccionadosAgendar.forEach(s => suma += s.precio);
 
             if (!clienteId || !fecha || serviciosSeleccionadosAgendar.length === 0) {
-                mostrarNotificacion("Busca/selecciona una clienta, fecha y servicios");
+                mostrarNotificacion("Faltan datos obligatorios");
                 return;
             }
 
             const nombresServicios = serviciosSeleccionadosAgendar.map(s => s.nombre).join(', ');
-
-            if (citaId && citaId.trim() !== "") {
-                const { error } = await supabaseClient.from('citas').update({
-                    cliente_id: clienteId,
-                    fecha: fecha,
-                    hora: hora || '10:00',
-                    servicios: nombresServicios,
-                    total: suma
-                }).eq('id', citaId);
-
-                if (error) {
-                    mostrarNotificacion("Error al actualizar cita");
-                } else {
-                    mostrarNotificacion("✓ Cita actualizada correctamente");
-                    cambiarSeccion('agenda');
-                }
+            if (citaId) {
+                await supabaseClient.from('citas').update({ cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma }).eq('id', citaId);
+                mostrarNotificacion("✓ Cita actualizada");
             } else {
-                const { error } = await supabaseClient.from('citas').insert([
-                    { usuario_id: usuarioSesion.id, cliente_id: clienteId, fecha: fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma, metodo_pago: 'pendiente', estado: 'pendiente' }
-                ]);
-
-                if (error) {
-                    mostrarNotificacion("Error al agendar");
-                } else {
-                    mostrarNotificacion("✓ Cita agendada correctamente");
-                    cambiarSeccion('agenda');
-                    verificarAlertasCitas();
-                }
+                await supabaseClient.from('citas').insert([{ usuario_id: usuarioSesion.id, cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma, metodo_pago: 'pendiente', estado: 'pendiente' }]);
+                mostrarNotificacion("✓ Cita agendada");
             }
+            cambiarSeccion('agenda');
         }
 
         async function inicializarCalculadora() {
             await obtenerClientesGlobales();
             document.getElementById('cobro-buscar-cliente').value = '';
             document.getElementById('cobro-cliente-id').value = '';
-            document.getElementById('cobro-lista-sugerencias').classList.add('hidden');
-
             const contenedorBotones = document.getElementById('botones-servicios');
             contenedorBotones.innerHTML = '';
             serviciosSeleccionadosCobro = [];
             actualizarTotalCobro();
-
             SERVICIOS_DISPONIBLES.forEach(s => {
                 contenedorBotones.innerHTML += `
                     <button type="button" onclick="toggleServicioCobro('${s.nombre}', ${s.precio}, this)" class="p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs">
-                        <span>${s.nombre}</span>
-                        <span class="font-bold text-[#7C5C43]">$${s.precio}</span>
+                        <span>${s.nombre}</span><span class="font-bold text-[#7C5C43]">$${s.precio}</span>
                     </button>
                 `;
             });
@@ -1091,12 +877,10 @@
             const index = serviciosSeleccionadosCobro.findIndex(s => s.nombre === nombre);
             if (index > -1) {
                 serviciosSeleccionadosCobro.splice(index, 1);
-                btnElement.classList.remove('btn-dinamico-secundario');
-                btnElement.classList.add('bg-[#FBF9F5]', 'text-stone-700', 'border-[#E8DDD1]');
+                btnElement.className = "p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs";
             } else {
                 serviciosSeleccionadosCobro.push({ nombre, precio });
-                btnElement.classList.remove('bg-[#FBF9F5]', 'text-stone-700', 'border-[#E8DDD1]');
-                btnElement.classList.add('btn-dinamico-secundario');
+                btnElement.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
             }
             actualizarTotalCobro();
         }
@@ -1111,81 +895,41 @@
             const clienteId = document.getElementById('cobro-cliente-id').value;
             const metodoPago = document.getElementById('metodo-pago').value;
             const nota = document.getElementById('nota-servicio').value;
-            
             let suma = 0;
             serviciosSeleccionadosCobro.forEach(s => suma += s.precio);
 
             if (!clienteId || serviciosSeleccionadosCobro.length === 0) {
-                mostrarNotificacion("Busca/selecciona clienta y elige servicio");
+                mostrarNotificacion("Selecciona clienta y servicio");
                 return;
             }
 
-            const nombresServicios = serviciosSeleccionadosCobro.map(s => s.nombre).join(', ');
-            const fechaHoy = new Date().toISOString().split('T')[0];
-            const horaActual = new Date().toTimeString().split(' ')[0];
-
-            const { error } = await supabaseClient.from('citas').insert([
-                { usuario_id: usuarioSesion.id, cliente_id: clienteId, fecha: fechaHoy, hora: horaActual, servicios: nombresServicios, total: suma, metodo_pago: metodoPago, estado: 'atendida', nota_servicio: nota }
-            ]);
-
-            if (error) {
-                mostrarNotificacion("Error al registrar cobro");
-            } else {
-                document.getElementById('nota-servicio').value = '';
-                mostrarNotificacion("✓ Cobro guardado con éxito");
-                cambiarSeccion('agenda');
-            }
+            await supabaseClient.from('citas').insert([{ usuario_id: usuarioSesion.id, cliente_id: clienteId, fecha: new Date().toISOString().split('T')[0], hora: new Date().toTimeString().split(' ')[0], servicios: serviciosSeleccionadosCobro.map(s => s.nombre).join(', '), total: suma, metodo_pago: metodoPago, estado: 'atendida', nota_servicio: nota }]);
+            mostrarNotificacion("✓ Cobro guardado");
+            cambiarSeccion('agenda');
         }
 
         async function guardarGasto() {
-            const concepto = document.getElementById('gasto-concepto').value;
+            const concepto = document.getElementById('gasto-concepto').value.trim();
             const categoria = document.getElementById('gasto-categoria').value;
             const monto = document.getElementById('gasto-monto').value;
-            const fechaHoy = new Date().toISOString().split('T')[0];
-
-            if (!concepto || !monto) {
-                mostrarNotificacion("Completa concepto y monto");
-                return;
-            }
-
-            const { error } = await supabaseClient.from('gastos').insert([
-                { usuario_id: usuarioSesion.id, fecha: fechaHoy, concepto, categoria, monto: Number(monto), metodo_pago: 'efectivo' }
-            ]);
-
-            if (error) {
-                mostrarNotificacion("Error al registrar gasto");
-            } else {
-                document.getElementById('gasto-concepto').value = '';
-                document.getElementById('gasto-monto').value = '';
-                mostrarNotificacion("✓ Gasto guardado con éxito");
-                cargarGastos();
-            }
+            if (!concepto || !monto) { mostrarNotificacion("Completa los campos"); return; }
+            await supabaseClient.from('gastos').insert([{ usuario_id: usuarioSesion.id, fecha: new Date().toISOString().split('T')[0], concepto, categoria, monto: Number(monto), metodo_pago: 'efectivo' }]);
+            document.getElementById('gasto-concepto').value = '';
+            document.getElementById('gasto-monto').value = '';
+            cargarGastos();
+            mostrarNotificacion("✓ Gasto guardado");
         }
 
         async function cargarGastos() {
-            if (!supabaseClient || !usuarioSesion) return;
-            const { data: gastos, error } = await supabaseClient
-                .from('gastos')
-                .select('*')
-                .eq('usuario_id', usuarioSesion.id)
-                .order('fecha', { ascending: false });
-
+            const { data: gastos } = await supabaseClient.from('gastos').select('*').eq('usuario_id', usuarioSesion.id).order('fecha', { ascending: false });
             const listaGastosHtml = document.getElementById('lista-gastos');
             listaGastosHtml.innerHTML = '';
-
-            if (error || !gastos || gastos.length === 0) {
-                listaGastosHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay gastos registrados</p>`;
-                return;
-            }
-
+            if (!gastos || gastos.length === 0) { listaGastosHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay gastos</p>`; return; }
             gastos.forEach(g => {
                 listaGastosHtml.innerHTML += `
                     <div class="border-b border-[#EFE7DE] pb-2.5 mb-2 flex justify-between items-center text-xs">
-                        <div>
-                            <p class="font-semibold text-stone-800">${g.concepto} <span class="text-[10px] text-stone-500 font-normal">(${g.categoria})</span></p>
-                            <p class="text-[10px] text-stone-400">${g.fecha}</p>
-                        </div>
-                        <span class="font-bold text-stone-700 font-serif-luxury text-sm">-$${Number(g.monto).toFixed(2)}</span>
+                        <div><p class="font-semibold text-stone-800">${g.concepto} <span class="text-[10px] text-stone-500">(${g.categoria})</span></p><p class="text-[10px] text-stone-400">${g.fecha}</p></div>
+                        <span class="font-bold text-stone-700 text-sm">-$${Number(g.monto).toFixed(2)}</span>
                     </div>
                 `;
             });
@@ -1193,19 +937,7 @@
 
         function toggleFormularioCliente() {
             const form = document.getElementById('form-nuevo-cliente');
-            const btn = document.getElementById('btn-nuevo-cliente');
-            
-            if (form.classList.contains('hidden')) {
-                form.classList.remove('hidden');
-                btn.innerText = '✕ Cerrar';
-                btn.classList.add('bg-stone-500');
-            } else {
-                form.classList.add('hidden');
-                btn.innerText = '＋ Nueva Clienta';
-                btn.classList.remove('bg-stone-500');
-                document.getElementById('input-nombre-cliente').value = '';
-                document.getElementById('input-telefono-cliente').value = '';
-            }
+            form.classList.toggle('hidden');
         }
 
         async function cargarClientes() {
@@ -1215,51 +947,27 @@
 
         function renderizarListaClientes(clientes) {
             const lista = document.getElementById('lista-clientes');
-            lista.innerHTML = '';
-
-            if (!clientes || clientes.length === 0) {
-                lista.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay clientas que coincidan</p>`;
-                return;
-            }
-
+            lista.innerHTML = clientes.length === 0 ? `<p class="text-stone-400 text-xs text-center py-4">No hay clientas</p>` : '';
             clientes.forEach(c => {
-                lista.innerHTML += `
-                    <div class="border border-[#EFE7DE] p-3 flex justify-between items-center bg-[#FBF9F5] rounded-xl mb-2">
-                        <div>
-                            <p class="font-semibold text-stone-800 text-sm">${c.nombre}</p>
-                            <p class="text-xs text-stone-500 mt-0.5">📞 ${c.telefono || 'Sin teléfono'}</p>
-                        </div>
-                    </div>
-                `;
+                lista.innerHTML += `<div class="border border-[#EFE7DE] p-3 flex justify-between items-center bg-[#FBF9F5] rounded-xl mb-2"><p class="font-semibold text-stone-800 text-sm">${c.nombre}</p><p class="text-xs text-stone-500">📞 ${c.telefono || 'Sin teléfono'}</p></div>`;
             });
         }
 
         function filtrarListaClientes() {
             const texto = document.getElementById('buscar-cliente').value.toLowerCase().trim();
-            const filtrados = listaClientesCache.filter(c => c.nombre.toLowerCase().includes(texto) || (c.telefono && c.telefono.includes(texto)));
-            renderizarListaClientes(filtrados);
+            renderizarListaClientes(listaClientesCache.filter(c => c.nombre.toLowerCase().includes(texto)));
         }
 
         async function guardarNuevoCliente() {
             const nombre = document.getElementById('input-nombre-cliente').value.trim();
             const telefono = document.getElementById('input-telefono-cliente').value.trim();
-
-            if (!nombre) {
-                mostrarNotificacion("Ingresa el nombre");
-                return;
-            }
-
-            const { error } = await supabaseClient.from('clientes').insert([{ usuario_id: usuarioSesion.id, nombre, telefono }]);
-
-            if (error) {
-                mostrarNotificacion("Error al guardar");
-            } else {
-                document.getElementById('input-nombre-cliente').value = '';
-                document.getElementById('input-telefono-cliente').value = '';
-                toggleFormularioCliente();
-                cargarClientes();
-                mostrarNotificacion("✓ Clienta guardada con éxito");
-            }
+            if (!nombre) { mostrarNotificacion("Ingresa el nombre"); return; }
+            await supabaseClient.from('clientes').insert([{ usuario_id: usuarioSesion.id, nombre, telefono }]);
+            document.getElementById('input-nombre-cliente').value = '';
+            document.getElementById('input-telefono-cliente').value = '';
+            toggleFormularioClienta();
+            cargarClientes();
+            mostrarNotificacion("✓ Clienta guardada");
         }
     </script>
 </body>
