@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BetsyMoreta Studio</title>
+    <title>BellApp - Beauty Platform OS</title>
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -70,24 +70,24 @@
         <button onclick="cerrarAlertaCita()" class="mt-1 bg-white text-amber-900 font-bold py-1 px-3 rounded-lg text-[11px] self-center">Entendido</button>
     </div>
 
-    <!-- PANTALLA LOGIN -->
+    <!-- PANTALLA LOGIN UNIVERSAL: BELLAPP (PROPUESTA 1) -->
     <div id="pin-screen" class="fixed inset-0 bg-[#FBF9F5] z-50 flex flex-col items-center justify-center p-6">
         <div class="flex flex-col items-center mb-6">
-            <div class="w-16 h-16 rounded-full border-2 border-[#B89B86] flex items-center justify-center mb-3 bg-white shadow-sm">
-                <span class="font-serif-luxury text-2xl font-semibold tracking-wider text-[#7C5C43]">BM</span>
+            <div class="w-16 h-16 rounded-2xl border border-[#D8C8BC] flex items-center justify-center mb-3 bg-white shadow-sm">
+                <span class="font-serif-luxury text-2xl font-bold tracking-tight text-[#7C5C43]">B✨</span>
             </div>
-            <h1 id="login-nombre-estudio" class="font-serif-luxury text-2xl font-medium text-[#5C4231] tracking-wide text-center">BetsyMoreta</h1>
-            <p class="text-xs uppercase tracking-[0.25em] text-[#A38874] mt-1 font-medium">Beauty Studio</p>
+            <h1 class="font-serif-luxury text-2xl font-semibold text-[#5C4231] tracking-wide text-center">BellApp</h1>
+            <p class="text-[10px] uppercase tracking-[0.3em] text-[#A38874] mt-1 font-medium">Beauty Platform OS</p>
         </div>
 
         <div class="w-full max-w-xs space-y-3">
             <div>
                 <label class="text-[11px] uppercase tracking-wider font-semibold text-stone-500 block mb-1">Usuario</label>
-                <input type="text" id="login-usuario" value="betsy" class="w-full text-center text-lg border border-[#D8C8BC] bg-white rounded-xl p-2.5 focus:outline-none focus:border-[#8C6D58] shadow-xs text-[#5C4231]">
+                <input type="text" id="login-usuario" placeholder="Ingresa tu usuario" class="w-full text-center text-sm border border-[#D8C8BC] bg-white rounded-xl p-3 focus:outline-none focus:border-[#8C6D58] shadow-xs text-[#5C4231]">
             </div>
             <div>
                 <label class="text-[11px] uppercase tracking-wider font-semibold text-stone-500 block mb-1">PIN / Contraseña</label>
-                <input type="password" id="pin-input" value="1725" maxlength="10" onkeyup="if(event.key === 'Enter') iniciarSesion()" class="w-full text-center text-2xl tracking-widest border border-[#D8C8BC] bg-white rounded-xl p-2.5 focus:outline-none focus:border-[#8C6D58] shadow-xs text-[#5C4231]" placeholder="••••">
+                <input type="password" id="pin-input" maxlength="10" onkeyup="if(event.key === 'Enter') iniciarSesion()" class="w-full text-center text-2xl tracking-widest border border-[#D8C8BC] bg-white rounded-xl p-2.5 focus:outline-none focus:border-[#8C6D58] shadow-xs text-[#5C4231]" placeholder="••••">
             </div>
             <button type="button" onclick="iniciarSesion()" class="w-full bg-[#8C6D58] hover:bg-[#745844] text-white font-medium py-3 rounded-xl shadow-md active:scale-95 transition text-sm tracking-wide mt-2">Ingresar al Sistema</button>
         </div>
@@ -104,8 +104,8 @@
                     <span id="header-logo-iniciales" class="font-serif-luxury text-xs font-semibold tracking-widest text-[#F2EAE1]">BM</span>
                 </div>
                 <div>
-                    <h1 id="header-nombre-estudio" class="font-serif-luxury text-base font-medium tracking-wide leading-none">BetsyMoreta</h1>
-                    <p class="text-[9px] uppercase tracking-[0.2em] text-[#D8C8BC] mt-0.5">Studio</p>
+                    <h1 id="header-nombre-estudio" class="font-serif-luxury text-base font-medium tracking-wide leading-none">Estudio</h1>
+                    <p class="text-[9px] uppercase tracking-[0.2em] text-[#D8C8BC] mt-0.5">Powered by BellApp</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -321,7 +321,7 @@
 
         </main>
 
-        <!-- MODAL PERSONALIZACIÓN CON SUBIDA DE FOTO DESDE CELULAR -->
+        <!-- MODAL PERSONALIZACIÓN -->
         <div id="modal-personalizacion" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-[#D8C8BC] space-y-4">
                 <div class="flex justify-between items-center border-b border-stone-100 pb-2">
@@ -965,7 +965,7 @@
             await supabaseClient.from('clientes').insert([{ usuario_id: usuarioSesion.id, nombre, telefono }]);
             document.getElementById('input-nombre-cliente').value = '';
             document.getElementById('input-telefono-cliente').value = '';
-            toggleFormularioClienta();
+            toggleFormularioCliente();
             cargarClientes();
             mostrarNotificacion("✓ Clienta guardada");
         }
