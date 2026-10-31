@@ -126,7 +126,7 @@
                 <button onclick="abrirModalPersonalizacion()" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[11px] px-2.5 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs">
                     <span>🎨 Tema</span>
                 </button>
-                <button onclick="solicitarPermisoNotificaciones()" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[11px] px-2.5 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs">
+                <button onclick="solicitarPermisoNotificaciones()" id="btn-estado-alertas" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[11px] px-2.5 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs">
                     <span>🔔 Alertas</span>
                 </button>
             </div>
@@ -237,13 +237,19 @@
                         </div>
                     </div>
 
+                    <!-- CAMPO ANTICIPO / SEÑA -->
+                    <div class="mb-3">
+                        <label class="block text-xs font-medium text-stone-600 mb-1">Anticipo / Seña ($):</label>
+                        <input type="number" step="0.01" id="agendar-anticipo" placeholder="0.00" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-[#FBF9F5] text-stone-700 font-mono">
+                    </div>
+
                     <div class="border-t border-[#EFE7DE] pt-3 mb-3">
                         <p class="text-xs font-medium text-stone-500 mb-2.5 uppercase tracking-wider">Servicios Solicitados:</p>
                         <div id="agendar-botones-servicios" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto mb-3 pr-1"></div>
                     </div>
 
                     <div class="bg-[#F9F5F0] p-3 rounded-xl mb-3 flex justify-between items-center border border-[#E8DDD1]">
-                        <span class="text-xs font-semibold text-[#7C5C43] uppercase tracking-wider">ESTIMADO:</span>
+                        <span class="text-xs font-semibold text-[#7C5C43] uppercase tracking-wider">ESTIMADO TOTAL:</span>
                         <span id="agendar-total" class="text-xl font-semibold text-[#5C4231] font-serif-luxury">$0.00</span>
                     </div>
 
@@ -275,9 +281,19 @@
                         <div id="botones-servicios" class="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto mb-3 pr-1"></div>
                     </div>
 
-                    <div class="bg-[#F9F5F0] p-3.5 rounded-xl mb-3 flex justify-between items-center border border-[#E8DDD1]">
-                        <span class="text-xs font-semibold text-[#7C5C43] uppercase tracking-wider">TOTAL A COBRAR:</span>
-                        <span id="cobro-total" class="text-2xl font-semibold text-[#5C4231] font-serif-luxury">$0.00</span>
+                    <div class="bg-[#F9F5F0] p-3.5 rounded-xl mb-3 space-y-2 border border-[#E8DDD1]">
+                        <div class="flex justify-between items-center text-xs text-stone-600">
+                            <span>Subtotal Servicios:</span>
+                            <span id="cobro-subtotal" class="font-mono">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-amber-800 font-medium">
+                            <span>Anticipo Descontado:</span>
+                            <span id="cobro-anticipo-descontado" class="font-mono">-$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center border-t border-[#E8DDD1] pt-2">
+                            <span class="text-xs font-semibold text-[#7C5C43] uppercase tracking-wider">RESTANTE A PAGAR:</span>
+                            <span id="cobro-total" class="text-2xl font-semibold text-[#5C4231] font-serif-luxury">$0.00</span>
+                        </div>
                     </div>
 
                     <select id="metodo-pago" class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 bg-[#FBF9F5] text-sm text-stone-700">
@@ -513,6 +529,70 @@
             await cargarTemaEstudio();
             await cargarServiciosBaseDatos();
             await cargarDatosIniciales();
+
+            // INICIAR MOTOR DE VIGILANCIA DE ALERTAS
+            setInterval(verificarCitasProximas, 30000); // Revisa cada 30 segundos
+        }
+
+        // MOTOR DE ALARMAS LOCALES EN TIEMPO REAL
+        async function verificarCitasProximas() {
+            if (!supabaseClient || !usuarioSesion) return;
+
+            const hoy = new Date().toISOString().split('T')[0];
+            const { data: citas } = await supabaseClient
+                .from('citas')
+                .select('*, clientes(nombre)')
+                .eq('usuario_id', usuarioSesion.id)
+                .eq('fecha', hoy)
+                .eq('estado', 'pendiente');
+
+            if (!citas) return;
+
+            const ahora = new Date();
+
+            citas.forEach(cita => {
+                if (!cita.hora || citasNotificadas.has(cita.id)) return;
+
+                const [h, m] = cita.hora.split(':').map(Number);
+                const fechaCita = new Date();
+                fechaCita.setHours(h, m, 0, 0);
+
+                const diferenciaMs = fechaCita - ahora;
+                const diferenciaMinutos = diferenciaMs / (1000 * 60);
+
+                // Si faltan entre 0 y 15 minutos para la cita
+                if (diferenciaMinutos <= 15 && diferenciaMinutos >= 0) {
+                    citasNotificadas.add(cita.id);
+                    dispararAlertaVisualSonora(cita.clientes ? cita.clientes.nombre : 'Clienta', cita.hora, cita.servicios);
+                }
+            });
+        }
+
+        function dispararAlertaVisualSonora(nombreCliente, hora, servicios) {
+            const alertaBox = document.getElementById('alerta-cita-proxima');
+            const detalle = document.getElementById('alerta-cita-detalle');
+            detalle.innerHTML = `<strong>${nombreCliente}</strong><br>${servicios}<br>Hora programada: ${hora}`;
+            alertaBox.classList.remove('hidden');
+
+            // Sonido de alerta nativo con Web Audio API
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+            } catch (e) {
+                console.log("Audio no soportado automáticamente");
+            }
+        }
+
+        function cerrarAlertaCita() {
+            document.getElementById('alerta-cita-proxima').classList.add('hidden');
         }
 
         async function cargarServiciosBaseDatos() {
@@ -633,7 +713,10 @@
         function solicitarPermisoNotificaciones() {
             if (!("Notification" in window)) return;
             Notification.requestPermission().then(permission => {
-                if (permission === "granted") mostrarNotificacion("✓ Alertas activadas");
+                if (permission === "granted") {
+                    document.getElementById('btn-estado-alertas').innerHTML = `<span>✓ Alertas</span>`;
+                    mostrarNotificacion("✓ Alertas activadas con éxito");
+                }
             });
         }
 
@@ -706,25 +789,28 @@
                     const nombreCliente = cita.clientes ? cita.clientes.nombre : 'Cliente general';
                     if (cita.estado === 'pendiente') {
                         hayPendientes = true;
+                        const anticipoBadge = Number(cita.anticipo) > 0 ? `<span class="text-xs text-amber-800 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Anticipo: $${Number(cita.anticipo).toFixed(2)}</span>` : '';
                         listaPendientesHtml.innerHTML += `
                             <div class="border-b border-[#EFE7DE] pb-3 mb-2 flex justify-between items-center">
                                 <div>
                                     <p class="font-semibold text-stone-800 text-sm">${nombreCliente} — <span class="texto-dinamico-primario font-bold">$${cita.total}</span></p>
                                     <p class="text-xs text-stone-500 font-medium">📅 ${cita.fecha} | ⏰ <span class="text-stone-800 font-bold">${cita.hora || '10:00'}</span></p>
                                     <p class="text-xs text-stone-500 mt-0.5">${cita.servicios}</p>
-                                    <div class="flex items-center gap-2 mt-1.5">
+                                    <div class="flex items-center gap-2 mt-1.5 flex-wrap">
                                         <span class="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">PENDIENTE</span>
+                                        ${anticipoBadge}
                                         <button onclick="abrirSeccionFotos('${cita.id}', '${nombreCliente}', '${cita.servicios}')" class="text-[10px] bg-[#FBF9F5] border border-[#D8C8BC] text-[#7C5C43] px-2 py-0.5 rounded-md font-medium">📷 Fotos</button>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <button onclick="marcarComoCobrada('${cita.id}')" class="btn-dinamico-primario text-white text-[10px] px-2.5 py-1 rounded-md shadow-xs transition text-center font-medium">Cobrar</button>
-                                    <button onclick="prepararEdicionCita('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${cita.fecha}', '${cita.hora || '10:00'}', '${encodeURIComponent(cita.servicios)}')" class="btn-dinamico-secundario text-white text-[10px] px-2.5 py-1 rounded-md transition text-center font-medium">Editar</button>
+                                    <button onclick="prepararEdicionCita('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${cita.fecha}', '${cita.hora || '10:00'}', '${encodeURIComponent(cita.servicios)}', '${cita.anticipo || 0}')" class="btn-dinamico-secundario text-white text-[10px] px-2.5 py-1 rounded-md transition text-center font-medium">Editar</button>
+                                    <button onclick="marcarNoAsistio('${cita.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 text-[10px] px-2 py-0.5 rounded-md transition text-center font-medium" title="No asistió (Conserva anticipo)">No Asistió</button>
                                     <button onclick="eliminarCita('${cita.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-0.5 rounded-md transition text-center font-medium">Eliminar</button>
                                 </div>
                             </div>
                         `;
-                    } else if (cita.estado === 'atendida') {
+                    } else if (cita.estado === 'atendida' || cita.estado === 'retenido') {
                         totalIngresosMes += Number(cita.total);
                     }
                 });
@@ -744,6 +830,22 @@
             mostrarNotificacion("✓ Cita cobrada");
         }
 
+        async function marcarNoAsistio(citaId) {
+            // Si la clienta no asiste pero dejó anticipo, se cobra el anticipo como ingreso retenido
+            const { data } = await supabaseClient.from('citas').select('anticipo').eq('id', citaId).single();
+            const montoRetenido = data && data.anticipo ? Number(data.anticipo) : 0;
+
+            await supabaseClient.from('citas').update({ 
+                estado: 'retenido', 
+                total: montoRetenido,
+                metodo_pago: 'anticipo_retenido',
+                servicios: 'CANCELADA - Anticipo Retenido'
+            }).eq('id', citaId);
+
+            cargarCitasYResumen();
+            mostrarNotificacion("✓ Anticipo retenido como cobro de cancelación");
+        }
+
         async function eliminarCita(citaId) {
             await supabaseClient.from('citas').delete().eq('id', citaId);
             cargarCitasYResumen();
@@ -756,7 +858,7 @@
             await inicializarFormularioAgendar();
         }
 
-        async function prepararEdicionCita(citaId, clienteId, clienteNombre, fecha, hora, serviciosEncoded) {
+        async function prepararEdicionCita(citaId, clienteId, clienteNombre, fecha, hora, serviciosEncoded, anticipoVal) {
             document.getElementById('editar-cita-id').value = citaId;
             cambiarSeccion('agendar');
             await inicializarFormularioAgendar();
@@ -766,6 +868,7 @@
             document.getElementById('agendar-cliente-id').value = clienteId;
             document.getElementById('agendar-fecha').value = fecha;
             document.getElementById('agendar-hora').value = hora;
+            document.getElementById('agendar-anticipo').value = anticipoVal || 0;
 
             const serviciosActualesStr = decodeURIComponent(serviciosEncoded);
             const listaServiciosGuardados = serviciosActualesStr.split(',').map(s => s.trim());
@@ -786,7 +889,7 @@
         }
 
         async function cargarHistorialCitas() {
-            const { data: citas } = await supabaseClient.from('citas').select('*, clientes(nombre)').eq('usuario_id', usuarioSesion.id).eq('estado', 'atendida').order('fecha', { ascending: false });
+            const { data: citas } = await supabaseClient.from('citas').select('*, clientes(nombre)').eq('usuario_id', usuarioSesion.id).in('estado', ['atendida', 'retenido']).order('fecha', { ascending: false });
             const listaAtendidasHtml = document.getElementById('lista-citas-atendidas');
             listaAtendidasHtml.innerHTML = '';
             if (!citas || citas.length === 0) {
@@ -820,8 +923,8 @@
             cambiarSeccion('fotos');
             const { data } = await supabaseClient.from('citas').select('foto_antes, foto_despues').eq('id', citaId).single();
             if (data) {
-                document.getElementById('preview-antes').innerHTML = data.foto_antes ? `<img src="${data.foto_antes}" onclick="abrirVisorFoto('${data.foto_antes}')" class="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition" title="Haz clic para ver en grande">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
-                document.getElementById('preview-despues').innerHTML = data.foto_despues ? `<img src="${data.foto_despues}" onclick="abrirVisorFoto('${data.foto_despues}')" class="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition" title="Haz clic para ver en grande">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
+                document.getElementById('preview-antes').innerHTML = data.foto_antes ? `<img src="${data.foto_antes}" onclick="abrirVisorFoto('${data.foto_antes}')" class="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-95 transition" title="Haz clic para ver en grande">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
+                document.getElementById('preview-despues').innerHTML = data.foto_despues ? `<img src="${data.foto_despues}" onclick="abrirVisorFoto('${data.foto_despues}')" class="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-95 transition" title="Haz clic para ver en grande">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
             }
         }
 
@@ -876,6 +979,7 @@
                 document.getElementById('agendar-cliente-id').value = '';
                 document.getElementById('agendar-fecha').value = new Date().toISOString().split('T')[0];
                 document.getElementById('agendar-hora').value = '';
+                document.getElementById('agendar-anticipo').value = '';
                 serviciosSeleccionadosAgendar = [];
             }
             const contenedorBotones = document.getElementById('agendar-botones-servicios');
@@ -919,6 +1023,7 @@
             const clienteId = document.getElementById('agendar-cliente-id').value;
             const fecha = document.getElementById('agendar-fecha').value;
             const hora = document.getElementById('agendar-hora').value;
+            const anticipoVal = Number(document.getElementById('agendar-anticipo').value) || 0;
             let suma = 0;
             serviciosSeleccionadosAgendar.forEach(s => suma += s.precio);
 
@@ -929,10 +1034,10 @@
 
             const nombresServicios = serviciosSeleccionadosAgendar.map(s => s.nombre).join(', ');
             if (citaId) {
-                await supabaseClient.from('citas').update({ cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma }).eq('id', citaId);
+                await supabaseClient.from('citas').update({ cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma, anticipo: anticipoVal }).eq('id', citaId);
                 mostrarNotificacion("✓ Cita actualizada al instante");
             } else {
-                await supabaseClient.from('citas').insert([{ usuario_id: usuarioSesion.id, cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma, metodo_pago: 'pendiente', estado: 'pendiente' }]);
+                await supabaseClient.from('citas').insert([{ usuario_id: usuarioSesion.id, cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma, anticipo: anticipoVal, metodo_pago: 'pendiente', estado: 'pendiente' }]);
                 mostrarNotificacion("✓ Cita agendada al instante");
             }
             cambiarSeccion('agenda');
@@ -977,6 +1082,8 @@
         function actualizarTotalCobro() {
             let suma = 0;
             serviciosSeleccionadosCobro.forEach(s => suma += s.precio);
+            document.getElementById('cobro-subtotal').innerText = `$${suma.toFixed(2)}`;
+            document.getElementById('cobro-anticipo-descontado').innerText = `-$0.00`;
             document.getElementById('cobro-total').innerText = `$${suma.toFixed(2)}`;
         }
 
