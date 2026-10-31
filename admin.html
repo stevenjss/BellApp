@@ -10,7 +10,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        :root {
+            --color-primario: #7C5C43;
+            --color-secundario: #8C6D58;
+            --color-fondo: #FBF9F5;
+        }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--color-fondo);
+        }
         .font-serif-luxury { font-family: 'Playfair Display', serif; }
         input[type="color"] {
             -webkit-appearance: none;
@@ -24,26 +32,31 @@
         input[type="color"]::-webkit-color-swatch { border: none; }
     </style>
 </head>
-<body class="bg-stone-950 text-stone-100 min-h-screen p-4 md:p-8 pb-12">
+<body class="text-stone-800 min-h-screen p-4 md:p-8 pb-12">
 
-    <!-- CONTENEDOR DE NOTIFICACIONES FLOTANTES (TOAST) -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2"></div>
+    <!-- BANNER TOAST FLOTANTE -->
+    <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col gap-2"></div>
 
     <div id="panel-contenido" class="max-w-3xl mx-auto space-y-6">
         
-        <header class="flex justify-between items-center border-b border-stone-800 pb-4">
-            <div>
-                <h1 class="font-serif-luxury text-2xl font-bold text-amber-400">BellApp OS</h1>
-                <p class="text-xs text-stone-400">Gestión Global de Cuentas y Suscripciones</p>
+        <header class="flex justify-between items-center border-b border-[#E8DDD1] pb-4 bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-xs">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl border border-[#D8C8BC] flex items-center justify-center bg-[#FBF9F5] shadow-xs">
+                    <span class="font-serif-luxury text-xl font-bold text-[#7C5C43]">B✨</span>
+                </div>
+                <div>
+                    <h1 class="font-serif-luxury text-2xl font-bold text-[#5C4231] tracking-wide">BellApp OS</h1>
+                    <p class="text-[10px] uppercase tracking-[0.2em] text-[#A38874] font-medium">Panel Administrador Maestro</p>
+                </div>
             </div>
-            <button onclick="window.location.href='index.html'" class="text-xs bg-stone-900 hover:bg-stone-800 text-stone-300 px-3.5 py-2 rounded-xl border border-stone-800 transition">← Salir al Inicio</button>
+            <button onclick="window.location.href='index.html'" class="text-xs bg-[#FBF9F5] hover:bg-[#F4EFE6] text-[#7C5C43] px-4 py-2 rounded-xl border border-[#D8C8BC] font-semibold transition shadow-xs">← Salir al Inicio</button>
         </header>
 
         <!-- FORMULARIO CREAR / EDITAR CLIENTE -->
-        <div class="bg-stone-900 p-5 rounded-2xl border border-stone-800 shadow-lg space-y-4">
-            <div class="flex justify-between items-center border-b border-stone-800 pb-3">
-                <h2 id="titulo-form" class="text-sm font-bold text-amber-400 uppercase tracking-wider">➕ Crear Nuevo Estudio / Cliente</h2>
-                <button id="btn-cancelar-edicion" onclick="resetearFormulario()" class="hidden text-xs text-stone-400 hover:text-stone-200">Cancelar Edición</button>
+        <div class="bg-white/90 backdrop-blur-md p-6 rounded-3xl border border-[#EFE7DE] shadow-sm space-y-4">
+            <div class="flex justify-between items-center border-b border-[#EFE7DE] pb-3">
+                <h2 id="titulo-form" class="text-xs font-bold text-[#7C5C43] uppercase tracking-wider font-serif-luxury">➕ Crear Nuevo Estudio / Cliente</h2>
+                <button id="btn-cancelar-edicion" onclick="resetearFormulario()" class="hidden text-xs text-stone-500 hover:text-stone-800 font-medium">Cancelar Edición</button>
             </div>
 
             <input type="hidden" id="edit-user-id" value="">
@@ -55,45 +68,45 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Nombre Comercial del Estudio</label>
-                    <input type="text" id="nuevo-nombre" placeholder="ej. Studio Elegance" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                    <label class="text-[11px] text-stone-600 font-semibold uppercase block mb-1">Nombre Comercial del Estudio</label>
+                    <input type="text" id="nuevo-nombre" placeholder="ej. Studio Elegance" class="w-full bg-[#FBF9F5] border border-[#D8C8BC] p-3 rounded-xl text-xs text-stone-800 focus:outline-none focus:border-[#8C6D58]">
                 </div>
                 <div>
-                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Usuario de Acceso (Único)</label>
-                    <input type="text" id="nuevo-usuario" placeholder="ej. elegance" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                    <label class="text-[11px] text-stone-600 font-semibold uppercase block mb-1">Usuario de Acceso (Único)</label>
+                    <input type="text" id="nuevo-usuario" placeholder="ej. elegance" class="w-full bg-[#FBF9F5] border border-[#D8C8BC] p-3 rounded-xl text-xs text-stone-800 focus:outline-none focus:border-[#8C6D58]">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">PIN / Contraseña</label>
-                    <input type="text" id="nueva-pass" placeholder="ej. 1234" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                    <label class="text-[11px] text-stone-600 font-semibold uppercase block mb-1">PIN / Contraseña</label>
+                    <input type="text" id="nueva-pass" placeholder="ej. 1234" class="w-full bg-[#FBF9F5] border border-[#D8C8BC] p-3 rounded-xl text-xs text-stone-800 focus:outline-none focus:border-[#8C6D58]">
                 </div>
                 <div>
-                    <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Fecha de Vencimiento (Suscripción)</label>
-                    <input type="date" id="nueva-vencimiento" class="w-full bg-stone-950 border border-stone-800 p-2.5 rounded-xl text-xs text-stone-200 focus:outline-none focus:border-amber-500">
+                    <label class="text-[11px] text-stone-600 font-semibold uppercase block mb-1">Fecha de Vencimiento (Suscripción)</label>
+                    <input type="date" id="nueva-vencimiento" class="w-full bg-[#FBF9F5] border border-[#D8C8BC] p-3 rounded-xl text-xs text-stone-800 focus:outline-none focus:border-[#8C6D58]">
                 </div>
             </div>
 
             <!-- SELECTOR DE COLOR PRINCIPAL -->
-            <div class="space-y-2">
-                <label class="text-[11px] text-amber-400 font-semibold uppercase tracking-wider block">🎨 COLOR PRINCIPAL DE LA MARCA (FONDO BLANCO FIJO)</label>
+            <div class="space-y-2 pt-1">
+                <label class="text-[11px] text-[#7C5C43] font-bold uppercase tracking-wider block">🎨 COLOR PRINCIPAL DE LA MARCA (FONDO BLANCO FIJO)</label>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     
                     <!-- Tarjeta Primario -->
-                    <div id="card-primario" class="rounded-xl p-4 flex flex-col justify-between shadow-md transition" style="background-color: #7C5C43; min-height: 90px;">
+                    <div id="card-primario" class="rounded-2xl p-4 flex flex-col justify-between shadow-sm transition border border-[#D8C8BC]" style="background-color: #7C5C43; min-height: 90px;">
                         <div class="flex justify-between items-center">
-                            <span class="text-[10px] font-bold text-white uppercase tracking-wider bg-black/30 px-2.5 py-1 rounded">Color Principal</span>
-                            <input type="color" id="color-primario-picker" value="#7C5C43" onchange="actualizarColorPrimario(this.value)" class="w-7 h-7 opacity-80 hover:opacity-100">
+                            <span class="text-[10px] font-bold text-white uppercase tracking-wider bg-black/30 px-2.5 py-1 rounded-lg">Color Principal</span>
+                            <input type="color" id="color-primario-picker" value="#7C5C43" onchange="actualizarColorPrimario(this.value)" class="w-7 h-7 opacity-90 hover:opacity-100">
                         </div>
                         <input type="text" id="color-primario-text" value="#7C5C43" oninput="actualizarTextoPrimario(this.value)" class="bg-transparent text-base text-white font-mono font-bold focus:outline-none mt-2 uppercase">
                     </div>
 
                     <!-- Vista Previa Automática -->
-                    <div class="bg-white border border-stone-300 rounded-xl p-4 flex flex-col justify-between shadow-md" style="min-height: 90px;">
+                    <div class="bg-[#FBF9F5] border border-[#D8C8BC] rounded-2xl p-4 flex flex-col justify-between shadow-sm" style="min-height: 90px;">
                         <div class="flex justify-between items-center">
-                            <span class="text-[10px] font-bold text-stone-700 uppercase tracking-wider bg-stone-100 px-2.5 py-1 rounded border border-stone-200">Fondo & Secundario (Automático)</span>
+                            <span class="text-[10px] font-bold text-stone-700 uppercase tracking-wider bg-white px-2.5 py-1 rounded-lg border border-stone-200">Fondo & Secundario</span>
                             <div id="preview-secundario" class="w-6 h-6 rounded-full border border-stone-300 shadow-inner" style="background-color: #5A412F;"></div>
                         </div>
                         <div class="flex items-center justify-between mt-2">
@@ -106,21 +119,21 @@
             </div>
 
             <div>
-                <label class="text-[11px] text-stone-400 font-semibold uppercase block mb-1">Logotipo del Estudio (Subir desde teléfono o PC)</label>
-                <div class="flex items-center gap-3 bg-stone-950 p-2.5 rounded-xl border border-stone-800">
-                    <input type="file" id="input-logo-file" accept="image/*" class="text-xs text-stone-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-600 file:text-stone-950 hover:file:bg-amber-500 cursor-pointer">
-                    <span id="lbl-logo-estado" class="text-[10px] text-stone-500">Sin logo nuevo seleccionado</span>
+                <label class="text-[11px] text-stone-600 font-semibold uppercase block mb-1">Logotipo del Estudio (Subir desde teléfono o PC)</label>
+                <div class="flex items-center gap-3 bg-[#FBF9F5] p-3 rounded-2xl border border-[#D8C8BC]">
+                    <input type="file" id="input-logo-file" accept="image/*" class="text-xs text-stone-600 file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#8C6D58] file:text-white hover:file:bg-[#745844] cursor-pointer">
+                    <span id="lbl-logo-estado" class="text-[10px] text-stone-400 font-medium">Sin logo nuevo seleccionado</span>
                 </div>
             </div>
 
-            <button onclick="guardarUsuario()" id="btn-guardar" class="w-full bg-emerald-600 hover:bg-emerald-500 text-stone-950 py-3 rounded-xl text-xs font-bold transition shadow-md">Crear Cuenta de Estudio</button>
+            <button onclick="guardarUsuario()" id="btn-guardar" class="w-full bg-[#7C5C43] hover:bg-[#5C4231] text-white py-3.5 rounded-2xl text-xs font-semibold tracking-wide transition shadow-md mt-2">Crear Cuenta de Estudio</button>
         </div>
 
         <!-- LISTA DE ESTUDIOS REGISTRADOS -->
-        <div class="bg-stone-900 p-5 rounded-2xl border border-stone-800 shadow-lg space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-sm font-bold text-stone-300 uppercase tracking-wider">👥 Cuentas Registradas</h2>
-                <span id="contador-usuarios" class="text-xs bg-stone-800 text-amber-400 font-bold px-2.5 py-1 rounded-full border border-stone-700">0 Registrados</span>
+        <div class="bg-white/90 backdrop-blur-md p-6 rounded-3xl border border-[#EFE7DE] shadow-sm space-y-4">
+            <div class="flex justify-between items-center border-b border-[#EFE7DE] pb-3">
+                <h2 class="text-xs font-bold text-[#5C4231] uppercase tracking-wider font-serif-luxury">👥 Cuentas Registradas</h2>
+                <span id="contador-usuarios" class="text-xs bg-[#FBF9F5] text-[#7C5C43] font-bold px-3 py-1 rounded-full border border-[#D8C8BC]">0 Registrados</span>
             </div>
             
             <div id="lista-usuarios" class="space-y-3">
@@ -143,7 +156,7 @@
         function mostrarToast(mensaje, esError = false) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `pointer-events-auto px-4 py-3 rounded-xl text-xs font-bold shadow-2xl transition-all duration-300 transform translate-y-2 opacity-0 ${esError ? 'bg-rose-600 text-white border border-rose-500' : 'bg-emerald-500 text-stone-950 border border-emerald-400'}`;
+            toast.className = `pointer-events-auto px-5 py-3 rounded-2xl text-xs font-bold shadow-xl border transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 ${esError ? 'bg-rose-800 text-white border-rose-600' : 'bg-[#5C4231] text-white border-[#8C6D58]'}`;
             toast.innerText = mensaje;
             
             container.appendChild(toast);
@@ -155,7 +168,7 @@
             setTimeout(() => {
                 toast.classList.add('translate-y-2', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
-            }, 2000);
+            }, 2500);
         }
 
         function calcularColorSecundario(hex) {
@@ -201,13 +214,13 @@
                 const { data: usuarios, error } = await supabaseClient.from('usuarios').select('*').order('created_at', { ascending: false });
                 
                 if (error) {
-                    lista.innerHTML = `<p class="text-rose-400 text-xs text-center py-4">Error al cargar: ${error.message}</p>`;
+                    lista.innerHTML = `<p class="text-rose-600 text-xs text-center py-4">Error al cargar: ${error.message}</p>`;
                     document.getElementById('contador-usuarios').innerText = '0 Registrados';
                     return;
                 }
 
                 if (!usuarios || usuarios.length === 0) {
-                    lista.innerHTML = `<p class="text-stone-500 text-xs text-center py-4">No hay cuentas registradas</p>`;
+                    lista.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay cuentas registradas</p>`;
                     document.getElementById('contador-usuarios').innerText = '0 Registrados';
                     return;
                 }
@@ -218,7 +231,7 @@
                 usuarios.forEach(u => {
                     const esActivo = u.estado === 'activo';
                     
-                    let badgeVencimiento = '<span class="text-stone-500">Sin fecha asignada</span>';
+                    let badgeVencimiento = '<span class="text-stone-400">Sin fecha asignada</span>';
                     if (u.fecha_vencimiento) {
                         const hoy = new Date();
                         hoy.setHours(0, 0, 0, 0);
@@ -226,37 +239,37 @@
                         const diferenciaDias = Math.ceil((vencimiento - hoy) / (1000 * 60 * 60 * 24));
                         
                         if (diferenciaDias < 0) {
-                            badgeVencimiento = `<span class="bg-rose-950 text-rose-400 border border-rose-800 px-2 py-0.5 rounded font-bold">Vencido (${Math.abs(diferenciaDias)}d atrás)</span>`;
+                            badgeVencimiento = `<span class="bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 rounded-lg font-bold">Vencido (${Math.abs(diferenciaDias)}d atrás)</span>`;
                         } else if (diferenciaDias <= 5) {
-                            badgeVencimiento = `<span class="bg-amber-950 text-amber-400 border border-amber-800 px-2 py-0.5 rounded font-bold">Vence en ${diferenciaDias} días ⚠️</span>`;
+                            badgeVencimiento = `<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-lg font-bold">Vence en ${diferenciaDias} días ⚠️</span>`;
                         } else {
-                            badgeVencimiento = `<span class="bg-stone-800 text-stone-300 px-2 py-0.5 rounded">Vence en ${diferenciaDias} días</span>`;
+                            badgeVencimiento = `<span class="bg-[#FBF9F5] text-stone-600 border border-[#D8C8BC] px-2 py-0.5 rounded-lg">Vence en ${diferenciaDias} días</span>`;
                         }
                     }
 
                     lista.innerHTML += `
-                        <div class="bg-stone-950 p-4 rounded-xl border border-stone-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                        <div class="bg-[#FBF9F5] p-4 rounded-2xl border border-[#EFE7DE] flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
                             <div class="space-y-1">
                                 <div class="flex items-center gap-2">
-                                    ${u.logo_url ? `<img src="${u.logo_url}" class="w-6 h-6 rounded-full object-cover border border-stone-700">` : '✨'}
-                                    <p class="font-bold text-amber-400 text-sm">${u.nombre_estudio}</p>
-                                    <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${u.rol === 'admin' ? 'bg-purple-900/50 text-purple-300 border border-purple-800' : 'bg-stone-800 text-stone-400'}">${u.rol}</span>
+                                    ${u.logo_url ? `<img src="${u.logo_url}" class="w-7 h-7 rounded-full object-cover border border-[#D8C8BC]">` : '✨'}
+                                    <p class="font-bold text-[#5C4231] text-sm font-serif-luxury">${u.nombre_estudio}</p>
+                                    <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${u.rol === 'admin' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-stone-200 text-stone-600'}">${u.rol}</span>
                                 </div>
-                                <p class="text-stone-400">Usuario: <span class="text-stone-200 font-mono font-bold">${u.usuario}</span> | PIN: <span class="text-stone-200 font-mono font-bold">${u.password}</span></p>
-                                <p class="text-stone-400">Suscripción: ${badgeVencimiento}</p>
+                                <p class="text-stone-500">Usuario: <span class="text-stone-800 font-mono font-bold">${u.usuario}</span> | PIN: <span class="text-stone-800 font-mono font-bold">${u.password}</span></p>
+                                <p class="text-stone-500">Suscripción: ${badgeVencimiento}</p>
                             </div>
-                            <div class="flex items-center gap-2 border-t md:border-t-0 border-stone-800 pt-2 md:pt-0">
-                                <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}')" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition font-medium">✏️ Editar</button>
-                                <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo'}')" class="px-3 py-1.5 rounded-lg font-bold transition border ${esActivo ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40' : 'bg-rose-950/40 text-rose-400 border-rose-800 hover:bg-rose-900/40'}">
+                            <div class="flex items-center gap-2 border-t md:border-t-0 border-[#EFE7DE] pt-2 md:pt-0">
+                                <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}')" class="px-3 py-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-[#D8C8BC] rounded-xl transition font-medium shadow-xs">✏️ Editar</button>
+                                <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo'}')" class="px-3 py-1.5 rounded-xl font-bold transition border shadow-xs ${esActivo ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100' : 'bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100'}">
                                     ${esActivo ? '🟢 Activo' : '🔴 Suspendido'}
                                 </button>
-                                ${u.rol !== 'admin' ? `<button onclick="eliminarEstudio('${u.id}', '${u.nombre_estudio}')" class="px-3 py-1.5 bg-rose-900/50 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg transition font-medium">🗑️ Eliminar</button>` : ''}
+                                ${u.rol !== 'admin' ? `<button onclick="eliminarEstudio('${u.id}', '${u.nombre_estudio}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl transition font-medium shadow-xs">🗑️ Eliminar</button>` : ''}
                             </div>
                         </div>
                     `;
                 });
             } catch (err) {
-                lista.innerHTML = `<p class="text-rose-400 text-xs text-center py-4">Error de conexión: ${err.message}</p>`;
+                lista.innerHTML = `<p class="text-rose-600 text-xs text-center py-4">Error de conexión: ${err.message}</p>`;
             }
         }
 
@@ -368,7 +381,7 @@
 
             document.getElementById('titulo-form').innerText = "✏️ Editar Estudio / Cliente";
             document.getElementById('btn-guardar').innerText = "Guardar Cambios del Estudio";
-            document.getElementById('btn-guardar').className = "w-full bg-amber-600 hover:bg-amber-500 text-stone-950 py-3 rounded-xl text-xs font-bold transition shadow-md";
+            document.getElementById('btn-guardar').className = "w-full bg-[#8C6D58] hover:bg-[#745844] text-white py-3.5 rounded-2xl text-xs font-semibold tracking-wide transition shadow-md mt-2";
             document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
         }
 
@@ -386,7 +399,7 @@
 
             document.getElementById('titulo-form').innerText = "➕ Crear Nuevo Estudio / Cliente";
             document.getElementById('btn-guardar').innerText = "Crear Cuenta de Estudio";
-            document.getElementById('btn-guardar').className = "w-full bg-emerald-600 hover:bg-emerald-500 text-stone-950 py-3 rounded-xl text-xs font-bold transition shadow-md";
+            document.getElementById('btn-guardar').className = "w-full bg-[#7C5C43] hover:bg-[#5C4231] text-white py-3.5 rounded-2xl text-xs font-semibold tracking-wide transition shadow-md mt-2";
             document.getElementById('btn-cancelar-edicion').classList.add('hidden');
         }
 
@@ -396,10 +409,6 @@
         }
 
         async function eliminarEstudio(id, nombre) {
-            if (!confirm(`¿Estás completamente seguro de eliminar el estudio "${nombre}"?\n\nSe borrarán todas sus citas, clientas, gastos y configuraciones de forma permanente.`)) {
-                return;
-            }
-
             await supabaseClient.from('citas').delete().eq('usuario_id', id);
             await supabaseClient.from('clientes').delete().eq('usuario_id', id);
             await supabaseClient.from('gastos').delete().eq('usuario_id', id);
