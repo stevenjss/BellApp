@@ -867,19 +867,27 @@
             document.getElementById('agendar-anticipo').value = anticipoVal || 0;
 
             const serviciosActualesStr = decodeURIComponent(serviciosEncoded).toLowerCase();
+            const listaServiciosCita = serviciosActualesStr.split(',').map(s => s.trim());
             
             serviciosSeleccionadosAgendar = [];
             document.querySelectorAll('#agendar-botones-servicios button').forEach(btn => {
                 const nombreServicio = btn.getAttribute('data-nombre');
                 const precioServicio = Number(btn.getAttribute('data-precio'));
                 
-                if (nombreServicio && serviciosActualesStr.includes(nombreServicio.toLowerCase())) {
+                const esMatchExacto = nombreServicio && listaServiciosCita.some(sServicio => sServicio === nombreServicio.toLowerCase());
+
+                if (esMatchExacto) {
                     serviciosSeleccionadosAgendar.push({ nombre: nombreServicio, precio: precioServicio });
                     btn.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
                 } else {
                     btn.className = "p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs";
                 }
             });
+
+            if (serviciosSeleccionadosAgendar.length === 0 && serviciosActualesStr) {
+                serviciosSeleccionadosAgendar.push({ nombre: decodeURIComponent(serviciosEncoded), precio: 0 });
+            }
+
             actualizarTotalAgendar();
         }
 
@@ -1102,23 +1110,24 @@
             document.getElementById('cobro-buscar-cliente').value = clienteNombre;
             document.getElementById('cobro-cliente-id').value = clienteId;
             
-            const serviciosStr = decodeURIComponent(serviciosEncoded);
-            const listaNombres = serviciosStr.split(',').map(s => s.trim().toLowerCase());
+            const serviciosStr = decodeURIComponent(serviciosEncoded).toLowerCase();
+            const listaServiciosCita = serviciosStr.split(',').map(s => s.trim());
             serviciosSeleccionadosCobro = [];
 
             document.querySelectorAll('#botones-servicios button').forEach(btn => {
                 const nombreServicio = btn.getAttribute('data-nombre');
                 const precioServicio = Number(btn.getAttribute('data-precio'));
 
-                if (nombreServicio && listaNombres.some(n => nombreServicio.toLowerCase().includes(n) || n.includes(nombreServicio.toLowerCase()))) {
+                const esMatchExacto = nombreServicio && listaServiciosCita.some(sServicio => sServicio === nombreServicio.toLowerCase());
+
+                if (esMatchExacto) {
                     serviciosSeleccionadosCobro.push({ nombre: nombreServicio, precio: precioServicio });
                     btn.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
                 }
             });
 
-            // Si por diferencias de ortografía no coincidieron los nombres exactos, asegurar el total
             if (serviciosSeleccionadosCobro.length === 0 && totalCita > 0) {
-                serviciosSeleccionadosCobro.push({ nombre: serviciosStr || "Servicio General", precio: totalCita });
+                serviciosSeleccionadosCobro.push({ nombre: decodeURIComponent(serviciosEncoded) || "Servicio General", precio: totalCita + (Number(anticipoVal) || 0) });
             }
 
             window.citaCobrandoId = citaId;
