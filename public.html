@@ -21,54 +21,82 @@
         <span id="toast-msg">Mensaje</span>
     </div>
 
-    <div class="max-w-md w-full bg-white rounded-3xl p-6 shadow-xl border border-[#EFE7DE] space-y-5">
+    <div class="max-w-2xl w-full bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-[#EFE7DE] space-y-6">
         
-        <div class="text-center space-y-2">
+        <div class="text-center space-y-2 border-b border-[#EFE7DE] pb-4">
             <div id="estudio-logo" class="w-16 h-16 rounded-2xl mx-auto border border-[#D8C8BC] flex items-center justify-center bg-[#FBF9F5] overflow-hidden shadow-xs">
                 <span class="font-serif-luxury text-2xl font-bold text-[#7C5C43]">B✨</span>
             </div>
-            <h1 id="estudio-nombre" class="font-serif-luxury text-xl font-bold text-[#5C4231]">Cargando Estudio...</h1>
-            <p class="text-xs text-stone-500 uppercase tracking-wider">Reserva tu cita en línea</p>
+            <h1 id="estudio-nombre" class="font-serif-luxury text-2xl font-bold text-[#5C4231]">Cargando Estudio...</h1>
+            <p class="text-xs text-stone-500 uppercase tracking-wider">Selecciona fecha y hora para tu reserva</p>
         </div>
 
-        <div id="formulario-reserva" class="space-y-4 hidden">
-            <div>
-                <label class="block text-xs font-semibold text-stone-600 mb-1">Tu Nombre Completo:</label>
-                <input type="text" id="cliente-nombre" placeholder="Ej. María Pérez" class="w-full border border-[#D8C8BC] p-3 rounded-xl text-xs bg-[#FBF9F5] focus:outline-none focus:border-[#8C6D58]">
-            </div>
-
-            <div>
-                <label class="block text-xs font-semibold text-stone-600 mb-1">Tu Teléfono / WhatsApp:</label>
-                <input type="tel" id="cliente-telefono" placeholder="Ej. 0991234567" class="w-full border border-[#D8C8BC] p-3 rounded-xl text-xs bg-[#FBF9F5] focus:outline-none focus:border-[#8C6D58]">
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
+        <div id="formulario-reserva" class="space-y-5 hidden">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-semibold text-stone-600 mb-1">Fecha:</label>
-                    <input type="date" id="cita-fecha" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-xs bg-[#FBF9F5]">
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Tu Nombre Completo:</label>
+                    <input type="text" id="cliente-nombre" placeholder="Ej. María Pérez" class="w-full border border-[#D8C8BC] p-3 rounded-xl text-xs bg-[#FBF9F5] focus:outline-none focus:border-[#8C6D58]">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-stone-600 mb-1">Hora (Intervalos de 30 min):</label>
-                    <input type="time" id="cita-hora" step="1800" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-xs bg-[#FBF9F5]">
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Tu Teléfono / WhatsApp:</label>
+                    <input type="tel" id="cliente-telefono" placeholder="Ej. 0991234567" class="w-full border border-[#D8C8BC] p-3 rounded-xl text-xs bg-[#FBF9F5] focus:outline-none focus:border-[#8C6D58]">
                 </div>
             </div>
 
+            <!-- PANEL DOBLE: CALENDARIO / HORAS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#FBF9F5] p-4 rounded-2xl border border-[#E8DDD1]">
+                
+                <!-- Izquierda: Selector de Fecha -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 id="mes-anio-titulo" class="font-serif-luxury font-bold text-stone-800 text-sm">Mes Año</h3>
+                        <div class="flex gap-1">
+                            <button onclick="cambiarMes(-1)" class="w-7 h-7 bg-white border border-[#D8C8BC] rounded-lg text-xs font-bold hover:bg-[#F2EAE1]">‹</button>
+                            <button onclick="cambiarMes(1)" class="w-7 h-7 bg-white border border-[#D8C8BC] rounded-lg text-xs font-bold hover:bg-[#F2EAE1]">›</button>
+                        </div>
+                    </div>
+
+                    <!-- Días de la semana -->
+                    <div class="grid grid-cols-7 text-center text-[10px] font-bold text-stone-400 uppercase">
+                        <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+                    </div>
+
+                    <!-- Cuadrícula de días -->
+                    <div id="cuadricula-dias" class="grid grid-cols-7 gap-1 text-center text-xs">
+                        <!-- Generado por JS -->
+                    </div>
+                    <input type="hidden" id="cita-fecha-seleccionada" value="">
+                </div>
+
+                <!-- Derecha: Horas Libres -->
+                <div class="space-y-3 flex flex-col">
+                    <label class="block text-xs font-semibold text-stone-700 uppercase tracking-wider">Horas Disponibles (8am - 7pm):</label>
+                    <div id="contenedor-horas-libres" class="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto p-2 border border-[#D8C8BC] rounded-xl bg-white flex-1">
+                        <p class="col-span-2 text-xs text-stone-400 text-center py-6">Selecciona un día del calendario</p>
+                    </div>
+                    <input type="hidden" id="cita-hora-seleccionada" value="">
+                </div>
+
+            </div>
+
+            <!-- SERVICIOS -->
             <div>
                 <label class="block text-xs font-semibold text-stone-600 mb-2 uppercase tracking-wider">Selecciona el Servicio:</label>
-                <div id="lista-servicios-publicos" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    <!-- Servicios cargados dinámicamente -->
+                <div id="lista-servicios-publicos" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+                    <!-- Cargado dinámicamente -->
                 </div>
             </div>
 
-            <div class="bg-[#F9F5F0] p-3 rounded-xl flex justify-between items-center border border-[#E8DDD1]">
+            <div class="bg-[#F9F5F0] p-3.5 rounded-xl flex justify-between items-center border border-[#E8DDD1]">
                 <span class="text-xs font-semibold text-[#7C5C43] uppercase">TOTAL ESTIMADO:</span>
-                <span id="publico-total" class="text-lg font-bold text-[#5C4231] font-serif-luxury">$0.00</span>
+                <span id="publico-total" class="text-xl font-bold text-[#5C4231] font-serif-luxury">$0.00</span>
             </div>
 
-            <button onclick="enviarReservaPublica()" id="btn-reservar" class="w-full py-3.5 rounded-xl font-bold text-white text-xs shadow-md transition">Confirmar y Agendar Cita</button>
+            <button onclick="enviarReservaPublica()" id="btn-reservar" class="w-full py-4 rounded-xl font-bold text-white text-xs shadow-md transition uppercase tracking-wider">Confirmar y Agendar Cita</button>
         </div>
 
-        <div id="mensaje-error-estudio" class="hidden text-center py-6 text-stone-500 text-xs">
+        <div id="mensaje-error-estudio" class="hidden text-center py-8 text-stone-500 text-xs">
             ⚠️ El estudio solicitado no existe o el enlace es incorrecto.
         </div>
     </div>
@@ -81,6 +109,9 @@
         let usuarioActualId = null;
         let serviciosSeleccionadosPublico = [];
         let colorPrimarioEstudio = '#7C5C43';
+        let fechaActualVisual = new Date();
+        let fechaSeleccionadaStr = '';
+        let horaSeleccionadaGlobal = '';
 
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -91,7 +122,10 @@
                 return;
             }
 
-            document.getElementById('cita-fecha').value = new Date().toISOString().split('T')[0];
+            const hoy = new Date();
+            fechaSeleccionadaStr = hoy.toISOString().split('T')[0];
+            document.getElementById('cita-fecha-seleccionada').value = fechaSeleccionadaStr;
+
             await cargarDatosEstudioPorSlug(slugEstudio);
         });
 
@@ -149,7 +183,141 @@
             }
 
             await cargarServiciosPublicos(usuario.id);
+            renderizarCalendario();
+            await cargarHorasDisponibles();
             document.getElementById('formulario-reserva').classList.remove('hidden');
+        }
+
+        function renderizarCalendario() {
+            const anio = fechaActualVisual.getFullYear();
+            const mes = fechaActualVisual.getMonth();
+
+            const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            document.getElementById('mes-anio-titulo').innerText = `${nombresMeses[mes]} ${anio}`;
+
+            const primerDiaIndex = new Date(anio, mes, 1).getDay();
+            const ajustadoIndex = primerDiaIndex === 0 ? 6 : primerDiaIndex - 1; // Lunes como inicio
+            const totalDiasMes = new Date(anio, mes + 1, 0).getDate();
+
+            const cuadricula = document.getElementById('cuadricula-dias');
+            cuadricula.innerHTML = '';
+
+            // Espacios vacíos mes anterior
+            for (let i = 0; i < ajustadoIndex; i++) {
+                cuadricula.innerHTML += `<div></div>`;
+            }
+
+            const hoyStr = new Date().toISOString().split('T')[0];
+
+            for (let dia = 1; dia <= totalDiasMes; dia++) {
+                const mesStr = (mes + 1).toString().padStart(2, '0');
+                const diaStr = dia.toString().padStart(2, '0');
+                const fechaConstruida = `${anio}-${mesStr}-${diaStr}`;
+
+                const esSeleccionado = fechaConstruida === fechaSeleccionadaStr;
+                const esHoy = fechaConstruida === hoyStr;
+
+                let estilosBoton = "w-8 h-8 rounded-full text-xs font-medium flex items-center justify-center mx-auto transition ";
+                if (esSeleccionado) {
+                    estilosBoton += `text-white font-bold shadow-sm`;
+                } else if (esHoy) {
+                    estilosBoton += `border border-stone-400 text-stone-800 hover:bg-stone-100`;
+                } else {
+                    estilosBoton += `text-stone-700 hover:bg-stone-100`;
+                }
+
+                const btn = document.createElement('button');
+                btn.type = "button";
+                btn.className = estilosBoton;
+                if (esSeleccionado) btn.style.backgroundColor = colorPrimarioEstudio;
+                btn.innerText = dia;
+                btn.onclick = () => seleccionarFechaCalendario(fechaConstruida);
+
+                cuadricula.appendChild(btn);
+            }
+        }
+
+        function cambiarMes(delta) {
+            fechaActualVisual.setMonth(fechaActualVisual.getMonth() + delta);
+            renderizarCalendario();
+        }
+
+        async function seleccionarFechaCalendario(fecha) {
+            fechaSeleccionadaStr = fecha;
+            document.getElementById('cita-fecha-seleccionada').value = fecha;
+            renderizarCalendario();
+            await cargarHorasDisponibles();
+        }
+
+        async function cargarHorasDisponibles() {
+            const contenedorHoras = document.getElementById('contenedor-horas-libres');
+            contenedorHoras.innerHTML = `<p class="col-span-2 text-xs text-stone-400 text-center py-6">Calculando horas...</p>`;
+            horaSeleccionadaGlobal = '';
+            document.getElementById('cita-hora-seleccionada').value = '';
+
+            if (!fechaSeleccionadaStr || !usuarioActualId) return;
+
+            const { data: citasExistentes } = await supabaseClient
+                .from('citas')
+                .select('hora, estado')
+                .eq('usuario_id', usuarioActualId)
+                .eq('fecha', fechaSeleccionadaStr)
+                .neq('estado', 'eliminada');
+
+            let franjasHorarias = [];
+            for (let h = 8; h < 19; h++) {
+                franjasHorarias.push(`${h.toString().padStart(2, '0')}:00`);
+                franjasHorarias.push(`${h.toString().padStart(2, '0')}:30`);
+            }
+            franjasHorarias.push("19:00");
+
+            contenedorHoras.innerHTML = '';
+            let contadorLibres = 0;
+
+            franjasHorarias.forEach(franja => {
+                const [fH, fM] = franja.split(':').map(Number);
+                const minutosFranja = fH * 60 + fM;
+
+                let ocupada = false;
+                if (citasExistentes) {
+                    for (let c of citasExistentes) {
+                        if (!c.hora || c.estado === 'retenido') continue;
+                        const [cH, cM] = c.hora.split(':').map(Number);
+                        if (Math.abs(minutosFranja - (cH * 60 + cM)) < 60) {
+                            ocupada = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!ocupada) {
+                    contadorLibres++;
+                    contenedorHoras.innerHTML += `
+                        <button type="button" onclick="seleccionarHoraLibre('${franja}', this)" class="btn-hora p-2.5 rounded-xl text-xs font-bold border border-[#D8C8BC] bg-white text-stone-700 hover:bg-[#F4EFE6] transition shadow-xs text-center">
+                            ${franja}
+                        </button>
+                    `;
+                }
+            });
+
+            if (contadorLibres === 0) {
+                contenedorHoras.innerHTML = `<p class="col-span-2 text-xs text-rose-700 font-medium text-center py-6">No hay horas libres este día.</p>`;
+            }
+        }
+
+        function seleccionarHoraLibre(hora, elemento) {
+            document.querySelectorAll('.btn-hora').forEach(b => {
+                b.style.backgroundColor = '#FFFFFF';
+                b.style.color = '#374151';
+                b.style.borderColor = '#D8C8BC';
+            });
+
+            elemento.style.backgroundColor = colorPrimarioEstudio;
+            elemento.style.color = '#FFFFFF';
+            elemento.style.borderColor = colorPrimarioEstudio;
+
+            horaSeleccionadaGlobal = hora;
+            document.getElementById('cita-hora-seleccionada').value = hora;
         }
 
         async function cargarServiciosPublicos(usuarioId) {
@@ -162,13 +330,13 @@
             contenedor.innerHTML = '';
 
             if (!servicios || servicios.length === 0) {
-                contenedor.innerHTML = `<p class="text-xs text-stone-400 text-center py-2">No hay servicios disponibles por el momento.</p>`;
+                contenedor.innerHTML = `<p class="text-xs text-stone-400 text-center py-2">Sin servicios disponibles.</p>`;
                 return;
             }
 
             servicios.forEach(s => {
                 contenedor.innerHTML += `
-                    <div onclick="toggleServicioPublico('${s.nombre_servicio}', ${s.precio}, this)" class="p-3 border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] cursor-pointer transition flex justify-between items-center text-xs">
+                    <div onclick="toggleServicioPublico('${s.nombre_servicio}', ${s.precio}, this)" class="p-3 border border-[#E8DDD1] rounded-xl bg-white hover:bg-[#F2EAE1] cursor-pointer transition flex justify-between items-center text-xs">
                         <span class="font-medium text-stone-700">${s.nombre_servicio}</span>
                         <span class="font-bold" style="color: ${colorPrimarioEstudio}">$${Number(s.precio).toFixed(2)}</span>
                     </div>
@@ -180,7 +348,7 @@
             const index = serviciosSeleccionadosPublico.findIndex(s => s.nombre === nombre);
             if (index > -1) {
                 serviciosSeleccionadosPublico.splice(index, 1);
-                elemento.style.backgroundColor = '#FBF9F5';
+                elemento.style.backgroundColor = '#FFFFFF';
                 elemento.style.borderColor = '#E8DDD1';
             } else {
                 serviciosSeleccionadosPublico.push({ nombre, precio });
@@ -199,45 +367,14 @@
         async function enviarReservaPublica() {
             const nombre = document.getElementById('cliente-nombre').value.trim();
             const telefono = document.getElementById('cliente-telefono').value.trim();
-            const fecha = document.getElementById('cita-fecha').value;
-            const hora = document.getElementById('cita-hora').value;
+            const fecha = document.getElementById('cita-fecha-seleccionada').value;
+            const hora = document.getElementById('cita-hora-seleccionada').value;
 
             if (!nombre || !fecha || !hora || serviciosSeleccionadosPublico.length === 0) {
-                mostrarToast("Por favor completa tu nombre, fecha, hora y selecciona al menos un servicio.");
+                mostrarToast("Por favor completa tu nombre, selecciona un día en el calendario, elige una hora libre y marca al menos un servicio.");
                 return;
             }
 
-            // Validar restricción de 1 hora de espacio respecto a otras citas del mismo día
-            const { data: citasExistentes } = await supabaseClient
-                .from('citas')
-                .select('hora, estado')
-                .eq('usuario_id', usuarioActualId)
-                .eq('fecha', fecha)
-                .neq('estado', 'eliminada');
-
-            if (citasExistentes && citasExistentes.length > 0) {
-                const [nuevoH, nuevoM] = hora.split(':').map(Number);
-                const minutosNuevaCita = nuevoH * 60 + nuevoM;
-
-                for (let cita of citasExistentes) {
-                    if (!cita.hora) continue;
-                    // Ignorar citas canceladas o retenidas si deseas, pero validamos pendientes y atendidas
-                    if (cita.estado === 'retenido') continue; 
-
-                    const [hExistente, mExistente] = cita.hora.split(':').map(Number);
-                    const minutosCitaExistente = hExistente * 60 + mExistente;
-
-                    const diferenciaMinutos = Math.abs(minutosNuevaCita - minutosCitaExistente);
-
-                    // Si hay menos de 60 minutos (1 hora) de diferencia, se bloquea
-                    if (diferenciaMinutos < 60) {
-                        mostrarToast(`⚠️ Ya hay una cita cercana a las ${cita.hora}. Debe existir al menos 1 hora de espacio entre citas.`);
-                        return;
-                    }
-                }
-            }
-
-            // 1. Verificar o crear clienta en la tabla 'clientes' de ese estudio
             let { data: clienteExistente } = await supabaseClient
                 .from('clientes')
                 .select('id')
@@ -265,7 +402,6 @@
             serviciosSeleccionadosPublico.forEach(s => sumaTotal += s.precio);
             const nombresServicios = serviciosSeleccionadosPublico.map(s => s.nombre).join(', ');
 
-            // 2. Insertar la cita en la tabla 'citas' con estado pendiente
             const { error: errCita } = await supabaseClient.from('citas').insert([{
                 usuario_id: usuarioActualId,
                 cliente_id: clienteId,
@@ -285,10 +421,10 @@
             }
 
             document.getElementById('formulario-reserva').innerHTML = `
-                <div class="text-center py-8 space-y-3">
+                <div class="text-center py-10 space-y-3">
                     <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto font-bold text-lg">✓</div>
-                    <h2 class="font-serif-luxury text-lg font-bold text-stone-800">¡Cita Solicitada con Éxito!</h2>
-                    <p class="text-xs text-stone-500">Tu cita ha sido agendada correctamente. Te esperamos.</p>
+                    <h2 class="font-serif-luxury text-xl font-bold text-stone-800">¡Cita Solicitada con Éxito!</h2>
+                    <p class="text-xs text-stone-500">Tu cita quedó agendada para el <strong class="text-stone-800">${fecha}</strong> a las <strong class="text-stone-800">${hora}</strong>. Te esperamos.</p>
                 </div>
             `;
         }
