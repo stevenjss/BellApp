@@ -61,6 +61,20 @@
         <span id="toast-mensaje">Operación realizada con éxito</span>
     </div>
 
+    <!-- MODAL VISOR DE FOTO GRANDE Y DESCARGA -->
+    <div id="modal-visor-foto" class="fixed inset-0 bg-black/80 z-50 hidden flex flex-col items-center justify-center p-4">
+        <div class="relative max-w-lg w-full bg-white rounded-3xl p-4 shadow-2xl flex flex-col items-center space-y-3">
+            <button onclick="cerrarVisorFoto()" class="absolute top-3 right-3 bg-stone-100 hover:bg-stone-200 text-stone-700 w-8 h-8 rounded-full font-bold flex items-center justify-center text-sm shadow-xs">✕</button>
+            <h3 class="font-serif-luxury text-sm font-bold text-[#5C4231] uppercase tracking-wider">Detalle de Imagen</h3>
+            <div class="w-full max-h-[60vh] flex items-center justify-center overflow-hidden rounded-2xl bg-stone-900 border border-stone-200">
+                <img id="imagen-visor-zoom" src="" class="max-h-[60vh] object-contain">
+            </div>
+            <a id="btn-descargar-foto" href="#" download="foto_estudio.jpg" target="_blank" class="w-full text-center btn-dinamico-primario py-3 rounded-xl text-xs font-bold shadow-md transition flex items-center justify-center gap-2">
+                ⬇️ Descargar Imagen en este Dispositivo
+            </a>
+        </div>
+    </div>
+
     <!-- ALERTA CITA -->
     <div id="alerta-cita-proxima" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden bg-amber-800 text-white text-xs px-6 py-4 rounded-2xl shadow-2xl border-2 border-amber-500 transition-all flex flex-col gap-2 max-w-xs text-center animate-bounce">
         <div class="flex items-center justify-center gap-2 font-bold text-sm">
@@ -806,9 +820,19 @@
             cambiarSeccion('fotos');
             const { data } = await supabaseClient.from('citas').select('foto_antes, foto_despues').eq('id', citaId).single();
             if (data) {
-                document.getElementById('preview-antes').innerHTML = data.foto_antes ? `<img src="${data.foto_antes}" class="w-full h-full object-cover rounded-lg">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
-                document.getElementById('preview-despues').innerHTML = data.foto_despues ? `<img src="${data.foto_despues}" class="w-full h-full object-cover rounded-lg">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
+                document.getElementById('preview-antes').innerHTML = data.foto_antes ? `<img src="${data.foto_antes}" onclick="abrirVisorFoto('${data.foto_antes}')" class="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition" title="Haz clic para ver en grande">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
+                document.getElementById('preview-despues').innerHTML = data.foto_despues ? `<img src="${data.foto_despues}" onclick="abrirVisorFoto('${data.foto_despues}')" class="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition" title="Haz clic para ver en grande">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
             }
+        }
+
+        function abrirVisorFoto(url) {
+            document.getElementById('imagen-visor-zoom').src = url;
+            document.getElementById('btn-descargar-foto').href = url;
+            document.getElementById('modal-visor-foto').classList.remove('hidden');
+        }
+
+        function cerrarVisorFoto() {
+            document.getElementById('modal-visor-foto').classList.add('hidden');
         }
 
         async function subirFotoServicio(tipo, inputElement) {
