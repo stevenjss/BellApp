@@ -62,7 +62,6 @@
             <input type="hidden" id="edit-user-id" value="">
             <input type="hidden" id="edit-logo-url" value="">
             
-            <!-- Campos ocultos de configuración base -->
             <input type="hidden" id="color-fondo-text" value="#FFFFFF">
             <input type="hidden" id="color-secundario-text" value="#5A412F">
 
@@ -90,11 +89,8 @@
 
             <!-- SELECTOR DE COLOR PRINCIPAL -->
             <div class="space-y-2 pt-1">
-                <label class="text-[11px] text-[#7C5C43] font-bold uppercase tracking-wider block">🎨 COLOR PRINCIPAL DE LA MARCA (FONDO BLANCO FIJO)</label>
-                
+                <label class="text-[11px] text-[#7C5C43] font-bold uppercase tracking-wider block">🎨 COLOR PRINCIPAL DE LA MARCA</label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    
-                    <!-- Tarjeta Primario -->
                     <div id="card-primario" class="rounded-2xl p-4 flex flex-col justify-between shadow-sm transition border border-[#D8C8BC]" style="background-color: #7C5C43; min-height: 90px;">
                         <div class="flex justify-between items-center">
                             <span class="text-[10px] font-bold text-white uppercase tracking-wider bg-black/30 px-2.5 py-1 rounded-lg">Color Principal</span>
@@ -102,8 +98,6 @@
                         </div>
                         <input type="text" id="color-primario-text" value="#7C5C43" oninput="actualizarTextoPrimario(this.value)" class="bg-transparent text-base text-white font-mono font-bold focus:outline-none mt-2 uppercase">
                     </div>
-
-                    <!-- Vista Previa Automática -->
                     <div class="bg-[#FBF9F5] border border-[#D8C8BC] rounded-2xl p-4 flex flex-col justify-between shadow-sm" style="min-height: 90px;">
                         <div class="flex justify-between items-center">
                             <span class="text-[10px] font-bold text-stone-700 uppercase tracking-wider bg-white px-2.5 py-1 rounded-lg border border-stone-200">Fondo & Secundario</span>
@@ -114,12 +108,11 @@
                             <span id="label-sec-hex" class="text-xs text-stone-500 font-mono">Sec: #5A412F</span>
                         </div>
                     </div>
-
                 </div>
             </div>
 
             <div>
-                <label class="text-[11px] text-stone-600 font-semibold uppercase block mb-1">Logotipo del Estudio (Subir desde teléfono o PC)</label>
+                <label class="text-[11px] text-stone-600 font-semibold uppercase block mb-1">Logotipo del Estudio</label>
                 <div class="flex items-center gap-3 bg-[#FBF9F5] p-3 rounded-2xl border border-[#D8C8BC]">
                     <input type="file" id="input-logo-file" accept="image/*" class="text-xs text-stone-600 file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#8C6D58] file:text-white hover:file:bg-[#745844] cursor-pointer">
                     <span id="lbl-logo-estado" class="text-[10px] text-stone-400 font-medium">Sin logo nuevo seleccionado</span>
@@ -158,13 +151,8 @@
             const toast = document.createElement('div');
             toast.className = `pointer-events-auto px-5 py-3 rounded-2xl text-xs font-bold shadow-xl border transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 ${esError ? 'bg-rose-800 text-white border-rose-600' : 'bg-[#5C4231] text-white border-[#8C6D58]'}`;
             toast.innerText = mensaje;
-            
             container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
             setTimeout(() => {
                 toast.classList.add('translate-y-2', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
@@ -173,18 +161,11 @@
 
         function calcularColorSecundario(hex) {
             let color = hex.replace('#', '');
-            if (color.length === 3) {
-                color = color.split('').map(c => c + c).join('');
-            }
+            if (color.length === 3) color = color.split('').map(c => c + c).join('');
             let num = parseInt(color, 16);
-            let r = (num >> 16) - 30;
-            let g = ((num >> 8) & 0x00FF) - 30;
-            let b = (num & 0x0000FF) - 30;
-            
-            r = r < 0 ? 0 : r;
-            g = g < 0 ? 0 : g;
-            b = b < 0 ? 0 : b;
-            
+            let r = Math.max(0, (num >> 16) - 30);
+            let g = Math.max(0, ((num >> 8) & 0x00FF) - 30);
+            let b = Math.max(0, (num & 0x0000FF) - 30);
             return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
         }
 
@@ -192,11 +173,8 @@
             document.getElementById('color-primario-text').value = colorHex;
             document.getElementById('card-primario').style.backgroundColor = colorHex;
             document.getElementById('color-primario-picker').value = colorHex;
-
             const secundarioDerivado = calcularColorSecundario(colorHex);
             document.getElementById('color-secundario-text').value = secundarioDerivado;
-            document.getElementById('color-fondo-text').value = '#FFFFFF';
-            
             document.getElementById('preview-secundario').style.backgroundColor = secundarioDerivado;
             document.getElementById('label-sec-hex').innerText = `Sec: ${secundarioDerivado}`;
         }
@@ -209,16 +187,12 @@
 
         async function cargarUsuarios() {
             const lista = document.getElementById('lista-usuarios');
-            
             try {
                 const { data: usuarios, error } = await supabaseClient.from('usuarios').select('*').order('created_at', { ascending: false });
-                
                 if (error) {
                     lista.innerHTML = `<p class="text-rose-600 text-xs text-center py-4">Error al cargar: ${error.message}</p>`;
-                    document.getElementById('contador-usuarios').innerText = '0 Registrados';
                     return;
                 }
-
                 if (!usuarios || usuarios.length === 0) {
                     lista.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay cuentas registradas</p>`;
                     document.getElementById('contador-usuarios').innerText = '0 Registrados';
@@ -228,24 +202,13 @@
                 document.getElementById('contador-usuarios').innerText = `${usuarios.length} Registrados`;
                 lista.innerHTML = '';
 
+                // Obtener URL base actual (ej. https://tuusuario.github.io/bellapp/admin.html -> https://tuusuario.github.io/bellapp/public.html)
+                const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+
                 usuarios.forEach(u => {
                     const esActivo = u.estado === 'activo';
-                    
-                    let badgeVencimiento = '<span class="text-stone-400">Sin fecha asignada</span>';
-                    if (u.fecha_vencimiento) {
-                        const hoy = new Date();
-                        hoy.setHours(0, 0, 0, 0);
-                        const vencimiento = new Date(u.fecha_vencimiento + 'T00:00:00');
-                        const diferenciaDias = Math.ceil((vencimiento - hoy) / (1000 * 60 * 60 * 24));
-                        
-                        if (diferenciaDias < 0) {
-                            badgeVencimiento = `<span class="bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 rounded-lg font-bold">Vencido (${Math.abs(diferenciaDias)}d atrás)</span>`;
-                        } else if (diferenciaDias <= 5) {
-                            badgeVencimiento = `<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-lg font-bold">Vence en ${diferenciaDias} días ⚠️</span>`;
-                        } else {
-                            badgeVencimiento = `<span class="bg-[#FBF9F5] text-stone-600 border border-[#D8C8BC] px-2 py-0.5 rounded-lg">Vence en ${diferenciaDias} días</span>`;
-                        }
-                    }
+                    const slug = u.slug || u.usuario;
+                    const enlacePublico = `${baseUrl}public.html?estudio=${slug}`;
 
                     lista.innerHTML += `
                         <div class="bg-[#FBF9F5] p-4 rounded-2xl border border-[#EFE7DE] flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
@@ -256,9 +219,10 @@
                                     <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${u.rol === 'admin' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-stone-200 text-stone-600'}">${u.rol}</span>
                                 </div>
                                 <p class="text-stone-500">Usuario: <span class="text-stone-800 font-mono font-bold">${u.usuario}</span> | PIN: <span class="text-stone-800 font-mono font-bold">${u.password}</span></p>
-                                <p class="text-stone-500">Suscripción: ${badgeVencimiento}</p>
+                                <p class="text-stone-500 truncate max-w-xs">Enlace WhatsApp: <a href="${enlacePublico}" target="_blank" class="text-[#7C5C43] underline font-medium">${enlacePublico}</a></p>
                             </div>
-                            <div class="flex items-center gap-2 border-t md:border-t-0 border-[#EFE7DE] pt-2 md:pt-0">
+                            <div class="flex items-center gap-2 flex-wrap border-t md:border-t-0 border-[#EFE7DE] pt-2 md:pt-0">
+                                <button onclick="copiarEnlace('${enlacePublico}')" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl transition font-medium shadow-xs">🔗 Copiar Enlace</button>
                                 <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}')" class="px-3 py-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-[#D8C8BC] rounded-xl transition font-medium shadow-xs">✏️ Editar</button>
                                 <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo'}')" class="px-3 py-1.5 rounded-xl font-bold transition border shadow-xs ${esActivo ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100' : 'bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100'}">
                                     ${esActivo ? '🟢 Activo' : '🔴 Suspendido'}
@@ -273,17 +237,21 @@
             }
         }
 
+        function copiarEnlace(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                mostrarToast("✓ Enlace copiado al portapapeles para WhatsApp");
+            });
+        }
+
         async function guardarUsuario() {
             const editId = document.getElementById('edit-user-id').value;
             const nombre = document.getElementById('nuevo-nombre').value.trim();
             const user = document.getElementById('nuevo-usuario').value.trim().toLowerCase();
             const pass = document.getElementById('nueva-pass').value.trim();
             const vencimiento = document.getElementById('nueva-vencimiento').value;
-            
             const colorPrimario = document.getElementById('color-primario-text').value.trim() || '#7C5C43';
             const colorSecundario = document.getElementById('color-secundario-text').value.trim() || '#5A412F';
-            const colorFondo = '#FFFFFF';
-
+            const slugGenerado = user.replace(/\s+/g, '-');
             const fileInput = document.getElementById('input-logo-file');
             let logoUrl = document.getElementById('edit-logo-url').value;
 
@@ -296,7 +264,6 @@
                 const file = fileInput.files[0];
                 const fileName = `logo_${Date.now()}_${file.name}`;
                 const { error: uploadError } = await supabaseClient.storage.from('fotos-estudio').upload(fileName, file);
-                
                 if (!uploadError) {
                     const { data: publicUrlData } = supabaseClient.storage.from('fotos-estudio').getPublicUrl(fileName);
                     logoUrl = publicUrlData.publicUrl;
@@ -309,7 +276,8 @@
                     usuario: user,
                     password: pass,
                     fecha_vencimiento: vencimiento || null,
-                    logo_url: logoUrl || null
+                    logo_url: logoUrl || null,
+                    slug: slugGenerado
                 }).eq('id', editId);
 
                 if (error) {
@@ -318,9 +286,8 @@
                     await supabaseClient.from('configuracion_estudio').update({
                         color_primario: colorPrimario,
                         color_secundario: colorSecundario,
-                        color_fondo: colorFondo
+                        color_fondo: '#FFFFFF'
                     }).eq('usuario_id', editId);
-
                     mostrarToast("✓ Estudio actualizado correctamente");
                     resetearFormulario();
                     cargarUsuarios();
@@ -334,7 +301,8 @@
                         rol: 'cliente', 
                         estado: 'activo',
                         fecha_vencimiento: vencimiento || null,
-                        logo_url: logoUrl || null
+                        logo_url: logoUrl || null,
+                        slug: slugGenerado
                     }
                 ]).select().single();
 
@@ -350,7 +318,7 @@
                             usuario_id: nuevoUser.id,
                             color_primario: colorPrimario,
                             color_secundario: colorSecundario,
-                            color_fondo: colorFondo
+                            color_fondo: '#FFFFFF'
                         }]);
                     }
                     mostrarToast("✓ Nuevo Estudio creado con éxito");
@@ -367,21 +335,11 @@
             document.getElementById('nueva-pass').value = pass;
             document.getElementById('nueva-vencimiento').value = (vencimiento && vencimiento !== 'null') ? vencimiento : '';
             document.getElementById('edit-logo-url').value = (logoUrl && logoUrl !== 'null') ? logoUrl : '';
-            
             const { data: config } = await supabaseClient.from('configuracion_estudio').select('*').eq('usuario_id', id).single();
-            if (config) {
-                actualizarColorPrimario(config.color_primario || '#7C5C43');
-            }
-
-            if (logoUrl && logoUrl !== 'null') {
-                document.getElementById('lbl-logo-estado').innerText = "✓ Logo actual guardado";
-            } else {
-                document.getElementById('lbl-logo-estado').innerText = "Sin logo guardado";
-            }
-
+            if (config) actualizarColorPrimario(config.color_primario || '#7C5C43');
+            document.getElementById('lbl-logo-estado').innerText = (logoUrl && logoUrl !== 'null') ? "✓ Logo actual guardado" : "Sin logo guardado";
             document.getElementById('titulo-form').innerText = "✏️ Editar Estudio / Cliente";
             document.getElementById('btn-guardar').innerText = "Guardar Cambios del Estudio";
-            document.getElementById('btn-guardar').className = "w-full bg-[#8C6D58] hover:bg-[#745844] text-white py-3.5 rounded-2xl text-xs font-semibold tracking-wide transition shadow-md mt-2";
             document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
         }
 
@@ -394,12 +352,9 @@
             document.getElementById('edit-logo-url').value = '';
             document.getElementById('input-logo-file').value = '';
             document.getElementById('lbl-logo-estado').innerText = "Sin logo nuevo seleccionado";
-            
             actualizarColorPrimario('#7C5C43');
-
             document.getElementById('titulo-form').innerText = "➕ Crear Nuevo Estudio / Cliente";
             document.getElementById('btn-guardar').innerText = "Crear Cuenta de Estudio";
-            document.getElementById('btn-guardar').className = "w-full bg-[#7C5C43] hover:bg-[#5C4231] text-white py-3.5 rounded-2xl text-xs font-semibold tracking-wide transition shadow-md mt-2";
             document.getElementById('btn-cancelar-edicion').classList.add('hidden');
         }
 
@@ -413,12 +368,9 @@
             await supabaseClient.from('clientes').delete().eq('usuario_id', id);
             await supabaseClient.from('gastos').delete().eq('usuario_id', id);
             await supabaseClient.from('configuracion_estudio').delete().eq('usuario_id', id);
-
             const { error } = await supabaseClient.from('usuarios').delete().eq('id', id);
-
-            if (error) {
-                mostrarToast("Error al eliminar: " + error.message, true);
-            } else {
+            if (error) mostrarToast("Error al eliminar: " + error.message, true);
+            else {
                 mostrarToast("✓ Estudio eliminado con éxito");
                 cargarUsuarios();
             }
