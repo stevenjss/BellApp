@@ -270,7 +270,6 @@
                     <input type="hidden" id="cobro-cliente-id">
                     <div id="cobro-lista-sugerencias" class="hidden border border-[#D8C8BC] bg-white rounded-xl shadow-md max-h-36 overflow-y-auto mb-3 text-sm text-stone-700"></div>
 
-                    <!-- TOCA LOS SERVICIOS REALIZADOS + BOTÓN EDITAR SERVICIOS -->
                     <div class="border-t border-[#EFE7DE] pt-3 mb-3 mt-3">
                         <div class="flex justify-between items-center mb-2.5">
                             <p class="text-xs font-medium text-stone-500 uppercase tracking-wider">Toca los servicios realizados:</p>
@@ -530,11 +529,9 @@
             await cargarServiciosBaseDatos();
             await cargarDatosIniciales();
 
-            // INICIAR MOTOR DE VIGILANCIA DE ALERTAS
-            setInterval(verificarCitasProximas, 30000); // Revisa cada 30 segundos
+            setInterval(verificarCitasProximas, 30000);
         }
 
-        // MOTOR DE ALARMAS LOCALES EN TIEMPO REAL
         async function verificarCitasProximas() {
             if (!supabaseClient || !usuarioSesion) return;
 
@@ -560,7 +557,6 @@
                 const diferenciaMs = fechaCita - ahora;
                 const diferenciaMinutos = diferenciaMs / (1000 * 60);
 
-                // Si faltan entre 0 y 15 minutos para la cita
                 if (diferenciaMinutos <= 15 && diferenciaMinutos >= 0) {
                     citasNotificadas.add(cita.id);
                     dispararAlertaVisualSonora(cita.clientes ? cita.clientes.nombre : 'Clienta', cita.hora, cita.servicios);
@@ -574,7 +570,6 @@
             detalle.innerHTML = `<strong>${nombreCliente}</strong><br>${servicios}<br>Hora programada: ${hora}`;
             alertaBox.classList.remove('hidden');
 
-            // Sonido de alerta nativo con Web Audio API
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator();
@@ -789,7 +784,9 @@
                     const nombreCliente = cita.clientes ? cita.clientes.nombre : 'Cliente general';
                     if (cita.estado === 'pendiente') {
                         hayPendientes = true;
-                        const anticipoBadge = Number(cita.anticipo) > 0 ? `<span class="text-xs text-amber-800 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Anticipo: $${Number(cita.anticipo).toFixed(2)}</span>` : '';
+                        const anticipoVal = Number(cita.anticipo) || 0;
+                        const anticipoBadge = anticipoVal > 0 ? `<span class="text-xs text-amber-800 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Anticipo: $${anticipoVal.toFixed(2)}</span>` : '';
+                        
                         listaPendientesHtml.innerHTML += `
                             <div class="border-b border-[#EFE7DE] pb-3 mb-2 flex justify-between items-center">
                                 <div>
@@ -803,8 +800,8 @@
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <button onclick="marcarComoCobrada('${cita.id}')" class="btn-dinamico-primario text-white text-[10px] px-2.5 py-1 rounded-md shadow-xs transition text-center font-medium">Cobrar</button>
-                                    <button onclick="prepararEdicionCita('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${cita.fecha}', '${cita.hora || '10:00'}', '${encodeURIComponent(cita.servicios)}', '${cita.anticipo || 0}')" class="btn-dinamico-secundario text-white text-[10px] px-2.5 py-1 rounded-md transition text-center font-medium">Editar</button>
+                                    <button onclick="prepararCobroDesdeAgenda('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${cita.servicios}', ${cita.total}, ${anticipoVal})" class="btn-dinamico-primario text-white text-[10px] px-2.5 py-1 rounded-md shadow-xs transition text-center font-medium">Cobrar</button>
+                                    <button onclick="prepararEdicionCita('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${cita.fecha}', '${cita.hora || '10:00'}', '${encodeURIComponent(cita.servicios)}', '${anticipoVal}')" class="btn-dinamico-secundario text-white text-[10px] px-2.5 py-1 rounded-md transition text-center font-medium">Editar</button>
                                     <button onclick="marcarNoAsistio('${cita.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 text-[10px] px-2 py-0.5 rounded-md transition text-center font-medium" title="No asistió (Conserva anticipo)">No Asistió</button>
                                     <button onclick="eliminarCita('${cita.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-0.5 rounded-md transition text-center font-medium">Eliminar</button>
                                 </div>
@@ -824,14 +821,7 @@
             document.getElementById('lbl-profit-mes').innerText = `$${(totalIngresosMes - totalGastosMes).toFixed(2)}`;
         }
 
-        async function marcarComoCobrada(citaId) {
-            await supabaseClient.from('citas').update({ estado: 'atendida', metodo_pago: 'efectivo' }).eq('id', citaId);
-            cargarCitasYResumen();
-            mostrarNotificacion("✓ Cita cobrada");
-        }
-
         async function marcarNoAsistio(citaId) {
-            // Si la clienta no asiste pero dejó anticipo, se cobra el anticipo como ingreso retenido
             const { data } = await supabaseClient.from('citas').select('anticipo').eq('id', citaId).single();
             const montoRetenido = data && data.anticipo ? Number(data.anticipo) : 0;
 
@@ -870,15 +860,14 @@
             document.getElementById('agendar-hora').value = hora;
             document.getElementById('agendar-anticipo').value = anticipoVal || 0;
 
-            const serviciosActualesStr = decodeURIComponent(serviciosEncoded);
-            const listaServiciosGuardados = serviciosActualesStr.split(',').map(s => s.trim());
+            const serviciosActualesStr = decodeURIComponent(serviciosEncoded).toLowerCase();
             
             serviciosSeleccionadosAgendar = [];
             document.querySelectorAll('#agendar-botones-servicios button').forEach(btn => {
                 const nombreServicio = btn.getAttribute('data-nombre');
                 const precioServicio = Number(btn.getAttribute('data-precio'));
                 
-                if (listaServiciosGuardados.includes(nombreServicio)) {
+                if (serviciosActualesStr.includes(nombreServicio.toLowerCase())) {
                     serviciosSeleccionadosAgendar.push({ nombre: nombreServicio, precio: precioServicio });
                     btn.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
                 } else {
@@ -1033,11 +1022,41 @@
             }
 
             const nombresServicios = serviciosSeleccionadosAgendar.map(s => s.nombre).join(', ');
+            
             if (citaId) {
-                await supabaseClient.from('citas').update({ cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma, anticipo: anticipoVal }).eq('id', citaId);
+                const { error } = await supabaseClient.from('citas').update({ 
+                    cliente_id: clienteId, 
+                    fecha, 
+                    hora: hora || '10:00', 
+                    servicios: nombresServicios, 
+                    total: suma, 
+                    anticipo: anticipoVal 
+                }).eq('id', citaId);
+
+                if (error) {
+                    mostrarNotificacion("Error al actualizar la cita");
+                    console.error(error);
+                    return;
+                }
                 mostrarNotificacion("✓ Cita actualizada al instante");
             } else {
-                await supabaseClient.from('citas').insert([{ usuario_id: usuarioSesion.id, cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma, anticipo: anticipoVal, metodo_pago: 'pendiente', estado: 'pendiente' }]);
+                const { error } = await supabaseClient.from('citas').insert([{ 
+                    usuario_id: usuarioSesion.id, 
+                    cliente_id: clienteId, 
+                    fecha, 
+                    hora: hora || '10:00', 
+                    servicios: nombresServicios, 
+                    total: suma, 
+                    anticipo: anticipoVal, 
+                    metodo_pago: 'pendiente', 
+                    estado: 'pendiente' 
+                }]);
+
+                if (error) {
+                    mostrarNotificacion("Error al guardar la cita");
+                    console.error(error);
+                    return;
+                }
                 mostrarNotificacion("✓ Cita agendada al instante");
             }
             cambiarSeccion('agenda');
@@ -1067,6 +1086,30 @@
             });
         }
 
+        function prepararCobroDesdeAgenda(citaId, clienteId, clienteNombre, serviciosStr, totalCita, anticipoVal) {
+            cambiarSeccion('cobrar');
+            document.getElementById('cobro-buscar-cliente').value = clienteNombre;
+            document.getElementById('cobro-cliente-id').value = clienteId;
+            
+            const listaNombres = serviciosStr.split(',').map(s => s.trim().toLowerCase());
+            serviciosSeleccionadosCobro = [];
+
+            document.querySelectorAll('#botones-servicios button').forEach(btn => {
+                const nombreServicio = btn.getAttribute('data-nombre');
+                const precioServicio = Number(btn.getAttribute('data-precio'));
+
+                if (listaNombres.some(n => nombreServicio.toLowerCase().includes(n) || n.includes(nombreServicio.toLowerCase()))) {
+                    serviciosSeleccionadosCobro.push({ nombre: nombreServicio, precio: precioServicio });
+                    btn.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
+                }
+            });
+
+            // Guardamos el ID de la cita que estamos cobrando y el anticipo
+            window.citaCobrandoId = citaId;
+            window.anticipoCobrandoVal = anticipoVal;
+            actualizarTotalCobro();
+        }
+
         function toggleServicioCobro(nombre, precio, btnElement) {
             const index = serviciosSeleccionadosCobro.findIndex(s => s.nombre === nombre);
             if (index > -1) {
@@ -1080,14 +1123,17 @@
         }
 
         function actualizarTotalCobro() {
-            let suma = 0;
-            serviciosSeleccionadosCobro.forEach(s => suma += s.precio);
-            document.getElementById('cobro-subtotal').innerText = `$${suma.toFixed(2)}`;
-            document.getElementById('cobro-anticipo-descontado').innerText = `-$0.00`;
-            document.getElementById('cobro-total').innerText = `$${suma.toFixed(2)}`;
+            let subtotal = 0;
+            serviciosSeleccionadosCobro.forEach(s => subtotal += s.precio);
+            const anticipo = window.anticipoCobrandoVal || 0;
+            let totalFinal = subtotal - anticipo;
+            if (totalFinal < 0) totalFinal = 0;
+
+            document.getElementById('cobro-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('cobro-anticipo-descontado').innerText = `-$${anticipo.toFixed(2)}`;
+            document.getElementById('cobro-total').innerText = `$${totalFinal.toFixed(2)}`;
         }
 
-        // FUNCIONES DE GESTIÓN DE SERVICIOS DESDE EL MODAL
         function abrirModalServicios() {
             const modal = document.getElementById('modal-servicios');
             if (modal) {
@@ -1190,16 +1236,46 @@
             const clienteId = document.getElementById('cobro-cliente-id').value;
             const metodoPago = document.getElementById('metodo-pago').value;
             const nota = document.getElementById('nota-servicio').value;
-            let suma = 0;
-            serviciosSeleccionadosCobro.forEach(s => suma += s.precio);
+            
+            let subtotal = 0;
+            serviciosSeleccionadosCobro.forEach(s => subtotal += s.precio);
+            const anticipo = window.anticipoCobrandoVal || 0;
+            let totalFinal = subtotal - anticipo;
+            if (totalFinal < 0) totalFinal = 0;
 
             if (!clienteId || serviciosSeleccionadosCobro.length === 0) {
                 mostrarNotificacion("Selecciona clienta y servicio");
                 return;
             }
 
-            await supabaseClient.from('citas').insert([{ usuario_id: usuarioSesion.id, cliente_id: clienteId, fecha: new Date().toISOString().split('T')[0], hora: new Date().toTimeString().split(' ')[0], servicios: serviciosSeleccionadosCobro.map(s => s.nombre).join(', '), total: suma, metodo_pago: metodoPago, estado: 'atendida', nota_servicio: nota }]);
-            mostrarNotificacion("✓ Cobro guardado");
+            const nombresServicios = serviciosSeleccionadosCobro.map(s => s.nombre).join(', ');
+
+            if (window.citaCobrandoId) {
+                await supabaseClient.from('citas').update({
+                    estado: 'atendida',
+                    metodo_pago: metodoPago,
+                    total: totalFinal,
+                    servicios: nombresServicios,
+                    nota_servicio: nota
+                }).eq('id', window.citaCobrandoId);
+                window.citaCobrandoId = null;
+                window.anticipoCobrandoVal = 0;
+            } else {
+                await supabaseClient.from('citas').insert([{ 
+                    usuario_id: usuarioSesion.id, 
+                    cliente_id: clienteId, 
+                    fecha: new Date().toISOString().split('T')[0], 
+                    hora: new Date().toTimeString().split(' ')[0], 
+                    servicios: nombresServicios, 
+                    total: totalFinal, 
+                    anticipo: 0,
+                    metodo_pago: metodoPago, 
+                    estado: 'atendida', 
+                    nota_servicio: nota 
+                }]);
+            }
+
+            mostrarNotificacion("✓ Cobro guardado y cita cerrada");
             cambiarSeccion('agenda');
         }
 
