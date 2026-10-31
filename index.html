@@ -734,7 +734,9 @@
                 document.getElementById('seccion-agendar').classList.remove('hidden');
             } else if (seccion === 'cobrar') {
                 document.getElementById('seccion-cobrar').classList.remove('hidden');
-                inicializarCalculadora();
+                if (!window.citaCobrandoId) {
+                    inicializarCalculadora();
+                }
             } else if (seccion === 'clientes') {
                 document.getElementById('seccion-clientes').classList.remove('hidden');
                 cargarClientes();
@@ -804,7 +806,7 @@
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <button onclick="prepararCobroDesdeAgenda('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${cita.servicios}', ${totalCita}, ${anticipoVal})" class="btn-dinamico-primario text-white text-[10px] px-2.5 py-1 rounded-md shadow-xs transition text-center font-medium">Cobrar $${restanteCobrar.toFixed(2)}</button>
+                                    <button onclick="prepararCobroDesdeAgenda('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${encodeURIComponent(cita.servicios)}', ${totalCita}, ${anticipoVal})" class="btn-dinamico-primario text-white text-[10px] px-2.5 py-1 rounded-md shadow-xs transition text-center font-medium">Cobrar $${restanteCobrar.toFixed(2)}</button>
                                     <button onclick="prepararEdicionCita('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${cita.fecha}', '${cita.hora || '10:00'}', '${encodeURIComponent(cita.servicios)}', '${anticipoVal}')" class="btn-dinamico-secundario text-white text-[10px] px-2.5 py-1 rounded-md transition text-center font-medium">Editar</button>
                                     <button onclick="marcarNoAsistio('${cita.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 text-[10px] px-2 py-0.5 rounded-md transition text-center font-medium" title="No asistió (Conserva anticipo)">No Asistió</button>
                                     <button onclick="eliminarCita('${cita.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-0.5 rounded-md transition text-center font-medium">Eliminar</button>
@@ -871,7 +873,7 @@
                 const nombreServicio = btn.getAttribute('data-nombre');
                 const precioServicio = Number(btn.getAttribute('data-precio'));
                 
-                if (serviciosActualesStr.includes(nombreServicio.toLowerCase())) {
+                if (nombreServicio && serviciosActualesStr.includes(nombreServicio.toLowerCase())) {
                     serviciosSeleccionadosAgendar.push({ nombre: nombreServicio, precio: precioServicio });
                     btn.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
                 } else {
@@ -1074,27 +1076,33 @@
             const contenedorBotones = document.getElementById('botones-servicios');
             contenedorBotones.innerHTML = '';
             serviciosSeleccionadosCobro = [];
-            actualizarTotalCobro();
+            window.citaCobrandoId = null;
+            window.anticipoCobrandoVal = 0;
 
             if (listaServiciosEstudio.length === 0) {
                 contenedorBotones.innerHTML = `<p class="text-[11px] text-stone-400 col-span-2 py-3 text-center italic">Sin servicios. Haz clic en "Editar Servicios".</p>`;
+                actualizarTotalCobro();
                 return;
             }
 
             listaServiciosEstudio.forEach(s => {
                 contenedorBotones.innerHTML += `
-                    <button type="button" onclick="toggleServicioCobro('${s.nombre_servicio}', ${s.precio}, this)" class="p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs">
+                    <button type="button" data-nombre="${s.nombre_servicio}" data-precio="${s.precio}" onclick="toggleServicioCobro('${s.nombre_servicio}', ${s.precio}, this)" class="p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs">
                         <span>${s.nombre_servicio}</span><span class="font-bold text-[#7C5C43]">$${Number(s.precio).toFixed(2)}</span>
                     </button>
                 `;
             });
+            actualizarTotalCobro();
         }
 
-        function prepararCobroDesdeAgenda(citaId, clienteId, clienteNombre, serviciosStr, totalCita, anticipoVal) {
+        async function prepararCobroDesdeAgenda(citaId, clienteId, clienteNombre, serviciosEncoded, totalCita, anticipoVal) {
             cambiarSeccion('cobrar');
+            await inicializarCalculadora();
+
             document.getElementById('cobro-buscar-cliente').value = clienteNombre;
             document.getElementById('cobro-cliente-id').value = clienteId;
             
+            const serviciosStr = decodeURIComponent(serviciosEncoded);
             const listaNombres = serviciosStr.split(',').map(s => s.trim().toLowerCase());
             serviciosSeleccionadosCobro = [];
 
@@ -1102,14 +1110,19 @@
                 const nombreServicio = btn.getAttribute('data-nombre');
                 const precioServicio = Number(btn.getAttribute('data-precio'));
 
-                if (listaNombres.some(n => nombreServicio.toLowerCase().includes(n) || n.includes(nombreServicio.toLowerCase()))) {
+                if (nombreServicio && listaNombres.some(n => nombreServicio.toLowerCase().includes(n) || n.includes(nombreServicio.toLowerCase()))) {
                     serviciosSeleccionadosCobro.push({ nombre: nombreServicio, precio: precioServicio });
                     btn.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
                 }
             });
 
+            // Si por diferencias de ortografía no coincidieron los nombres exactos, asegurar el total
+            if (serviciosSeleccionadosCobro.length === 0 && totalCita > 0) {
+                serviciosSeleccionadosCobro.push({ nombre: serviciosStr || "Servicio General", precio: totalCita });
+            }
+
             window.citaCobrandoId = citaId;
-            window.anticipoCobrandoVal = anticipoVal;
+            window.anticipoCobrandoVal = Number(anticipoVal) || 0;
             actualizarTotalCobro();
         }
 
