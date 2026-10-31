@@ -196,13 +196,12 @@
             document.getElementById('mes-anio-titulo').innerText = `${nombresMeses[mes]} ${anio}`;
 
             const primerDiaIndex = new Date(anio, mes, 1).getDay();
-            const ajustadoIndex = primerDiaIndex === 0 ? 6 : primerDiaIndex - 1; // Lunes como inicio
+            const ajustadoIndex = primerDiaIndex === 0 ? 6 : primerDiaIndex - 1;
             const totalDiasMes = new Date(anio, mes + 1, 0).getDate();
 
             const cuadricula = document.getElementById('cuadricula-dias');
             cuadricula.innerHTML = '';
 
-            // Espacios vacíos mes anterior
             for (let i = 0; i < ajustadoIndex; i++) {
                 cuadricula.innerHTML += `<div></div>`;
             }
@@ -257,6 +256,11 @@
 
             if (!fechaSeleccionadaStr || !usuarioActualId) return;
 
+            const ahora = new Date();
+            const hoyStr = ahora.toISOString().split('T')[0];
+            const esHoy = (fechaSeleccionadaStr === hoyStr);
+            const horaActualMinutos = ahora.getHours() * 60 + ahora.getMinutes();
+
             const { data: citasExistentes } = await supabaseClient
                 .from('citas')
                 .select('hora, estado')
@@ -277,6 +281,11 @@
             franjasHorarias.forEach(franja => {
                 const [fH, fM] = franja.split(':').map(Number);
                 const minutosFranja = fH * 60 + fM;
+
+                // Validación: Si es hoy, bloquear horas anteriores al momento actual del sistema
+                if (esHoy && minutosFranja <= horaActualMinutos) {
+                    return; 
+                }
 
                 let ocupada = false;
                 if (citasExistentes) {
@@ -301,7 +310,7 @@
             });
 
             if (contadorLibres === 0) {
-                contenedorHoras.innerHTML = `<p class="col-span-2 text-xs text-rose-700 font-medium text-center py-6">No hay horas libres este día.</p>`;
+                contenedorHoras.innerHTML = `<p class="col-span-2 text-xs text-rose-700 font-medium text-center py-6">No hay horas libres disponibles para esta fecha.</p>`;
             }
         }
 
