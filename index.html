@@ -784,13 +784,17 @@
                     const nombreCliente = cita.clientes ? cita.clientes.nombre : 'Cliente general';
                     if (cita.estado === 'pendiente') {
                         hayPendientes = true;
+                        const totalCita = Number(cita.total) || 0;
                         const anticipoVal = Number(cita.anticipo) || 0;
+                        let restanteCobrar = totalCita - anticipoVal;
+                        if (restanteCobrar < 0) restanteCobrar = 0;
+
                         const anticipoBadge = anticipoVal > 0 ? `<span class="text-xs text-amber-800 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Anticipo: $${anticipoVal.toFixed(2)}</span>` : '';
                         
                         listaPendientesHtml.innerHTML += `
                             <div class="border-b border-[#EFE7DE] pb-3 mb-2 flex justify-between items-center">
                                 <div>
-                                    <p class="font-semibold text-stone-800 text-sm">${nombreCliente} — <span class="texto-dinamico-primario font-bold">$${cita.total}</span></p>
+                                    <p class="font-semibold text-stone-800 text-sm">${nombreCliente} — <span class="texto-dinamico-primario font-bold">$${totalCita.toFixed(2)}</span></p>
                                     <p class="text-xs text-stone-500 font-medium">📅 ${cita.fecha} | ⏰ <span class="text-stone-800 font-bold">${cita.hora || '10:00'}</span></p>
                                     <p class="text-xs text-stone-500 mt-0.5">${cita.servicios}</p>
                                     <div class="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -800,7 +804,7 @@
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <button onclick="prepararCobroDesdeAgenda('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${cita.servicios}', ${cita.total}, ${anticipoVal})" class="btn-dinamico-primario text-white text-[10px] px-2.5 py-1 rounded-md shadow-xs transition text-center font-medium">Cobrar</button>
+                                    <button onclick="prepararCobroDesdeAgenda('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${cita.servicios}', ${totalCita}, ${anticipoVal})" class="btn-dinamico-primario text-white text-[10px] px-2.5 py-1 rounded-md shadow-xs transition text-center font-medium">Cobrar $${restanteCobrar.toFixed(2)}</button>
                                     <button onclick="prepararEdicionCita('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${cita.fecha}', '${cita.hora || '10:00'}', '${encodeURIComponent(cita.servicios)}', '${anticipoVal}')" class="btn-dinamico-secundario text-white text-[10px] px-2.5 py-1 rounded-md transition text-center font-medium">Editar</button>
                                     <button onclick="marcarNoAsistio('${cita.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 text-[10px] px-2 py-0.5 rounded-md transition text-center font-medium" title="No asistió (Conserva anticipo)">No Asistió</button>
                                     <button onclick="eliminarCita('${cita.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-0.5 rounded-md transition text-center font-medium">Eliminar</button>
@@ -1104,7 +1108,6 @@
                 }
             });
 
-            // Guardamos el ID de la cita que estamos cobrando y el anticipo
             window.citaCobrandoId = citaId;
             window.anticipoCobrandoVal = anticipoVal;
             actualizarTotalCobro();
