@@ -106,12 +106,13 @@
         const SUPABASE_ANON_KEY = "sb_publishable_qr02Rl-cs9BWfws_pN3fSQ_5MZ5q6F-"; 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let usuarioActualId = null;
+        let usuarioActualObj = null;
         let serviciosSeleccionadosPublico = [];
         let colorPrimarioEstudio = '#7C5C43';
         let fechaActualVisual = new Date();
         let fechaSeleccionadaStr = '';
         let horaSeleccionadaGlobal = '';
+        let listaDiasNoLaborables = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -122,8 +123,11 @@
                 return;
             }
 
-            const hoy = new Date();
-            fechaSeleccionadaStr = hoy.toISOString().split('T')[0];
+            const ahora = new Date();
+            const yyyy = ahora.getFullYear();
+            const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+            const dd = String(ahora.getDate()).padStart(2, '0');
+            fechaSeleccionadaStr = `${yyyy}-${mm}-${dd}`;
             document.getElementById('cita-fecha-seleccionada').value = fechaSeleccionadaStr;
 
             await cargarDatosEstudioPorSlug(slugEstudio);
@@ -162,7 +166,7 @@
                 return;
             }
 
-            usuarioActualId = usuario.id;
+            usuarioActualObj = usuario;
             document.getElementById('estudio-nombre').innerText = usuario.nombre_estudio;
 
             if (usuario.logo_url) {
@@ -182,10 +186,21 @@
                 document.getElementById('btn-reservar').style.backgroundColor = '#7C5C43';
             }
 
+            await cargarDiasNoLaborablesBaseDatos(usuario.id);
             await cargarServiciosPublicos(usuario.id);
             renderizarCalendario();
             await cargarHorasDisponibles();
             document.getElementById('formulario-reserva').classList.remove('hidden');
+        }
+
+        async function cargarDiasNoLaborablesBaseDatos(usuarioId) {
+            const { data } = await supabaseClient
+                .from('dias_no_laborables')
+                .select('fecha')
+                .eq('usuario_id', usuarioId);
+            if (data) {
+                listaDiasNoLaborables = data.map(d => d.fecha);
+            }
         }
 
         function renderizarCalendario() {
@@ -206,18 +221,23 @@
                 cuadricula.innerHTML += `<div></div>`;
             }
 
-            const hoyStr = new Date().toISOString().split('T')[0];
+            const ahora = new Date();
+            const hoyStr = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
 
             for (let dia = 1; dia <= totalDiasMes; dia++) {
                 const mesStr = (mes + 1).toString().padStart(2, '0');
                 const diaStr = dia.toString().padStart(2, '0');
                 const fechaConstruida = `${anio}-${mesStr}-${diaStr}`;
 
+                const esBloqueado = listaDiasNoLaborables.includes(fechaConstruida);
                 const esSeleccionado = fechaConstruida === fechaSeleccionadaStr;
                 const esHoy = fechaConstruida === hoyStr;
 
                 let estilosBoton = "w-8 h-8 rounded-full text-xs font-medium flex items-center justify-center mx-auto transition ";
-                if (esSeleccionado) {
+                
+                if (esBloqueado) {
+                    estilosBoton += "bg-rose-500 text-white cursor-not-allowed font-bold opacity-80 shadow-xs";
+                } else if (esSeleccionado) {
                     estilosBoton += `text-white font-bold shadow-sm`;
                 } else if (esHoy) {
                     estilosBoton += `border border-stone-400 text-stone-800 hover:bg-stone-100`;
@@ -228,9 +248,14 @@
                 const btn = document.createElement('button');
                 btn.type = "button";
                 btn.className = estilosBoton;
-                if (esSeleccionado) btn.style.backgroundColor = colorPrimarioEstudio;
+                if (esSeleccionado && !esBloqueado) btn.style.backgroundColor = colorPrimarioEstudio;
                 btn.innerText = dia;
-                btn.onclick = () => seleccionarFechaCalendario(fechaConstruida);
+                
+                if (!esBloqueado) {
+                    btn.onclick = () => seleccionarFechaCalendario(fechaConstruida);
+                } else {
+                    btn.onclick = () => mostrarToast("⚠️ El estudio no labora en esta fecha.");
+                }
 
                 cuadricula.appendChild(btn);
             }
@@ -254,17 +279,22 @@
             horaSeleccionadaGlobal = '';
             document.getElementById('cita-hora-seleccionada').value = '';
 
-            if (!fechaSeleccionadaStr || !usuarioActualId) return;
+            if (!fechaSeleccionadaStr || !usuarioActualObj) return;
+
+            if (listaDiasNoLaborables.includes(fechaSeleccionadaStr)) {
+                contenedorHoras.innerHTML = `<p class="col-span-2 text-xs text-rose-700 font-bold text-center py-6">🚫 Día no laborable. Selecciona otro día.</p>`;
+                return;
+            }
 
             const ahora = new Date();
-            const hoyStr = ahora.toISOString().split('T')[0];
+            const hoyStr = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
             const esHoy = (fechaSeleccionadaStr === hoyStr);
             const horaActualMinutos = ahora.getHours() * 60 + ahora.getMinutes();
 
             const { data: citasExistentes } = await supabaseClient
                 .from('citas')
                 .select('hora, estado')
-                .eq('usuario_id', usuarioActualId)
+                .eq('usuario_id', usuarioActualObj.id)
                 .eq('fecha', fechaSeleccionadaStr)
                 .neq('estado', 'eliminada');
 
@@ -282,7 +312,6 @@
                 const [fH, fM] = franja.split(':').map(Number);
                 const minutosFranja = fH * 60 + fM;
 
-                // Validación: Si es hoy, bloquear horas anteriores al momento actual del sistema
                 if (esHoy && minutosFranja <= horaActualMinutos) {
                     return; 
                 }
@@ -387,7 +416,7 @@
             let { data: clienteExistente } = await supabaseClient
                 .from('clientes')
                 .select('id')
-                .eq('usuario_id', usuarioActualId)
+                .eq('usuario_id', usuarioActualObj.id)
                 .ilike('nombre', nombre)
                 .single();
 
@@ -396,7 +425,7 @@
             if (!clienteId) {
                 const { data: nuevoCliente, error: errCliente } = await supabaseClient
                     .from('clientes')
-                    .insert([{ usuario_id: usuarioActualId, nombre, telefono }])
+                    .insert([{ usuario_id: usuarioActualObj.id, nombre, telefono }])
                     .select('id')
                     .single();
 
@@ -412,7 +441,7 @@
             const nombresServicios = serviciosSeleccionadosPublico.map(s => s.nombre).join(', ');
 
             const { error: errCita } = await supabaseClient.from('citas').insert([{
-                usuario_id: usuarioActualId,
+                usuario_id: usuarioActualObj.id,
                 cliente_id: clienteId,
                 fecha,
                 hora,
@@ -436,6 +465,12 @@
                     <p class="text-xs text-stone-500">Tu cita quedó agendada para el <strong class="text-stone-800">${fecha}</strong> a las <strong class="text-stone-800">${hora}</strong>. Te esperamos.</p>
                 </div>
             `;
+
+            if (usuarioActualObj.telefono_estudio) {
+                const mensajeWhatsapp = `Hola *${usuarioActualObj.nombre_estudio}*, acabo de agendar una cita.%0A%0A👤 *Cliente:* ${nombre}%0A📱 *Teléfono:* ${telefono || 'No provisto'}%0A📅 *Fecha:* ${fecha}%0A⏰ *Hora:* ${hora}%0A💅 *Servicios:* ${nombresServicios}%0A💵 *Total:* $${sumaTotal.toFixed(2)}`;
+                const urlWhatsapp = `https://api.whatsapp.com/send?phone=${usuarioActualObj.telefono_estudio.replace(/\+/g, '')}&text=${mensajeWhatsapp}`;
+                window.open(urlWhatsapp, '_blank');
+            }
         }
     </script>
 </body>
