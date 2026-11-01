@@ -162,10 +162,23 @@
                 <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-sm font-semibold text-[#5C4231] font-serif-luxury">📅 Próximas Citas (Ordenadas por Hora)</h3>
-                        <span class="text-[10px] bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full font-medium">⏱️ Cronológico</span>
+                        <span class="text-[10px] bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full font-medium">⏱️ Tiempo Real</span>
                     </div>
                     <div id="lista-citas-pendientes" class="space-y-3">
                         <p class="text-stone-400 text-xs text-center py-3">Sin citas pendientes por atender</p>
+                    </div>
+                </div>
+
+                <!-- GESTIÓN DÍAS NO LABORABLES -->
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE] space-y-3">
+                    <h3 class="text-sm font-semibold text-[#5C4231] font-serif-luxury">🚫 Días No Laborables</h3>
+                    <p class="text-[11px] text-stone-500">Selecciona las fechas que no trabajarás para que se bloqueen en tu enlace de reservas.</p>
+                    <div class="flex gap-2">
+                        <input type="date" id="input-dia-bloquear" class="flex-1 border border-[#D8C8BC] p-2.5 rounded-xl text-xs bg-[#FBF9F5] text-stone-700">
+                        <button onclick="bloquearDia()" class="bg-rose-700 hover:bg-rose-800 text-white px-3.5 py-2.5 rounded-xl text-xs font-semibold shadow-xs">Bloquear Día</button>
+                    </div>
+                    <div id="lista-dias-bloqueados" class="flex flex-wrap gap-2 pt-1">
+                        <!-- Renderizado de días bloqueados -->
                     </div>
                 </div>
             </section>
@@ -528,8 +541,85 @@
             await cargarTemaEstudio();
             await cargarServiciosBaseDatos();
             await cargarDatosIniciales();
+            await cargarDiasNoLaborables();
+
+            subscribirCanalRealtime();
 
             setInterval(verificarCitasProximas, 30000);
+        }
+
+        function subscribirCanalRealtime() {
+            if (!supabaseClient || !usuarioSesion) return;
+            
+            supabaseClient
+                .channel('cambios-citas')
+                .on('postgres_changes', { 
+                    event: '*', 
+                    schema: 'public', 
+                    table: 'citas',
+                    filter: `usuario_id=eq.${usuarioSesion.id}`
+                }, payload => {
+                    cargarCitasYResumen();
+                })
+                .subscribe();
+        }
+
+        async function cargarDiasNoLaborables() {
+            if (!supabaseClient || !usuarioSesion) return;
+            const { data: dias } = await supabaseClient
+                .from('dias_no_laborables')
+                .select('*')
+                .eq('usuario_id', usuarioSesion.id)
+                .order('fecha', { ascending: true });
+
+            const contenedor = document.getElementById('lista-dias-bloqueados');
+            contenedor.innerHTML = '';
+
+            if (!dias || dias.length === 0) {
+                contenedor.innerHTML = `<span class="text-xs text-stone-400 font-medium italic">No hay días bloqueados</span>`;
+                return;
+            }
+
+            dias.forEach(d => {
+                contenedor.innerHTML += `
+                    <div class="flex items-center gap-1.5 bg-rose-50 border border-rose-200 text-rose-800 px-2.5 py-1 rounded-lg text-xs font-semibold">
+                        <span>📅 ${d.fecha}</span>
+                        <button onclick="desbloquearDia('${d.id}')" class="text-rose-600 hover:text-rose-900 font-bold text-xs ml-1">✕</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function bloquearDia() {
+            const fecha = document.getElementById('input-dia-bloquear').value;
+            if (!fecha || !usuarioSesion) {
+                mostrarNotificacion("Selecciona una fecha válida");
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('dias_no_laborables')
+                .insert([{ usuario_id: usuarioSesion.id, fecha }]);
+
+            if (error) {
+                mostrarNotificacion("Error al bloquear día");
+            } else {
+                document.getElementById('input-dia-bloquear').value = '';
+                mostrarNotificacion("✓ Día bloqueado para reservas");
+                cargarDiasNoLaborables();
+            }
+        }
+
+        async function desbloquearDia(id) {
+            const { error } = await supabaseClient
+                .from('dias_no_laborables')
+                .delete()
+                .eq('id', id);
+
+            if (!error) {
+                mostrarNotificacion("✓ Día desbloqueado");
+                cargarDiasNoLaborables();
+            }
         }
 
         async function verificarCitasProximas() {
