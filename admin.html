@@ -82,8 +82,21 @@
                     <input type="text" id="nueva-pass" placeholder="ej. 1234" class="w-full bg-[#FBF9F5] border border-[#D8C8BC] p-3 rounded-xl text-xs text-stone-800 focus:outline-none focus:border-[#8C6D58]">
                 </div>
                 <div>
+                    <label class="text-[11px] text-stone-600 font-semibold uppercase block mb-1">Teléfono / WhatsApp del Dueño</label>
+                    <input type="tel" id="nuevo-telefono-estudio" placeholder="ej. 593991234567" class="w-full bg-[#FBF9F5] border border-[#D8C8BC] p-3 rounded-xl text-xs text-stone-800 focus:outline-none focus:border-[#8C6D58]">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
                     <label class="text-[11px] text-stone-600 font-semibold uppercase block mb-1">Fecha de Vencimiento (Suscripción)</label>
                     <input type="date" id="nueva-vencimiento" class="w-full bg-[#FBF9F5] border border-[#D8C8BC] p-3 rounded-xl text-xs text-stone-800 focus:outline-none focus:border-[#8C6D58]">
+                </div>
+                <div>
+                    <label class="text-[11px] text-stone-600 font-semibold uppercase block mb-1">Logotipo del Estudio</label>
+                    <div class="flex items-center gap-3 bg-[#FBF9F5] p-2.5 rounded-xl border border-[#D8C8BC]">
+                        <input type="file" id="input-logo-file" accept="image/*" class="text-xs text-stone-600 file:mr-4 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#8C6D58] file:text-white hover:file:bg-[#745844] cursor-pointer">
+                    </div>
                 </div>
             </div>
 
@@ -108,14 +121,6 @@
                             <span id="label-sec-hex" class="text-xs text-stone-500 font-mono">Sec: #5A412F</span>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div>
-                <label class="text-[11px] text-stone-600 font-semibold uppercase block mb-1">Logotipo del Estudio</label>
-                <div class="flex items-center gap-3 bg-[#FBF9F5] p-3 rounded-2xl border border-[#D8C8BC]">
-                    <input type="file" id="input-logo-file" accept="image/*" class="text-xs text-stone-600 file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#8C6D58] file:text-white hover:file:bg-[#745844] cursor-pointer">
-                    <span id="lbl-logo-estado" class="text-[10px] text-stone-400 font-medium">Sin logo nuevo seleccionado</span>
                 </div>
             </div>
 
@@ -202,7 +207,6 @@
                 document.getElementById('contador-usuarios').innerText = `${usuarios.length} Registrados`;
                 lista.innerHTML = '';
 
-                // Obtener URL base actual (ej. https://tuusuario.github.io/bellapp/admin.html -> https://tuusuario.github.io/bellapp/public.html)
                 const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
 
                 usuarios.forEach(u => {
@@ -219,11 +223,12 @@
                                     <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${u.rol === 'admin' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-stone-200 text-stone-600'}">${u.rol}</span>
                                 </div>
                                 <p class="text-stone-500">Usuario: <span class="text-stone-800 font-mono font-bold">${u.usuario}</span> | PIN: <span class="text-stone-800 font-mono font-bold">${u.password}</span></p>
+                                <p class="text-stone-500">WhatsApp Dueño: <span class="text-stone-800 font-mono font-bold">${u.telefono_estudio || 'Sin registrar'}</span></p>
                                 <p class="text-stone-500 truncate max-w-xs">Enlace WhatsApp: <a href="${enlacePublico}" target="_blank" class="text-[#7C5C43] underline font-medium">${enlacePublico}</a></p>
                             </div>
                             <div class="flex items-center gap-2 flex-wrap border-t md:border-t-0 border-[#EFE7DE] pt-2 md:pt-0">
                                 <button onclick="copiarEnlace('${enlacePublico}')" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl transition font-medium shadow-xs">🔗 Copiar Enlace</button>
-                                <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}')" class="px-3 py-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-[#D8C8BC] rounded-xl transition font-medium shadow-xs">✏️ Editar</button>
+                                <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.telefono_estudio || ''}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}')" class="px-3 py-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-[#D8C8BC] rounded-xl transition font-medium shadow-xs">✏️ Editar</button>
                                 <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo'}')" class="px-3 py-1.5 rounded-xl font-bold transition border shadow-xs ${esActivo ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100' : 'bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100'}">
                                     ${esActivo ? '🟢 Activo' : '🔴 Suspendido'}
                                 </button>
@@ -248,6 +253,7 @@
             const nombre = document.getElementById('nuevo-nombre').value.trim();
             const user = document.getElementById('nuevo-usuario').value.trim().toLowerCase();
             const pass = document.getElementById('nueva-pass').value.trim();
+            const telefonoEstudio = document.getElementById('nuevo-telefono-estudio').value.trim();
             const vencimiento = document.getElementById('nueva-vencimiento').value;
             const colorPrimario = document.getElementById('color-primario-text').value.trim() || '#7C5C43';
             const colorSecundario = document.getElementById('color-secundario-text').value.trim() || '#5A412F';
@@ -275,6 +281,7 @@
                     nombre_estudio: nombre,
                     usuario: user,
                     password: pass,
+                    telefono_estudio: telefonoEstudio || null,
                     fecha_vencimiento: vencimiento || null,
                     logo_url: logoUrl || null,
                     slug: slugGenerado
@@ -298,6 +305,7 @@
                         nombre_estudio: nombre, 
                         usuario: user, 
                         password: pass, 
+                        telefono_estudio: telefonoEstudio || null,
                         rol: 'cliente', 
                         estado: 'activo',
                         fecha_vencimiento: vencimiento || null,
@@ -328,16 +336,16 @@
             }
         }
 
-        async function prepararEdicion(id, nombre, usuario, pass, vencimiento, logoUrl) {
+        async function prepararEdicion(id, nombre, usuario, pass, telefono, vencimiento, logoUrl) {
             document.getElementById('edit-user-id').value = id;
             document.getElementById('nuevo-nombre').value = nombre;
             document.getElementById('nuevo-usuario').value = usuario;
             document.getElementById('nueva-pass').value = pass;
+            document.getElementById('nuevo-telefono-estudio').value = (telefono && telefono !== 'null') ? telefono : '';
             document.getElementById('nueva-vencimiento').value = (vencimiento && vencimiento !== 'null') ? vencimiento : '';
             document.getElementById('edit-logo-url').value = (logoUrl && logoUrl !== 'null') ? logoUrl : '';
             const { data: config } = await supabaseClient.from('configuracion_estudio').select('*').eq('usuario_id', id).single();
             if (config) actualizarColorPrimario(config.color_primario || '#7C5C43');
-            document.getElementById('lbl-logo-estado').innerText = (logoUrl && logoUrl !== 'null') ? "✓ Logo actual guardado" : "Sin logo guardado";
             document.getElementById('titulo-form').innerText = "✏️ Editar Estudio / Cliente";
             document.getElementById('btn-guardar').innerText = "Guardar Cambios del Estudio";
             document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
@@ -348,10 +356,10 @@
             document.getElementById('nuevo-nombre').value = '';
             document.getElementById('nuevo-usuario').value = '';
             document.getElementById('nueva-pass').value = '';
+            document.getElementById('nuevo-telefono-estudio').value = '';
             document.getElementById('nueva-vencimiento').value = '';
             document.getElementById('edit-logo-url').value = '';
             document.getElementById('input-logo-file').value = '';
-            document.getElementById('lbl-logo-estado').innerText = "Sin logo nuevo seleccionado";
             actualizarColorPrimario('#7C5C43');
             document.getElementById('titulo-form').innerText = "➕ Crear Nuevo Estudio / Cliente";
             document.getElementById('btn-guardar').innerText = "Crear Cuenta de Estudio";
@@ -368,6 +376,7 @@
             await supabaseClient.from('clientes').delete().eq('usuario_id', id);
             await supabaseClient.from('gastos').delete().eq('usuario_id', id);
             await supabaseClient.from('configuracion_estudio').delete().eq('usuario_id', id);
+            await supabaseClient.from('dias_no_laborables').delete().eq('usuario_id', id);
             const { error } = await supabaseClient.from('usuarios').delete().eq('id', id);
             if (error) mostrarToast("Error al eliminar: " + error.message, true);
             else {
