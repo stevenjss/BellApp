@@ -564,14 +564,18 @@
             if (!supabaseClient || !usuarioSesion) return;
             
             supabaseClient
-                .channel('cambios-citas')
+                .channel('schema-db-changes')
                 .on('postgres_changes', { 
                     event: '*', 
                     schema: 'public', 
-                    table: 'citas',
-                    filter: `usuario_id=eq.${usuarioSesion.id}`
+                    table: 'citas'
                 }, payload => {
-                    cargarCitasYResumen();
+                    if (payload.new && payload.new.usuario_id === usuarioSesion.id) {
+                        cargarCitasYResumen();
+                        mostrarNotificacion("🔔 ¡Actualización en tiempo real!");
+                    } else if (payload.old && payload.old.usuario_id === usuarioSesion.id) {
+                        cargarCitasYResumen();
+                    }
                 })
                 .subscribe();
         }
