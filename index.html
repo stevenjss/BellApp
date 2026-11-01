@@ -61,7 +61,29 @@
         <span id="toast-mensaje">Operación realizada con éxito</span>
     </div>
 
-    <!-- MODAL VISOR DE FOTO GRANDE Y DESCARGA -->
+    <!-- MODAL GESTIÓN DE DÍAS NO LABORABLES -->
+    <div id="modal-dias-libres" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+                <h3 class="font-bold text-stone-800 text-sm uppercase tracking-wider font-serif-luxury">🚫 Días No Laborables</h3>
+                <button onclick="cerrarModalDiasLibres()" class="text-stone-400 hover:text-stone-600 font-bold text-base">✕</button>
+            </div>
+            <p class="text-xs text-stone-500">Selecciona las fechas que no trabajarás para bloquearlas automáticamente en tu enlace de reservas.</p>
+            <div class="flex gap-2">
+                <input type="date" id="input-dia-bloquear" class="flex-1 border border-[#D8C8BC] p-2.5 rounded-xl text-xs bg-[#FBF9F5] text-stone-700">
+                <button onclick="bloquearDia()" class="bg-rose-700 hover:bg-rose-800 text-white px-3 py-2.5 rounded-xl text-xs font-semibold shadow-xs">Bloquear</button>
+            </div>
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-stone-400 uppercase">Fechas Bloqueadas Activas:</label>
+                <div id="lista-dias-bloqueados" class="max-h-40 overflow-y-auto space-y-2 pr-1 pt-1">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+            <button onclick="cerrarModalDiasLibres()" class="w-full bg-stone-200 hover:bg-stone-300 text-stone-700 py-2.5 rounded-xl text-xs font-bold transition">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL VISOR DE FOTO -->
     <div id="modal-visor-foto" class="fixed inset-0 bg-black/80 z-50 hidden flex flex-col items-center justify-center p-4">
         <div class="relative max-w-lg w-full bg-white rounded-3xl p-4 shadow-2xl flex flex-col items-center space-y-3">
             <button onclick="cerrarVisorFoto()" class="absolute top-3 right-3 bg-stone-100 hover:bg-stone-200 text-stone-700 w-8 h-8 rounded-full font-bold flex items-center justify-center text-sm shadow-xs">✕</button>
@@ -84,7 +106,7 @@
         <button onclick="cerrarAlertaCita()" class="mt-1 bg-white text-amber-900 font-bold py-1 px-3 rounded-lg text-[11px] self-center">Entendido</button>
     </div>
 
-    <!-- PANTALLA LOGIN UNIVERSAL: BELLAPP -->
+    <!-- PANTALLA LOGIN UNIVERSAL -->
     <div id="pin-screen" class="fixed inset-0 bg-[#FBF9F5] z-50 flex flex-col items-center justify-center p-6">
         <div class="flex flex-col items-center mb-6">
             <div class="w-16 h-16 rounded-2xl border border-[#D8C8BC] flex items-center justify-center mb-3 bg-white shadow-sm">
@@ -122,11 +144,14 @@
                     <p class="text-[9px] uppercase tracking-[0.2em] text-[#D8C8BC] mt-0.5">Powered by BellApp</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
-                <button onclick="abrirModalPersonalizacion()" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[11px] px-2.5 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs">
+            <div class="flex items-center gap-1.5">
+                <button onclick="abrirModalDiasLibres()" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[10px] px-2 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs font-medium">
+                    <span>🚫 Días Libres</span>
+                </button>
+                <button onclick="abrirModalPersonalizacion()" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[10px] px-2 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs font-medium">
                     <span>🎨 Tema</span>
                 </button>
-                <button onclick="solicitarPermisoNotificaciones()" id="btn-estado-alertas" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[11px] px-2.5 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs">
+                <button onclick="solicitarPermisoNotificaciones()" id="btn-estado-alertas" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[10px] px-2 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs font-medium">
                     <span>🔔 Alertas</span>
                 </button>
             </div>
@@ -166,19 +191,6 @@
                     </div>
                     <div id="lista-citas-pendientes" class="space-y-3">
                         <p class="text-stone-400 text-xs text-center py-3">Sin citas pendientes por atender</p>
-                    </div>
-                </div>
-
-                <!-- GESTIÓN DÍAS NO LABORABLES -->
-                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE] space-y-3">
-                    <h3 class="text-sm font-semibold text-[#5C4231] font-serif-luxury">🚫 Días No Laborables</h3>
-                    <p class="text-[11px] text-stone-500">Selecciona las fechas que no trabajarás para que se bloqueen en tu enlace de reservas.</p>
-                    <div class="flex gap-2">
-                        <input type="date" id="input-dia-bloquear" class="flex-1 border border-[#D8C8BC] p-2.5 rounded-xl text-xs bg-[#FBF9F5] text-stone-700">
-                        <button onclick="bloquearDia()" class="bg-rose-700 hover:bg-rose-800 text-white px-3.5 py-2.5 rounded-xl text-xs font-semibold shadow-xs">Bloquear Día</button>
-                    </div>
-                    <div id="lista-dias-bloqueados" class="flex flex-wrap gap-2 pt-1">
-                        <!-- Renderizado de días bloqueados -->
                     </div>
                 </div>
             </section>
@@ -564,6 +576,15 @@
                 .subscribe();
         }
 
+        function abrirModalDiasLibres() {
+            document.getElementById('modal-dias-libres').classList.remove('hidden');
+            cargarDiasNoLaborables();
+        }
+
+        function cerrarModalDiasLibres() {
+            document.getElementById('modal-dias-libres').classList.add('hidden');
+        }
+
         async function cargarDiasNoLaborables() {
             if (!supabaseClient || !usuarioSesion) return;
             const { data: dias } = await supabaseClient
@@ -582,9 +603,9 @@
 
             dias.forEach(d => {
                 contenedor.innerHTML += `
-                    <div class="flex items-center gap-1.5 bg-rose-50 border border-rose-200 text-rose-800 px-2.5 py-1 rounded-lg text-xs font-semibold">
+                    <div class="flex items-center justify-between bg-rose-50 border border-rose-200 text-rose-800 px-3 py-1.5 rounded-xl text-xs font-semibold">
                         <span>📅 ${d.fecha}</span>
-                        <button onclick="desbloquearDia('${d.id}')" class="text-rose-600 hover:text-rose-900 font-bold text-xs ml-1">✕</button>
+                        <button onclick="desbloquearDia('${d.id}')" class="text-rose-600 hover:text-rose-900 font-bold px-2 py-0.5 rounded">✕</button>
                     </div>
                 `;
             });
@@ -603,9 +624,10 @@
 
             if (error) {
                 mostrarNotificacion("Error al bloquear día");
+                console.error(error);
             } else {
                 document.getElementById('input-dia-bloquear').value = '';
-                mostrarNotificacion("✓ Día bloqueado para reservas");
+                mostrarNotificacion("✓ Día bloqueado con éxito");
                 cargarDiasNoLaborables();
             }
         }
