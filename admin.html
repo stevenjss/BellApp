@@ -100,6 +100,14 @@
                 </div>
             </div>
 
+            <!-- CHECKBOX ACTIVAR EXTRA INVENTARIO -->
+            <div class="flex items-center gap-2 pt-2 border-t border-[#EFE7DE]">
+                <input type="checkbox" id="check-modulo-inventario" class="w-4 h-4 accent-[#7C5C43] rounded cursor-pointer">
+                <label for="check-modulo-inventario" class="text-xs font-semibold text-[#5C4231] cursor-pointer">
+                    📦 Activar Módulo de Inventario y Venta de Productos (Extra)
+                </label>
+            </div>
+
             <!-- SELECTOR DE COLOR PRINCIPAL -->
             <div class="space-y-2 pt-1">
                 <label class="text-[11px] text-[#7C5C43] font-bold uppercase tracking-wider block">🎨 COLOR PRINCIPAL DE LA MARCA</label>
@@ -213,6 +221,7 @@
                     const esActivo = u.estado === 'activo';
                     const slug = u.slug || u.usuario;
                     const enlacePublico = `${baseUrl}public.html?estudio=${slug}`;
+                    const tieneInventario = u.modulo_inventario === true;
 
                     lista.innerHTML += `
                         <div class="bg-[#FBF9F5] p-4 rounded-2xl border border-[#EFE7DE] flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
@@ -221,6 +230,7 @@
                                     ${u.logo_url ? `<img src="${u.logo_url}" class="w-7 h-7 rounded-full object-cover border border-[#D8C8BC]">` : '✨'}
                                     <p class="font-bold text-[#5C4231] text-sm font-serif-luxury">${u.nombre_estudio}</p>
                                     <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${u.rol === 'admin' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-stone-200 text-stone-600'}">${u.rol}</span>
+                                    ${tieneInventario ? `<span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">📦 Inventario Activo</span>` : ''}
                                 </div>
                                 <p class="text-stone-500">Usuario: <span class="text-stone-800 font-mono font-bold">${u.usuario}</span> | PIN: <span class="text-stone-800 font-mono font-bold">${u.password}</span></p>
                                 <p class="text-stone-500">WhatsApp Dueño: <span class="text-stone-800 font-mono font-bold">${u.telefono_estudio || 'Sin registrar'}</span></p>
@@ -228,7 +238,7 @@
                             </div>
                             <div class="flex items-center gap-2 flex-wrap border-t md:border-t-0 border-[#EFE7DE] pt-2 md:pt-0">
                                 <button onclick="copiarEnlace('${enlacePublico}')" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl transition font-medium shadow-xs">🔗 Copiar Enlace</button>
-                                <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.telefono_estudio || ''}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}')" class="px-3 py-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-[#D8C8BC] rounded-xl transition font-medium shadow-xs">✏️ Editar</button>
+                                <button onclick="prepararEdicion('${u.id}', '${u.nombre_estudio}', '${u.usuario}', '${u.password}', '${u.telefono_estudio || ''}', '${u.fecha_vencimiento || ''}', '${u.logo_url || ''}', ${tieneInventario})" class="px-3 py-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-[#D8C8BC] rounded-xl transition font-medium shadow-xs">✏️ Editar</button>
                                 <button onclick="cambiarEstado('${u.id}', '${esActivo ? 'suspendido' : 'activo'}')" class="px-3 py-1.5 rounded-xl font-bold transition border shadow-xs ${esActivo ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100' : 'bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100'}">
                                     ${esActivo ? '🟢 Activo' : '🔴 Suspendido'}
                                 </button>
@@ -257,6 +267,7 @@
             const vencimiento = document.getElementById('nueva-vencimiento').value;
             const colorPrimario = document.getElementById('color-primario-text').value.trim() || '#7C5C43';
             const colorSecundario = document.getElementById('color-secundario-text').value.trim() || '#5A412F';
+            const tieneInventario = document.getElementById('check-modulo-inventario').checked;
             const slugGenerado = user.replace(/\s+/g, '-');
             const fileInput = document.getElementById('input-logo-file');
             let logoUrl = document.getElementById('edit-logo-url').value;
@@ -284,7 +295,8 @@
                     telefono_estudio: telefonoEstudio || null,
                     fecha_vencimiento: vencimiento || null,
                     logo_url: logoUrl || null,
-                    slug: slugGenerado
+                    slug: slugGenerado,
+                    modulo_inventario: tieneInventario
                 }).eq('id', editId);
 
                 if (error) {
@@ -310,7 +322,8 @@
                         estado: 'activo',
                         fecha_vencimiento: vencimiento || null,
                         logo_url: logoUrl || null,
-                        slug: slugGenerado
+                        slug: slugGenerado,
+                        modulo_inventario: tieneInventario
                     }
                 ]).select().single();
 
@@ -336,7 +349,7 @@
             }
         }
 
-        async function prepararEdicion(id, nombre, usuario, pass, telefono, vencimiento, logoUrl) {
+        async function prepararEdicion(id, nombre, usuario, pass, telefono, vencimiento, logoUrl, tieneInventario = false) {
             document.getElementById('edit-user-id').value = id;
             document.getElementById('nuevo-nombre').value = nombre;
             document.getElementById('nuevo-usuario').value = usuario;
@@ -344,6 +357,8 @@
             document.getElementById('nuevo-telefono-estudio').value = (telefono && telefono !== 'null') ? telefono : '';
             document.getElementById('nueva-vencimiento').value = (vencimiento && vencimiento !== 'null') ? vencimiento : '';
             document.getElementById('edit-logo-url').value = (logoUrl && logoUrl !== 'null') ? logoUrl : '';
+            document.getElementById('check-modulo-inventario').checked = tieneInventario;
+            
             const { data: config } = await supabaseClient.from('configuracion_estudio').select('*').eq('usuario_id', id).single();
             if (config) actualizarColorPrimario(config.color_primario || '#7C5C43');
             document.getElementById('titulo-form').innerText = "✏️ Editar Estudio / Cliente";
@@ -360,6 +375,7 @@
             document.getElementById('nueva-vencimiento').value = '';
             document.getElementById('edit-logo-url').value = '';
             document.getElementById('input-logo-file').value = '';
+            document.getElementById('check-modulo-inventario').checked = false;
             actualizarColorPrimario('#7C5C43');
             document.getElementById('titulo-form').innerText = "➕ Crear Nuevo Estudio / Cliente";
             document.getElementById('btn-guardar').innerText = "Crear Cuenta de Estudio";
@@ -377,6 +393,7 @@
             await supabaseClient.from('gastos').delete().eq('usuario_id', id);
             await supabaseClient.from('configuracion_estudio').delete().eq('usuario_id', id);
             await supabaseClient.from('dias_no_laborables').delete().eq('usuario_id', id);
+            await supabaseClient.from('productos').delete().eq('usuario_id', id);
             const { error } = await supabaseClient.from('usuarios').delete().eq('id', id);
             if (error) mostrarToast("Error al eliminar: " + error.message, true);
             else {
