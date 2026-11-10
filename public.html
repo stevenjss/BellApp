@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reserva de Cita - BellApp</title>
+    <title>Reserva y Productos - BellApp</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,21 +16,33 @@
 </head>
 <body class="text-stone-800 min-h-screen p-4 flex flex-col items-center justify-center">
 
-    <!-- TOAST -->
+    <!-- TOAST NOTIFICACIÓN -->
     <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden bg-[#5C4231] text-white text-xs px-5 py-3 rounded-xl shadow-lg border border-[#8C6D58] max-w-xs text-center">
         <span id="toast-msg">Mensaje</span>
     </div>
 
     <div class="max-w-2xl w-full bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-[#EFE7DE] space-y-6">
         
+        <!-- HEADER DEL ESTUDIO -->
         <div class="text-center space-y-2 border-b border-[#EFE7DE] pb-4">
             <div id="estudio-logo" class="w-16 h-16 rounded-2xl mx-auto border border-[#D8C8BC] flex items-center justify-center bg-[#FBF9F5] overflow-hidden shadow-xs">
                 <span class="font-serif-luxury text-2xl font-bold text-[#7C5C43]">B✨</span>
             </div>
             <h1 id="estudio-nombre" class="font-serif-luxury text-2xl font-bold text-[#5C4231]">Cargando Estudio...</h1>
-            <p class="text-xs text-stone-500 uppercase tracking-wider">Selecciona fecha y hora para tu reserva</p>
+            <p class="text-xs text-stone-500 uppercase tracking-wider">Reserva tu cita o adquiere tus productos</p>
         </div>
 
+        <!-- SELECTOR DE PESTAÑAS (CITAS / PRODUCTOS) -->
+        <div id="tabs-navegacion" class="flex gap-2 border-b border-stone-200 pb-3 hidden">
+            <button type="button" onclick="cambiarModoPublico('citas')" id="tab-btn-citas" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition text-center bg-[#7C5C43] text-white shadow-sm">
+                🗓️ Agendar Cita
+            </button>
+            <button type="button" onclick="cambiarModoPublico('productos')" id="tab-btn-productos" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition text-center bg-stone-100 text-stone-600 hover:bg-stone-200">
+                🛍️ Comprar Productos
+            </button>
+        </div>
+
+        <!-- VISTA DE AGENDAR CITA -->
         <div id="formulario-reserva" class="space-y-5 hidden">
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -47,7 +59,7 @@
             <!-- PANEL DOBLE: CALENDARIO / HORAS -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#FBF9F5] p-4 rounded-2xl border border-[#E8DDD1]">
                 
-                <!-- Izquierda: Selector de Fecha -->
+                <!-- Selector de Fecha -->
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
                         <h3 id="mes-anio-titulo" class="font-serif-luxury font-bold text-stone-800 text-sm">Mes Año</h3>
@@ -57,35 +69,30 @@
                         </div>
                     </div>
 
-                    <!-- Días de la semana -->
                     <div class="grid grid-cols-7 text-center text-[10px] font-bold text-stone-400 uppercase">
                         <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
                     </div>
 
-                    <!-- Cuadrícula de días -->
                     <div id="cuadricula-dias" class="grid grid-cols-7 gap-1 text-center text-xs">
                         <!-- Generado por JS -->
                     </div>
                     <input type="hidden" id="cita-fecha-seleccionada" value="">
                 </div>
 
-                <!-- Derecha: Horas Libres -->
+                <!-- Horas Libres -->
                 <div class="space-y-3 flex flex-col">
-                    <label class="block text-xs font-semibold text-stone-700 uppercase tracking-wider">Horas Disponibles (8am - 7pm):</label>
+                    <label class="block text-xs font-semibold text-stone-700 uppercase tracking-wider">Horas Disponibles:</label>
                     <div id="contenedor-horas-libres" class="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto p-2 border border-[#D8C8BC] rounded-xl bg-white flex-1">
                         <p class="col-span-2 text-xs text-stone-400 text-center py-6">Selecciona un día del calendario</p>
                     </div>
                     <input type="hidden" id="cita-hora-seleccionada" value="">
                 </div>
-
             </div>
 
             <!-- SERVICIOS -->
             <div>
                 <label class="block text-xs font-semibold text-stone-600 mb-2 uppercase tracking-wider">Selecciona el Servicio:</label>
-                <div id="lista-servicios-publicos" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
-                    <!-- Cargado dinámicamente -->
-                </div>
+                <div id="lista-servicios-publicos" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1"></div>
             </div>
 
             <div class="bg-[#F9F5F0] p-3.5 rounded-xl flex justify-between items-center border border-[#E8DDD1]">
@@ -93,7 +100,39 @@
                 <span id="publico-total" class="text-xl font-bold text-[#5C4231] font-serif-luxury">$0.00</span>
             </div>
 
-            <button type="button" onclick="enviarReservaPublica()" id="btn-reservar" class="w-full py-4 rounded-xl font-bold text-white text-xs shadow-md transition uppercase tracking-wider">Confirmar y Agendar Cita</button>
+            <button type="button" onclick="enviarReservaPublica()" id="btn-reservar" class="w-full py-4 rounded-xl font-bold text-white text-xs shadow-md transition uppercase tracking-wider bg-[#7C5C43]">Confirmar y Agendar Cita</button>
+        </div>
+
+        <!-- VISTA DE COMPRAR PRODUCTOS -->
+        <div id="seccion-tienda-productos" class="space-y-5 hidden">
+            <p class="text-xs text-stone-500">Selecciona los productos que deseas adquirir y envía tu pedido directamente al estudio por WhatsApp.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Tu Nombre Completo:</label>
+                    <input type="text" id="producto-cliente-nombre" placeholder="Ej. María Pérez" class="w-full border border-[#D8C8BC] p-3 rounded-xl text-xs bg-[#FBF9F5] focus:outline-none focus:border-[#8C6D58]">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Tu Teléfono / WhatsApp:</label>
+                    <input type="tel" id="producto-cliente-telefono" placeholder="Ej. 0991234567" class="w-full border border-[#D8C8BC] p-3 rounded-xl text-xs bg-[#FBF9F5] focus:outline-none focus:border-[#8C6D58]">
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-xs font-semibold text-stone-600 uppercase tracking-wider">Catálogo de Productos Disponibles:</label>
+                <div id="lista-productos-publicos" class="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-1">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+            <div class="bg-[#F9F5F0] p-3.5 rounded-xl flex justify-between items-center border border-[#E8DDD1]">
+                <span class="text-xs font-semibold text-[#7C5C43] uppercase">TOTAL PRODUCTOS:</span>
+                <span id="publico-total-productos" class="text-xl font-bold text-[#5C4231] font-serif-luxury">$0.00</span>
+            </div>
+
+            <button type="button" onclick="enviarPedidoProductoWhatsApp()" id="btn-comprar-producto" class="w-full py-4 rounded-xl font-bold text-white text-xs shadow-md transition uppercase tracking-wider bg-emerald-700 hover:bg-emerald-800">
+                📱 Pedir Productos por WhatsApp
+            </button>
         </div>
 
         <div id="mensaje-error-estudio" class="hidden text-center py-8 text-stone-500 text-xs">
@@ -108,6 +147,7 @@
 
         let usuarioActualObj = null;
         let serviciosSeleccionadosPublico = [];
+        let productosSeleccionadosPublico = [];
         let colorPrimarioEstudio = '#7C5C43';
         let fechaActualVisual = new Date();
         let fechaSeleccionadaStr = '';
@@ -182,15 +222,43 @@
             if (config && config.color_primario) {
                 colorPrimarioEstudio = config.color_primario;
                 document.getElementById('btn-reservar').style.backgroundColor = colorPrimarioEstudio;
-            } else {
-                document.getElementById('btn-reservar').style.backgroundColor = '#7C5C43';
+                document.getElementById('tab-btn-citas').style.backgroundColor = colorPrimarioEstudio;
             }
 
             await cargarDiasNoLaborablesBaseDatos(usuario.id);
             await cargarServiciosPublicos(usuario.id);
             renderizarCalendario();
             await cargarHorasDisponibles();
+
+            if (usuario.modulo_inventario) {
+                document.getElementById('tabs-navegacion').classList.remove('hidden');
+                await cargarProductosPublicos(usuario.id);
+            }
+
             document.getElementById('formulario-reserva').classList.remove('hidden');
+        }
+
+        function cambiarModoPublico(modo) {
+            const tabCitas = document.getElementById('tab-btn-citas');
+            const tabProds = document.getElementById('tab-btn-productos');
+            const secCitas = document.getElementById('formulario-reserva');
+            const secProds = document.getElementById('seccion-tienda-productos');
+
+            if (modo === 'citas') {
+                secCitas.classList.remove('hidden');
+                secProds.classList.add('hidden');
+                tabCitas.style.backgroundColor = colorPrimarioEstudio;
+                tabCitas.className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition text-center text-white shadow-sm";
+                tabProds.className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition text-center bg-stone-100 text-stone-600 hover:bg-stone-200";
+                tabProds.style.backgroundColor = "";
+            } else {
+                secCitas.classList.add('hidden');
+                secProds.classList.remove('hidden');
+                tabProds.style.backgroundColor = colorPrimarioEstudio;
+                tabProds.className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition text-center text-white shadow-sm";
+                tabCitas.className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition text-center bg-stone-100 text-stone-600 hover:bg-stone-200";
+                tabCitas.style.backgroundColor = "";
+            }
         }
 
         async function cargarDiasNoLaborablesBaseDatos(usuarioId) {
@@ -402,6 +470,81 @@
             document.getElementById('publico-total').innerText = `$${total.toFixed(2)}`;
         }
 
+        async function cargarProductosPublicos(usuarioId) {
+            const { data: prods } = await supabaseClient
+                .from('productos')
+                .select('*')
+                .eq('usuario_id', usuarioId)
+                .gt('stock', 0);
+
+            const contenedor = document.getElementById('lista-productos-publicos');
+            contenedor.innerHTML = '';
+
+            if (!prods || prods.length === 0) {
+                contenedor.innerHTML = `<p class="text-xs text-stone-400 text-center py-4">No hay productos disponibles por el momento.</p>`;
+                return;
+            }
+
+            prods.forEach(p => {
+                contenedor.innerHTML += `
+                    <div class="p-3 border border-[#E8DDD1] rounded-xl bg-white flex justify-between items-center text-xs">
+                        <div>
+                            <p class="font-bold text-stone-800">${p.nombre}</p>
+                            <p class="text-[10px] text-emerald-700 font-semibold">Disponible: ${p.stock} unids.</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-base" style="color: ${colorPrimarioEstudio}">$${Number(p.precio).toFixed(2)}</span>
+                            <button type="button" onclick="toggleProductoPublico('${p.id}', '${p.nombre}', ${p.precio}, this)" class="btn-prod-seleccionar bg-stone-100 text-stone-700 px-3 py-1.5 rounded-lg border border-stone-300 font-bold transition">
+                                ＋ Añadir
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleProductoPublico(id, nombre, precio, btnElement) {
+            const index = productosSeleccionadosPublico.findIndex(p => p.id === id);
+            if (index > -1) {
+                productosSeleccionadosPublico.splice(index, 1);
+                btnElement.innerText = "＋ Añadir";
+                btnElement.className = "btn-prod-seleccionar bg-stone-100 text-stone-700 px-3 py-1.5 rounded-lg border border-stone-300 font-bold transition";
+            } else {
+                productosSeleccionadosPublico.push({ id, nombre, precio });
+                btnElement.innerText = "✓ Listo";
+                btnElement.className = "btn-prod-seleccionar bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-bold transition";
+            }
+            
+            let total = 0;
+            productosSeleccionadosPublico.forEach(p => total += p.precio);
+            document.getElementById('publico-total-productos').innerText = `$${total.toFixed(2)}`;
+        }
+
+        function enviarPedidoProductoWhatsApp() {
+            const nombre = document.getElementById('producto-cliente-nombre').value.trim();
+            const telefono = document.getElementById('producto-cliente-telefono').value.trim();
+
+            if (!nombre || productosSeleccionadosPublico.length === 0) {
+                mostrarToast("Ingresa tu nombre y selecciona al menos un producto.");
+                return;
+            }
+
+            let sumaTotal = 0;
+            const listaNombres = productosSeleccionadosPublico.map(p => {
+                sumaTotal += p.precio;
+                return `• ${p.nombre} ($${p.precio.toFixed(2)})`;
+            }).join('\n');
+
+            let telLimpio = (usuarioActualObj.telefono_estudio || '').replace(/\D/g, '');
+            const textoMensaje = `Hola ${usuarioActualObj.nombre_estudio}, me gustaría comprar los siguientes productos:\n\n👤 *Cliente:* ${nombre}\n📱 *Teléfono:* ${telefono || 'No provisto'}\n\n🛍️ *PRODUCTOS:* \n${listaNombres}\n\n💵 *TOTAL:* $${sumaTotal.toFixed(2)}`;
+
+            if (telLimpio) {
+                window.location.href = `https://wa.me/${telLimpio}?text=${encodeURIComponent(textoMensaje)}`;
+            } else {
+                mostrarToast("El estudio no tiene registrado número de WhatsApp.");
+            }
+        }
+
         async function enviarReservaPublica() {
             const nombre = document.getElementById('cliente-nombre').value.trim();
             const telefono = document.getElementById('cliente-telefono').value.trim();
@@ -458,9 +601,7 @@
                 return;
             }
 
-            // Construir enlace seguro de WhatsApp compatible con iOS y Android
             let telLimpio = (usuarioActualObj.telefono_estudio || '').replace(/\D/g, '');
-            
             const textoMensaje = `Hola ${usuarioActualObj.nombre_estudio}, acabo de agendar una cita.\n\n👤 *Cliente:* ${nombre}\n📱 *Teléfono:* ${telefono || 'No provisto'}\n📅 *Fecha:* ${fecha}\n⏰ *Hora:* ${hora}\n💅 *Servicios:* ${nombresServicios}\n💵 *Total:* $${sumaTotal.toFixed(2)}`;
 
             document.getElementById('formulario-reserva').innerHTML = `
