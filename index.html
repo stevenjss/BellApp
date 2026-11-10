@@ -18,73 +18,142 @@
             --color-fondo: #FBF9F5;
         }
 
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--color-fondo); transition: background-color 0.3s ease; }
-        .font-serif-luxury { font-family: 'Playfair Display', serif; }
-
-        #bg-overlay {
-            position: fixed; inset: 0; background-size: cover; background-position: center; background-repeat: no-repeat; pointer-events: none; z-index: -1; opacity: 0.15; transition: opacity 0.3s ease;
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--color-fondo);
+            transition: background-color 0.3s ease;
+        }
+        .font-serif-luxury {
+            font-family: 'Playfair Display', serif;
         }
 
-        .btn-dinamico-primario { background-color: var(--color-primario) !important; color: #ffffff !important; }
-        .btn-dinamico-secundario { background-color: var(--color-secundario) !important; color: #ffffff !important; }
-        .texto-dinamico-primario { color: var(--color-primario) !important; }
+        #bg-overlay {
+            position: fixed;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.15;
+            transition: opacity 0.3s ease, background-image 0.3s ease;
+        }
+
+        .btn-dinamico-primario {
+            background-color: var(--color-primario) !important;
+            color: #ffffff !important;
+        }
+        .btn-dinamico-secundario {
+            background-color: var(--color-secundario) !important;
+            color: #ffffff !important;
+        }
+        .texto-dinamico-primario {
+            color: var(--color-primario) !important;
+        }
     </style>
 </head>
 <body class="text-stone-800 pb-20">
 
     <div id="bg-overlay"></div>
 
+    <!-- BANNER TOAST -->
     <div id="toast-notificacion" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden bg-[#5C4231] text-white text-xs px-5 py-3 rounded-xl shadow-lg border border-[#8C6D58] transition-all flex items-center gap-2">
         <span id="toast-mensaje">Operación realizada con éxito</span>
     </div>
 
-    <!-- MODAL DÍAS LIBRES -->
+    <!-- MODAL GESTIÓN DE DÍAS NO LABORABLES -->
     <div id="modal-dias-libres" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-stone-200 pb-3">
                 <h3 class="font-bold text-stone-800 text-sm uppercase tracking-wider font-serif-luxury">🚫 Días No Laborables</h3>
                 <button onclick="cerrarModalDiasLibres()" class="text-stone-400 hover:text-stone-600 font-bold text-base">✕</button>
             </div>
+            <p class="text-xs text-stone-500">Selecciona las fechas que no trabajarás para bloquearlas automáticamente en tu enlace de reservas.</p>
             <div class="flex gap-2">
                 <input type="date" id="input-dia-bloquear" class="flex-1 border border-[#D8C8BC] p-2.5 rounded-xl text-xs bg-[#FBF9F5] text-stone-700">
                 <button onclick="bloquearDia()" class="bg-rose-700 hover:bg-rose-800 text-white px-3 py-2.5 rounded-xl text-xs font-semibold shadow-xs">Bloquear</button>
             </div>
-            <div id="lista-dias-bloqueados" class="max-h-40 overflow-y-auto space-y-2 pr-1 pt-1"></div>
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-stone-400 uppercase">Fechas Bloqueadas Activas:</label>
+                <div id="lista-dias-bloqueados" class="max-h-40 overflow-y-auto space-y-2 pr-1 pt-1">
+                    <!-- Dinámico -->
+                </div>
+            </div>
             <button onclick="cerrarModalDiasLibres()" class="w-full bg-stone-200 hover:bg-stone-300 text-stone-700 py-2.5 rounded-xl text-xs font-bold transition">Cerrar</button>
         </div>
     </div>
 
-    <!-- PANTALLA LOGIN -->
+    <!-- MODAL VISOR DE FOTO -->
+    <div id="modal-visor-foto" class="fixed inset-0 bg-black/80 z-50 hidden flex flex-col items-center justify-center p-4">
+        <div class="relative max-w-lg w-full bg-white rounded-3xl p-4 shadow-2xl flex flex-col items-center space-y-3">
+            <button onclick="cerrarVisorFoto()" class="absolute top-3 right-3 bg-stone-100 hover:bg-stone-200 text-stone-700 w-8 h-8 rounded-full font-bold flex items-center justify-center text-sm shadow-xs">✕</button>
+            <h3 class="font-serif-luxury text-sm font-bold text-[#5C4231] uppercase tracking-wider">Detalle de Imagen</h3>
+            <div class="w-full max-h-[60vh] flex items-center justify-center overflow-hidden rounded-2xl bg-stone-900 border border-stone-200">
+                <img id="imagen-visor-zoom" src="" class="max-h-[60vh] object-contain">
+            </div>
+            <a id="btn-descargar-foto" href="#" download="foto_estudio.jpg" target="_blank" class="w-full text-center btn-dinamico-primario py-3 rounded-xl text-xs font-bold shadow-md transition flex items-center justify-center gap-2">
+                ⬇️ Descargar Imagen en este Dispositivo
+            </a>
+        </div>
+    </div>
+
+    <!-- ALERTA CITA -->
+    <div id="alerta-cita-proxima" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden bg-amber-800 text-white text-xs px-6 py-4 rounded-2xl shadow-2xl border-2 border-amber-500 transition-all flex flex-col gap-2 max-w-xs text-center animate-bounce">
+        <div class="flex items-center justify-center gap-2 font-bold text-sm">
+            <span>⏰ ¡CITA PRÓXIMA EN 15 MINUTOS!</span>
+        </div>
+        <p id="alerta-cita-detalle" class="text-amber-100 text-xs"></p>
+        <button onclick="cerrarAlertaCita()" class="mt-1 bg-white text-amber-900 font-bold py-1 px-3 rounded-lg text-[11px] self-center">Entendido</button>
+    </div>
+
+    <!-- PANTALLA LOGIN UNIVERSAL -->
     <div id="pin-screen" class="fixed inset-0 bg-[#FBF9F5] z-50 flex flex-col items-center justify-center p-6">
         <div class="flex flex-col items-center mb-6">
             <div class="w-16 h-16 rounded-2xl border border-[#D8C8BC] flex items-center justify-center mb-3 bg-white shadow-sm">
                 <span class="font-serif-luxury text-2xl font-bold tracking-tight text-[#7C5C43]">B✨</span>
             </div>
             <h1 class="font-serif-luxury text-2xl font-semibold text-[#5C4231] tracking-wide text-center">BellApp</h1>
+            <p class="text-[10px] uppercase tracking-[0.3em] text-[#A38874] mt-1 font-medium">Beauty Platform OS</p>
         </div>
+
         <div class="w-full max-w-xs space-y-3">
-            <input type="text" id="login-usuario" placeholder="Usuario" class="w-full text-center text-sm border border-[#D8C8BC] bg-white rounded-xl p-3 focus:outline-none">
-            <input type="password" id="pin-input" maxlength="10" onkeyup="if(event.key === 'Enter') iniciarSesion()" class="w-full text-center text-2xl tracking-widest border border-[#D8C8BC] bg-white rounded-xl p-2.5 focus:outline-none" placeholder="••••">
-            <button type="button" onclick="iniciarSesion()" class="w-full bg-[#8C6D58] hover:bg-[#745844] text-white font-medium py-3 rounded-xl shadow-md text-sm">Ingresar</button>
+            <div>
+                <label class="text-[11px] uppercase tracking-wider font-semibold text-stone-500 block mb-1">Usuario</label>
+                <input type="text" id="login-usuario" placeholder="Ingresa tu usuario" class="w-full text-center text-sm border border-[#D8C8BC] bg-white rounded-xl p-3 focus:outline-none focus:border-[#8C6D58] shadow-xs text-[#5C4231]">
+            </div>
+            <div>
+                <label class="text-[11px] uppercase tracking-wider font-semibold text-stone-500 block mb-1">PIN / Contraseña</label>
+                <input type="password" id="pin-input" maxlength="10" onkeyup="if(event.key === 'Enter') iniciarSesion()" class="w-full text-center text-2xl tracking-widest border border-[#D8C8BC] bg-white rounded-xl p-2.5 focus:outline-none focus:border-[#8C6D58] shadow-xs text-[#5C4231]" placeholder="••••">
+            </div>
+            <button type="button" onclick="iniciarSesion()" class="w-full bg-[#8C6D58] hover:bg-[#745844] text-white font-medium py-3 rounded-xl shadow-md active:scale-95 transition text-sm tracking-wide mt-2">Ingresar al Sistema</button>
         </div>
+        
         <p id="pin-error" class="text-amber-800 text-xs mt-4 hidden bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 text-center"></p>
     </div>
 
     <!-- APP PRINCIPAL -->
     <div id="app-content" class="hidden">
+        
         <header id="header-app" class="bg-[#7C5C43] text-white p-4 shadow-sm sticky top-0 z-40 flex justify-between items-center border-b border-[#694D36]">
             <div class="flex items-center gap-3">
                 <div id="header-logo-container" class="w-9 h-9 rounded-full border border-[#D8C8BC] flex items-center justify-center bg-[#5C4231] overflow-hidden">
-                    <span id="header-logo-iniciales" class="font-serif-luxury text-xs font-semibold text-[#F2EAE1]">BM</span>
+                    <span id="header-logo-iniciales" class="font-serif-luxury text-xs font-semibold tracking-widest text-[#F2EAE1]">BM</span>
                 </div>
                 <div>
-                    <h1 id="header-nombre-estudio" class="font-serif-luxury text-base font-medium">Estudio</h1>
-                    <p class="text-[9px] uppercase text-[#D8C8BC]">Powered by BellApp</p>
+                    <h1 id="header-nombre-estudio" class="font-serif-luxury text-base font-medium tracking-wide leading-none">Estudio</h1>
+                    <p class="text-[9px] uppercase tracking-[0.2em] text-[#D8C8BC] mt-0.5">Powered by BellApp</p>
                 </div>
             </div>
             <div class="flex items-center gap-1.5">
-                <button onclick="abrirModalDiasLibres()" class="bg-[#8C6D58] text-white text-[10px] px-2 py-1.5 rounded-lg">🚫 Días Libres</button>
-                <button onclick="abrirModalPersonalizacion()" class="bg-[#8C6D58] text-white text-[10px] px-2 py-1.5 rounded-lg">🎨 Tema</button>
+                <button onclick="abrirModalDiasLibres()" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[10px] px-2 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs font-medium">
+                    <span>🚫 Días Libres</span>
+                </button>
+                <button onclick="abrirModalPersonalizacion()" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[10px] px-2 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs font-medium">
+                    <span>🎨 Tema</span>
+                </button>
+                <button onclick="solicitarPermisoNotificaciones()" id="btn-estado-alertas" class="bg-[#8C6D58] hover:bg-[#694D36] text-white text-[10px] px-2 py-1.5 rounded-lg border border-[#A38874] transition flex items-center gap-1 shadow-xs font-medium">
+                    <span>🔔 Alertas</span>
+                </button>
             </div>
         </header>
 
@@ -95,29 +164,38 @@
                 <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
                     <h2 class="text-xs font-semibold text-[#8C6D58] uppercase tracking-wider mb-3">Balance del Mes (Profit)</h2>
                     <div class="grid grid-cols-3 gap-2 text-center mb-1">
-                        <div class="bg-[#FBF9F5] p-2.5 rounded-xl border"><p class="text-[10px]">Ventas</p><p id="lbl-ingresos-mes" class="text-base font-semibold text-[#7C5C43] font-serif-luxury">$0.00</p></div>
-                        <div class="bg-[#FBF9F5] p-2.5 rounded-xl border"><p class="text-[10px]">Gastos</p><p id="lbl-gastos-mes" class="text-base font-semibold text-stone-600 font-serif-luxury">$0.00</p></div>
-                        <div class="bg-[#F4EFE6] p-2.5 rounded-xl border"><p class="text-[10px] text-[#7C5C43] font-bold">Profit</p><p id="lbl-profit-mes" class="text-base font-bold text-[#5C4231] font-serif-luxury">$0.00</p></div>
+                        <div class="bg-[#FBF9F5] p-2.5 rounded-xl border border-[#EFE7DE]">
+                            <p class="text-[10px] text-stone-500 font-medium">Ventas</p>
+                            <p id="lbl-ingresos-mes" class="text-base font-semibold text-[#7C5C43] font-serif-luxury">$0.00</p>
+                        </div>
+                        <div class="bg-[#FBF9F5] p-2.5 rounded-xl border border-[#EFE7DE]">
+                            <p class="text-[10px] text-stone-500 font-medium">Gastos</p>
+                            <p id="lbl-gastos-mes" class="text-base font-semibold text-stone-600 font-serif-luxury">$0.00</p>
+                        </div>
+                        <div class="bg-[#F4EFE6] p-2.5 rounded-xl border border-[#D8C8BC]">
+                            <p class="text-[10px] text-[#7C5C43] font-bold uppercase">Profit 💼</p>
+                            <p id="lbl-profit-mes" class="text-base font-bold text-[#5C4231] font-serif-luxury">$0.00</p>
+                        </div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="abrirSeccionAgendarNueva()" class="btn-dinamico-primario py-3 rounded-xl font-medium text-xs">🗓️ Agendar Cita</button>
-                    <button onclick="cambiarSeccion('cobrar')" class="btn-dinamico-secundario py-3 rounded-xl font-medium text-xs">🧾 Cobro Rápido</button>
+                    <button onclick="abrirSeccionAgendarNueva()" class="btn-dinamico-primario hover:opacity-90 py-3 rounded-xl font-medium shadow-sm text-center text-xs transition">🗓️ Agendar Cita</button>
+                    <button onclick="cambiarSeccion('cobrar')" class="btn-dinamico-secundario hover:opacity-90 py-3 rounded-xl font-medium shadow-sm text-center text-xs transition">🧾 Cobro Rápido</button>
                 </div>
 
-                <!-- 1. PRÓXIMAS CITAS (PRIMERO) -->
+                <!-- 1. PRÓXIMAS CITAS (PRIMERO ARRIBA) -->
                 <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-sm font-semibold text-[#5C4231] font-serif-luxury">📅 Próximas Citas (Ordenadas por Hora)</h3>
-                        <span class="text-[10px] bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full">Tiempo Real</span>
+                        <span class="text-[10px] bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full font-medium">⏱️ Tiempo Real</span>
                     </div>
                     <div id="lista-citas-pendientes" class="space-y-3">
-                        <p class="text-stone-400 text-xs text-center py-3">Sin citas pendientes</p>
+                        <p class="text-stone-400 text-xs text-center py-3">Sin citas pendientes por atender</p>
                     </div>
                 </div>
 
-                <!-- 2. PEDIDOS DE PRODUCTOS PENDIENTES (SEGUNDO / ABAJO) -->
+                <!-- 2. PEDIDOS DE PRODUCTOS PENDIENTES (SEGUNDO ABAJO) -->
                 <div id="panel-pedidos-pendientes" class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE] hidden">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-sm font-semibold text-[#5C4231] font-serif-luxury">🛍️ Pedidos de Productos (Pendientes)</h3>
@@ -129,135 +207,346 @@
 
             <!-- VISTA HISTORIAL -->
             <section id="seccion-historial" class="hidden space-y-4">
-                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border">
-                    <h2 class="text-base font-semibold text-[#5C4231] mb-3 font-serif-luxury">📜 Historial</h2>
-                    <input type="text" id="buscar-historial" onkeyup="filtrarHistorial()" placeholder="Buscar..." class="w-full border p-3 rounded-xl mb-3 text-sm bg-[#FBF9F5]">
-                    <div id="lista-citas-atendidas" class="space-y-3 max-h-[60vh] overflow-y-auto"></div>
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
+                    <h2 class="text-base font-semibold text-[#5C4231] mb-3 font-serif-luxury">📜 Historial de Citas Atendidas</h2>
+                    <input type="text" id="buscar-historial" onkeyup="filtrarHistorial()" placeholder="Buscar clienta o servicio..." class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 text-sm bg-[#FBF9F5] text-stone-700 focus:outline-none focus:border-[#8C6D58]">
+                    <div id="lista-citas-atendidas" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                        <p class="text-stone-400 text-xs text-center py-4">No hay historial de citas cobradas</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA FOTOS -->
+            <section id="seccion-fotos" class="hidden space-y-4">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-base font-semibold text-[#5C4231] font-serif-luxury">📸 Fotos Antes / Después</h2>
+                        <button onclick="cambiarSeccion('agenda')" class="text-xs text-[#7C5C43] underline font-medium">← Volver</button>
+                    </div>
+                    <p id="fotos-info-cita" class="text-xs text-stone-500 mb-4 bg-[#FBF9F5] p-2.5 rounded-xl border border-[#EFE7DE]"></p>
+                    
+                    <input type="hidden" id="foto-cita-id">
+
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="border border-dashed border-[#D8C8BC] p-3 rounded-xl text-center bg-[#FBF9F5]">
+                            <p class="text-xs font-semibold text-[#7C5C43] uppercase mb-2">Foto Antes</p>
+                            <div id="preview-antes" class="h-32 bg-white rounded-lg border border-[#EFE7DE] flex items-center justify-center mb-2 overflow-hidden">
+                                <span class="text-stone-400 text-[11px]">Sin imagen</span>
+                            </div>
+                            <input type="file" id="input-foto-antes" accept="image/*" class="hidden" onchange="subirFotoServicio('antes', this)">
+                            <button onclick="document.getElementById('input-foto-antes').click()" class="w-full btn-dinamico-secundario text-xs py-2 rounded-lg">Subir Antes</button>
+                        </div>
+
+                        <div class="border border-dashed border-[#D8C8BC] p-3 rounded-xl text-center bg-[#FBF9F5]">
+                            <p class="text-xs font-semibold text-[#7C5C43] uppercase mb-2">Foto Después</p>
+                            <div id="preview-despues" class="h-32 bg-white rounded-lg border border-[#EFE7DE] flex items-center justify-center mb-2 overflow-hidden">
+                                <span class="text-stone-400 text-[11px]">Sin imagen</span>
+                            </div>
+                            <input type="file" id="input-foto-despues" accept="image/*" class="hidden" onchange="subirFotoServicio('despues', this)">
+                            <button onclick="document.getElementById('input-foto-despues').click()" class="w-full btn-dinamico-primario text-xs py-2 rounded-lg">Subir Después</button>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <!-- VISTA AGENDAR -->
             <section id="seccion-agendar" class="hidden space-y-4">
-                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
                     <h2 id="titulo-modo-agenda" class="text-base font-semibold text-[#5C4231] mb-3 font-serif-luxury">📅 Programar Cita</h2>
+                    
                     <input type="hidden" id="editar-cita-id" value="">
-                    <input type="text" id="agendar-buscar-cliente" onkeyup="filtrarClientesEnAutocomplete('agendar')" placeholder="Escribe el nombre de la clienta..." class="w-full border p-3 rounded-xl bg-[#FBF9F5] text-sm mb-1">
-                    <input type="hidden" id="agendar-cliente-id">
-                    <div id="agendar-lista-sugerencias" class="hidden border bg-white rounded-xl shadow-md max-h-36 overflow-y-auto mb-3 text-sm"></div>
 
-                    <div class="grid grid-cols-2 gap-2 mb-3">
-                        <input type="date" id="agendar-fecha" class="w-full border p-2.5 rounded-xl text-sm bg-[#FBF9F5]">
-                        <input type="time" id="agendar-hora" class="w-full border p-2.5 rounded-xl text-sm bg-[#FBF9F5]">
+                    <label class="block text-xs font-medium text-stone-600 mb-1">Buscar Clienta:</label>
+                    <input type="text" id="agendar-buscar-cliente" onkeyup="filtrarClientesEnAutocomplete('agendar')" placeholder="Escribe el nombre de la clienta..." class="w-full border border-[#D8C8BC] p-3 rounded-xl bg-[#FBF9F5] text-sm text-stone-700 focus:outline-none focus:border-[#8C6D58]">
+                    <input type="hidden" id="agendar-cliente-id">
+                    <div id="agendar-lista-sugerencias" class="hidden border border-[#D8C8BC] bg-white rounded-xl shadow-md max-h-36 overflow-y-auto mb-3 text-sm text-stone-700"></div>
+
+                    <div class="grid grid-cols-2 gap-2 mb-3 mt-3">
+                        <div>
+                            <label class="block text-xs font-medium text-stone-600 mb-1">Fecha:</label>
+                            <input type="date" id="agendar-fecha" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-[#FBF9F5] text-stone-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-stone-600 mb-1">Hora:</label>
+                            <input type="time" id="agendar-hora" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-[#FBF9F5] text-stone-700">
+                        </div>
                     </div>
-                    <input type="number" step="0.01" id="agendar-anticipo" placeholder="Anticipo / Seña ($)" class="w-full border p-2.5 rounded-xl text-sm bg-[#FBF9F5] mb-3">
-                    <div id="agendar-botones-servicios" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto mb-3"></div>
-                    <div class="bg-[#F9F5F0] p-3 rounded-xl mb-3 flex justify-between items-center border">
-                        <span class="text-xs font-semibold text-[#7C5C43]">TOTAL:</span>
+
+                    <!-- CAMPO ANTICIPO / SEÑA -->
+                    <div class="mb-3">
+                        <label class="block text-xs font-medium text-stone-600 mb-1">Anticipo / Seña ($):</label>
+                        <input type="number" step="0.01" id="agendar-anticipo" placeholder="0.00" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-[#FBF9F5] text-stone-700 font-mono">
+                    </div>
+
+                    <div class="border-t border-[#EFE7DE] pt-3 mb-3">
+                        <p class="text-xs font-medium text-stone-500 mb-2.5 uppercase tracking-wider">Servicios Solicitados:</p>
+                        <div id="agendar-botones-servicios" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto mb-3 pr-1"></div>
+                    </div>
+
+                    <div class="bg-[#F9F5F0] p-3 rounded-xl mb-3 flex justify-between items-center border border-[#E8DDD1]">
+                        <span class="text-xs font-semibold text-[#7C5C43] uppercase tracking-wider">ESTIMADO TOTAL:</span>
                         <span id="agendar-total" class="text-xl font-semibold text-[#5C4231] font-serif-luxury">$0.00</span>
                     </div>
+
                     <div class="flex gap-2">
-                        <button onclick="guardarCitaAgendada()" class="flex-1 btn-dinamico-primario text-white py-3.5 rounded-xl text-sm">Guardar</button>
-                        <button onclick="cambiarSeccion('agenda')" class="px-4 bg-stone-200 text-stone-700 py-3.5 rounded-xl text-xs">Cancelar</button>
+                        <button onclick="guardarCitaAgendada()" class="flex-1 btn-dinamico-primario hover:opacity-90 text-white py-3.5 rounded-xl font-medium shadow-md transition text-sm">Guardar Cambios</button>
+                        <button onclick="cambiarSeccion('agenda')" class="px-4 bg-stone-200 text-stone-700 py-3.5 rounded-xl font-medium text-xs">Cancelar</button>
                     </div>
                 </div>
             </section>
 
             <!-- VISTA COBRO -->
             <section id="seccion-cobrar" class="hidden space-y-4">
-                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
                     <h2 class="text-base font-semibold text-[#5C4231] mb-3 font-serif-luxury">🧾 Registrar Cobro</h2>
-                    <input type="text" id="cobro-buscar-cliente" onkeyup="filtrarClientesEnAutocomplete('cobro')" placeholder="Buscar clienta..." class="w-full border p-3 rounded-xl bg-[#FBF9F5] text-sm mb-1">
+                    
+                    <label class="block text-xs font-medium text-stone-600 mb-1">Buscar Clienta:</label>
+                    <input type="text" id="cobro-buscar-cliente" onkeyup="filtrarClientesEnAutocomplete('cobro')" placeholder="Escribe para buscar clienta..." class="w-full border border-[#D8C8BC] p-3 rounded-xl bg-[#FBF9F5] text-sm text-stone-700 focus:outline-none focus:border-[#8C6D58]">
                     <input type="hidden" id="cobro-cliente-id">
-                    <div id="cobro-lista-sugerencias" class="hidden border bg-white rounded-xl shadow-md max-h-36 overflow-y-auto mb-3 text-sm"></div>
+                    <div id="cobro-lista-sugerencias" class="hidden border border-[#D8C8BC] bg-white rounded-xl shadow-md max-h-36 overflow-y-auto mb-3 text-sm text-stone-700"></div>
 
-                    <div id="botones-servicios" class="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto mb-3"></div>
-                    <div id="seccion-cobro-productos-extra" class="hidden border-t pt-3 mb-3">
-                        <p class="text-xs font-medium text-[#7C5C43] mb-2 font-bold">📦 Productos Añadidos:</p>
-                        <div id="botones-productos-cobro" class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto"></div>
+                    <div class="border-t border-[#EFE7DE] pt-3 mb-3 mt-3">
+                        <div class="flex justify-between items-center mb-2.5">
+                            <p class="text-xs font-medium text-stone-500 uppercase tracking-wider">Toca los servicios / productos:</p>
+                            <button onclick="abrirModalServicios()" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber-300 transition flex items-center gap-1 shadow-xs">
+                                ⚙️ Editar Servicios
+                            </button>
+                        </div>
+                        <div id="botones-servicios" class="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto mb-3 pr-1"></div>
                     </div>
 
-                    <div class="bg-[#F9F5F0] p-3.5 rounded-xl mb-3 space-y-1 border">
-                        <div class="flex justify-between text-xs"><span>Subtotal:</span><span id="cobro-subtotal">$0.00</span></div>
-                        <div class="flex justify-between text-xs text-amber-800"><span>Anticipo:</span><span id="cobro-anticipo-descontado">-$0.00</span></div>
-                        <div class="flex justify-between border-t pt-2"><span class="text-xs font-semibold text-[#7C5C43]">RESTANTE:</span><span id="cobro-total" class="text-2xl font-semibold text-[#5C4231] font-serif-luxury">$0.00</span></div>
+                    <!-- SECCIÓN INVENTARIO EN COBRO (DINÁMICA) -->
+                    <div id="seccion-cobro-productos-extra" class="hidden border-t border-[#EFE7DE] pt-3 mb-3">
+                        <p class="text-xs font-medium text-[#7C5C43] uppercase tracking-wider mb-2 font-bold">📦 Añadir Productos de Inventario al Cobro:</p>
+                        <div id="botones-productos-cobro" class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+                            <!-- Carga dinámica si el módulo está activo -->
+                        </div>
                     </div>
 
-                    <select id="metodo-pago" class="w-full border p-3 rounded-xl mb-3 bg-[#FBF9F5] text-sm">
+                    <div class="bg-[#F9F5F0] p-3.5 rounded-xl mb-3 space-y-2 border border-[#E8DDD1]">
+                        <div class="flex justify-between items-center text-xs text-stone-600">
+                            <span>Subtotal Ítems:</span>
+                            <span id="cobro-subtotal" class="font-mono">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-amber-800 font-medium">
+                            <span>Anticipo Descontado:</span>
+                            <span id="cobro-anticipo-descontado" class="font-mono">-$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center border-t border-[#E8DDD1] pt-2">
+                            <span class="text-xs font-semibold text-[#7C5C43] uppercase tracking-wider">RESTANTE A PAGAR:</span>
+                            <span id="cobro-total" class="text-2xl font-semibold text-[#5C4231] font-serif-luxury">$0.00</span>
+                        </div>
+                    </div>
+
+                    <select id="metodo-pago" class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 bg-[#FBF9F5] text-sm text-stone-700">
                         <option value="efectivo">💵 Efectivo</option>
                         <option value="transferencia">🏦 Transferencia</option>
                         <option value="tarjeta">💳 Tarjeta</option>
+                        <option value="otro">Otro</option>
                     </select>
-                    <button onclick="guardarCobro()" class="w-full btn-dinamico-primario text-white py-3.5 rounded-xl text-sm">Guardar y Cerrar</button>
+
+                    <textarea id="nota-servicio" placeholder="Nota opcional..." class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 text-sm bg-[#FBF9F5] text-stone-700"></textarea>
+
+                    <button onclick="guardarCobro()" class="w-full btn-dinamico-primario hover:opacity-90 text-white py-3.5 rounded-xl font-medium shadow-md transition text-sm">Guardar y Cerrar Cita</button>
                 </div>
             </section>
 
-            <!-- VISTA INVENTARIO -->
+            <!-- VISTA INVENTARIO (EXTRA) -->
             <section id="seccion-inventario" class="hidden space-y-4">
-                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
                     <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-base font-semibold text-[#5C4231] font-serif-luxury">📦 Inventario</h2>
-                        <button onclick="toggleFormularioProducto()" class="btn-dinamico-secundario text-white px-3 py-1.5 rounded-lg text-xs">＋ Nuevo</button>
+                        <h2 class="text-base font-semibold text-[#5C4231] font-serif-luxury">📦 Inventario de Productos</h2>
+                        <button onclick="toggleFormularioProducto()" class="btn-dinamico-secundario text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">＋ Nuevo Producto</button>
                     </div>
-                    <div id="form-nuevo-producto" class="hidden bg-[#FBF9F5] p-4 rounded-xl border mb-4 space-y-3">
-                        <input type="text" id="input-nombre-producto" placeholder="Nombre" class="w-full border p-2.5 rounded-xl text-sm bg-white">
+
+                    <div id="form-nuevo-producto" class="hidden bg-[#FBF9F5] p-4 rounded-xl border border-[#D8C8BC] mb-4 space-y-3">
+                        <h3 class="text-xs font-semibold text-[#7C5C43] uppercase tracking-wider">Registrar Producto</h3>
+                        <input type="text" id="input-nombre-producto" placeholder="Nombre (ej. Aceite de Argán)" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-white text-stone-700 focus:outline-none focus:border-[#8C6D58]">
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="number" step="0.01" id="input-precio-producto" placeholder="Precio ($)" class="w-full border p-2.5 rounded-xl text-sm bg-white">
-                            <input type="number" id="input-stock-producto" placeholder="Stock" class="w-full border p-2.5 rounded-xl text-sm bg-white">
+                            <input type="number" step="0.01" id="input-precio-producto" placeholder="Precio ($)" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-white text-stone-700 focus:outline-none focus:border-[#8C6D58] font-mono">
+                            <input type="number" id="input-stock-producto" placeholder="Stock Inicial" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-white text-stone-700 focus:outline-none focus:border-[#8C6D58]">
                         </div>
-                        <button onclick="guardarNuevoProducto()" class="w-full btn-dinamico-primario py-2.5 rounded-xl text-xs">Guardar</button>
+                        <div class="flex gap-2 pt-1">
+                            <button onclick="guardarNuevoProducto()" class="flex-1 btn-dinamico-primario text-white py-2.5 rounded-xl text-xs font-medium shadow-sm">Guardar Producto</button>
+                            <button onclick="toggleFormularioProducto()" class="px-4 bg-stone-200 text-stone-700 py-2.5 rounded-xl text-xs font-medium">Cancelar</button>
+                        </div>
                     </div>
-                    <div id="lista-productos-inventario" class="space-y-2 max-h-[60vh] overflow-y-auto"></div>
+
+                    <div id="lista-productos-inventario" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+                        <p class="text-stone-400 text-xs text-center py-4">Cargando productos...</p>
+                    </div>
                 </div>
             </section>
 
             <!-- VISTA CLIENTAS -->
             <section id="seccion-clientes" class="hidden space-y-4">
-                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
                     <div class="flex justify-between items-center mb-3">
                         <h2 class="text-base font-semibold text-[#5C4231] font-serif-luxury">👩 Clientas</h2>
-                        <button onclick="toggleFormularioCliente()" class="btn-dinamico-secundario text-white px-3.5 py-1.5 rounded-lg text-xs">＋ Nueva</button>
+                        <button onclick="toggleFormularioCliente()" id="btn-nuevo-cliente" class="btn-dinamico-secundario text-white px-3.5 py-1.5 rounded-lg text-xs font-medium transition">＋ Nueva Clienta</button>
                     </div>
-                    <div id="form-nuevo-cliente" class="hidden bg-[#FBF9F5] p-4 rounded-xl border mb-4 space-y-3">
-                        <input type="text" id="input-nombre-cliente" placeholder="Nombre completo" class="w-full border p-2.5 rounded-xl text-sm bg-white">
-                        <input type="tel" id="input-telefono-cliente" placeholder="Teléfono" class="w-full border p-2.5 rounded-xl text-sm bg-white">
-                        <button onclick="guardarNuevoCliente()" class="w-full btn-dinamico-primario py-2.5 rounded-xl text-xs">Guardar</button>
+
+                    <div id="form-nuevo-cliente" class="hidden bg-[#FBF9F5] p-4 rounded-xl border border-[#D8C8BC] mb-4 space-y-3">
+                        <h3 class="text-xs font-semibold text-[#7C5C43] uppercase tracking-wider">Registrar Clienta</h3>
+                        <input type="text" id="input-nombre-cliente" placeholder="Nombre completo" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-white text-stone-700 focus:outline-none focus:border-[#8C6D58]">
+                        <input type="tel" id="input-telefono-cliente" placeholder="Teléfono (opcional)" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-white text-stone-700 focus:outline-none focus:border-[#8C6D58]">
+                        <div class="flex gap-2 pt-1">
+                            <button onclick="guardarNuevoCliente()" class="flex-1 btn-dinamico-primario text-white py-2.5 rounded-xl text-xs font-medium shadow-sm">Guardar Clienta</button>
+                            <button onclick="toggleFormularioCliente()" class="px-4 bg-stone-200 text-stone-700 py-2.5 rounded-xl text-xs font-medium">Cancelar</button>
+                        </div>
                     </div>
-                    <input type="text" id="buscar-cliente" onkeyup="filtrarListaClientes()" placeholder="Buscar..." class="w-full border p-2.5 rounded-xl mb-3 text-sm bg-[#FBF9F5]">
-                    <div id="lista-clientes" class="space-y-2 max-h-[60vh] overflow-y-auto"></div>
+
+                    <input type="text" id="buscar-cliente" onkeyup="filtrarListaClientes()" placeholder="Buscar clienta..." class="w-full border border-[#D8C8BC] p-2.5 rounded-xl mb-3 text-sm bg-[#FBF9F5] focus:outline-none focus:border-[#8C6D58]">
+                    <div id="lista-clientes" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
                 </div>
             </section>
+
+            <!-- VISTA GASTOS -->
+            <section id="seccion-gastos" class="hidden space-y-4">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE] mb-4">
+                    <h2 class="text-base font-semibold text-[#5C4231] mb-3 font-serif-luxury">💰 Registrar Gasto</h2>
+                    <input type="text" id="gasto-concepto" placeholder="Concepto (ej. Cera, Comida)" class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 text-sm bg-[#FBF9F5]">
+                    <select id="gasto-categoria" class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 bg-[#FBF9F5] text-sm text-stone-700">
+                        <option value="materiales">Materiales / Útiles</option>
+                        <option value="alimentacion">Comida</option>
+                        <option value="golosinas">Golosinas</option>
+                        <option value="otros">Otros</option>
+                    </select>
+                    <div class="mb-3">
+                        <label class="block text-[11px] font-semibold text-stone-500 mb-1 uppercase">Fecha del Gasto:</label>
+                        <input type="date" id="gasto-fecha" class="w-full border border-[#D8C8BC] p-3 rounded-xl text-sm bg-[#FBF9F5]">
+                    </div>
+                    <input type="number" id="gasto-monto" placeholder="Monto ($)" class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 text-sm bg-[#FBF9F5]">
+                    <button onclick="guardarGasto()" class="w-full btn-dinamico-primario text-white py-3.5 rounded-xl font-medium shadow-md transition text-sm">Registrar Gasto</button>
+                </div>
+
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
+                    <h3 class="text-sm font-semibold text-[#5C4231] mb-3 font-serif-luxury">Historial de Gastos (Cronológico)</h3>
+                    <div id="lista-gastos" class="space-y-2">
+                        <p class="text-stone-400 text-xs text-center py-4">No hay gastos registrados</p>
+                    </div>
+                </div>
+            </section>
+
         </main>
 
-        <nav id="nav-inferior" class="fixed bottom-0 left-0 right-0 bg-white/90 border-t flex justify-around p-2.5 shadow-lg max-w-md mx-auto z-40">
+        <!-- MODAL GESTIÓN DE SERVICIOS -->
+        <div id="modal-servicios" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+                    <h3 class="font-bold text-stone-800 text-sm uppercase tracking-wider font-serif-luxury">🛠️ Gestionar Catálogo de Servicios</h3>
+                    <button onclick="cerrarModalServicios()" class="text-stone-400 hover:text-stone-600 font-bold text-base">✕</button>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[11px] font-bold text-stone-500 uppercase block">Servicios Actuales (Modificar o Eliminar)</label>
+                    <div id="container-servicios-editar" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        <!-- Inputs editables -->
+                    </div>
+                </div>
+
+                <hr class="border-stone-200">
+
+                <div class="space-y-3 bg-stone-50 p-4 rounded-2xl border border-stone-200">
+                    <label class="text-[11px] font-bold text-[#7C5C43] uppercase block">➕ Añadir Nuevo Servicio</label>
+                    <div>
+                        <input type="text" id="nuevo-nombre-servicio" placeholder="Nombre (ej. Limpieza facial)" class="w-full bg-white border border-stone-300 p-2.5 rounded-xl text-xs focus:outline-none focus:border-[#7C5C43]">
+                    </div>
+                    <div>
+                        <input type="number" step="0.01" id="nuevo-precio-servicio" placeholder="Precio ($)" class="w-full bg-white border border-stone-300 p-2.5 rounded-xl text-xs focus:outline-none focus:border-[#7C5C43] font-mono">
+                    </div>
+                    <button onclick="crearNuevoServicio()" class="w-full btn-dinamico-primario text-white py-2.5 rounded-xl text-xs font-bold transition shadow-sm">Guardar Nuevo Servicio</button>
+                </div>
+
+                <button onclick="cerrarModalServicios()" class="w-full bg-stone-200 hover:bg-stone-300 text-stone-700 py-2.5 rounded-xl text-xs font-bold transition">Cerrar y Actualizar</button>
+            </div>
+        </div>
+
+        <!-- MODAL PERSONALIZACIÓN -->
+        <div id="modal-personalizacion" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-[#D8C8BC] space-y-4">
+                <div class="flex justify-between items-center border-b border-stone-100 pb-2">
+                    <h3 class="font-serif-luxury font-semibold text-[#5C4231] text-base">🎨 Personalizar Apariencia</h3>
+                    <button onclick="cerrarModalPersonalizacion()" class="text-stone-400 hover:text-stone-700 font-bold">✕</button>
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-stone-600 block mb-2">Paleta de Colores:</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="seleccionarPaleta('#7C5C43', '#8C6D58', '#FBF9F5')" class="p-2 border rounded-xl text-left text-xs bg-[#FBF9F5] border-[#7C5C43] font-medium">Café Clásico</button>
+                        <button onclick="seleccionarPaleta('#8D7B68', '#A8927A', '#F7F5F0')" class="p-2 border rounded-xl text-left text-xs bg-[#F7F5F0] border-[#8D7B68] font-medium">Hueso / Nude</button>
+                        <button onclick="seleccionarPaleta('#9E6B7B', '#B58393', '#FAF4F6')" class="p-2 border rounded-xl text-left text-xs bg-[#FAF4F6] border-[#9E6B7B] font-medium">Rosa Soft</button>
+                        <button onclick="seleccionarPaleta('#3A3A3A', '#555555', '#F0F0F0')" class="p-2 border rounded-xl text-left text-xs bg-[#F0F0F0] border-[#3A3A3A] font-medium">Elegante Oscuro</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-stone-600 block mb-1">Imagen de Fondo (Desde tu Celular):</label>
+                    <input type="file" id="input-archivo-fondo" accept="image/*" class="hidden" onchange="subirFondoCelular(this)">
+                    <div class="flex gap-2 items-center">
+                        <button onclick="document.getElementById('input-archivo-fondo').click()" class="flex-1 bg-stone-100 border border-[#D8C8BC] text-stone-700 py-2 rounded-xl text-xs font-medium">📁 Seleccionar Imagen</button>
+                        <button onclick="quitarFondo()" class="px-3 bg-rose-50 text-rose-700 border border-rose-200 py-2 rounded-xl text-xs font-medium">Quitar</button>
+                    </div>
+                    <input type="hidden" id="input-url-fondo" value="">
+                    <p id="lbl-estado-fondo" class="text-[10px] text-stone-400 mt-1">Ninguna imagen seleccionada</p>
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-stone-600 block mb-1">Transparencia del Fondo:</label>
+                    <input type="range" id="input-opacidad-fondo" min="0.05" max="0.5" step="0.05" value="0.15" class="w-full accent-[#7C5C43]">
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="guardarPersonalizacion()" class="flex-1 btn-dinamico-primario text-white py-2.5 rounded-xl text-xs font-medium">Guardar para el Estudio</button>
+                    <button onclick="cerrarModalPersonalizacion()" class="px-3 bg-stone-100 text-stone-600 py-2.5 rounded-xl text-xs font-medium">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <nav id="nav-inferior" class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-[#EFE7DE] flex justify-around p-2.5 shadow-lg max-w-md mx-auto z-40">
             <button onclick="cambiarSeccion('agenda')" class="flex flex-col items-center text-xs texto-dinamico-primario font-medium">📅 Agenda</button>
             <button onclick="cambiarSeccion('historial')" class="flex flex-col items-center text-xs text-stone-500">📜 Historial</button>
             <button onclick="cambiarSeccion('cobrar')" class="flex flex-col items-center text-xs text-stone-500">🧾 Cobrar</button>
             <button id="btn-nav-inventario" onclick="cambiarSeccion('inventario')" class="hidden flex-col items-center text-xs text-stone-500">📦 Productos</button>
             <button onclick="cambiarSeccion('clientes')" class="flex flex-col items-center text-xs text-stone-500">👩 Clientas</button>
+            <button onclick="cambiarSeccion('gastos')" class="flex flex-col items-center text-xs text-stone-500">💰 Gastos</button>
         </nav>
     </div>
 
     <script>
         const SUPABASE_URL = "https://udddoohrdhmekrwstcnu.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_qr02Rl-cs9BWfws_pN3fSQ_5MZ5q6F-"; 
-        let supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let supabaseClient = null;
         let usuarioSesion = null;
         let listaClientesCache = [];
+        let citasNotificadas = new Set();
+        let temaTemporal = { primario: '#7C5C43', secundario: '#8C6D58', fondo: '#FBF9F5' };
         let listaServiciosEstudio = [];
         let listaProductosEstudio = [];
         let productosSeleccionadosCobro = [];
+
+        try {
+            if (window.supabase) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch (e) {
+            console.error("Error al inicializar Supabase:", e);
+        }
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
+        }
+
         let serviciosSeleccionadosCobro = [];
         let serviciosSeleccionadosAgendar = [];
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Auto login si hay sesión previa guardada
-        });
-
         function mostrarNotificacion(mensaje) {
             const toast = document.getElementById('toast-notificacion');
-            document.getElementById('toast-mensaje').innerText = mensaje;
+            const toastMsg = document.getElementById('toast-mensaje');
+            toastMsg.innerText = mensaje;
             toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 2500);
+            setTimeout(() => { toast.classList.add('hidden'); }, 2500);
         }
 
         async function iniciarSesion() {
@@ -265,56 +554,417 @@
             const passVal = document.getElementById('pin-input').value.trim();
             const errorMsg = document.getElementById('pin-error');
 
-            const { data: usuarios } = await supabaseClient.from('usuarios').select('*').eq('usuario', userVal).eq('password', passVal);
-            if (!usuarios || usuarios.length === 0) {
+            if (!userVal || !passVal) {
+                errorMsg.innerText = "Ingresa usuario y PIN";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            const { data: usuarios, error } = await supabaseClient
+                .from('usuarios')
+                .select('*')
+                .eq('usuario', userVal)
+                .eq('password', passVal);
+
+            if (error || !usuarios || usuarios.length === 0) {
                 errorMsg.innerText = "Usuario o PIN incorrecto";
                 errorMsg.classList.remove('hidden');
                 return;
             }
 
-            usuarioSesion = usuarios[0];
-            if (usuarioSesion.rol === 'admin') { window.location.href = 'admin.html'; return; }
+            const usuario = usuarios[0];
 
+            if (usuario.estado === 'suspendido') {
+                errorMsg.innerText = "⛔ Tu cuenta está suspendida por falta de pago.";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            if (usuario.rol === 'admin') {
+                window.location.href = 'admin.html';
+                return;
+            }
+
+            usuarioSesion = usuario;
             document.getElementById('pin-screen').classList.add('hidden');
             document.getElementById('app-content').classList.remove('hidden');
-            document.getElementById('header-nombre-estudio').innerText = usuarioSesion.nombre_estudio;
 
-            if (usuarioSesion.modulo_inventario) {
+            document.getElementById('header-nombre-estudio').innerText = usuario.nombre_estudio;
+            
+            if (usuario.logo_url) {
+                document.getElementById('header-logo-container').innerHTML = `<img src="${usuario.logo_url}" class="w-full h-full object-cover">`;
+            } else {
+                const iniciales = usuario.nombre_estudio.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+                document.getElementById('header-logo-iniciales').innerText = iniciales;
+            }
+
+            if (usuario.modulo_inventario) {
                 document.getElementById('btn-nav-inventario').classList.remove('hidden');
                 document.getElementById('btn-nav-inventario').classList.add('flex');
             }
 
+            await cargarTemaEstudio();
             await cargarServiciosBaseDatos();
             await cargarProductosBaseDatos();
-            await cargarCitasYResumen();
+            await cargarDatosIniciales();
+            await cargarDiasNoLaborables();
+
             subscribirCanalRealtime();
+
+            setInterval(verificarCitasProximas, 30000);
         }
 
         function subscribirCanalRealtime() {
             if (!supabaseClient || !usuarioSesion) return;
-            supabaseClient.channel('schema-db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'citas' }, () => {
-                cargarCitasYResumen();
-            }).subscribe();
+            
+            supabaseClient
+                .channel('schema-db-changes')
+                .on('postgres_changes', { 
+                    event: '*', 
+                    schema: 'public', 
+                    table: 'citas'
+                }, payload => {
+                    if (payload.new && payload.new.usuario_id === usuarioSesion.id) {
+                        cargarCitasYResumen();
+                        mostrarNotificacion("🔔 ¡Actualización en tiempo real!");
+                    } else if (payload.old && payload.old.usuario_id === usuarioSesion.id) {
+                        cargarCitasYResumen();
+                    }
+                })
+                .subscribe();
+        }
+
+        function abrirModalDiasLibres() {
+            document.getElementById('modal-dias-libres').classList.remove('hidden');
+            cargarDiasNoLaborables();
+        }
+
+        function cerrarModalDiasLibres() {
+            document.getElementById('modal-dias-libres').classList.add('hidden');
+        }
+
+        async function cargarDiasNoLaborables() {
+            if (!supabaseClient || !usuarioSesion) return;
+            const { data: dias } = await supabaseClient
+                .from('dias_no_laborables')
+                .select('*')
+                .eq('usuario_id', usuarioSesion.id)
+                .order('fecha', { ascending: true });
+
+            const contenedor = document.getElementById('lista-dias-bloqueados');
+            contenedor.innerHTML = '';
+
+            if (!dias || dias.length === 0) {
+                contenedor.innerHTML = `<span class="text-xs text-stone-400 font-medium italic">No hay días bloqueados</span>`;
+                return;
+            }
+
+            dias.forEach(d => {
+                contenedor.innerHTML += `
+                    <div class="flex items-center justify-between bg-rose-50 border border-rose-200 text-rose-800 px-3 py-1.5 rounded-xl text-xs font-semibold">
+                        <span>📅 ${d.fecha}</span>
+                        <button onclick="desbloquearDia('${d.id}')" class="text-rose-600 hover:text-rose-900 font-bold px-2 py-0.5 rounded">✕</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function bloquearDia() {
+            const fecha = document.getElementById('input-dia-bloquear').value;
+            if (!fecha || !usuarioSesion) {
+                mostrarNotificacion("Selecciona una fecha válida");
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('dias_no_laborables')
+                .insert([{ usuario_id: usuarioSesion.id, fecha }]);
+
+            if (error) {
+                mostrarNotificacion("Error al bloquear día");
+                console.error(error);
+            } else {
+                document.getElementById('input-dia-bloquear').value = '';
+                mostrarNotificacion("✓ Día bloqueado con éxito");
+                cargarDiasNoLaborables();
+            }
+        }
+
+        async function desbloquearDia(id) {
+            const { error } = await supabaseClient
+                .from('dias_no_laborables')
+                .delete()
+                .eq('id', id);
+
+            if (!error) {
+                mostrarNotificacion("✓ Día desbloqueado");
+                cargarDiasNoLaborables();
+            }
+        }
+
+        async function verificarCitasProximas() {
+            if (!supabaseClient || !usuarioSesion) return;
+
+            const hoy = new Date().toISOString().split('T')[0];
+            const { data: citas } = await supabaseClient
+                .from('citas')
+                .select('*, clientes(nombre)')
+                .eq('usuario_id', usuarioSesion.id)
+                .eq('fecha', hoy)
+                .eq('estado', 'pendiente');
+
+            if (!citas) return;
+
+            const ahora = new Date();
+
+            citas.forEach(cita => {
+                if (!cita.hora || citasNotificadas.has(cita.id)) return;
+
+                const [h, m] = cita.hora.split(':').map(Number);
+                const fechaCita = new Date();
+                fechaCita.setHours(h, m, 0, 0);
+
+                const diferenciaMs = fechaCita - ahora;
+                const diferenciaMinutos = diferenciaMs / (1000 * 60);
+
+                if (diferenciaMinutos <= 15 && diferenciaMinutos >= 0) {
+                    citasNotificadas.add(cita.id);
+                    dispararAlertaVisualSonora(cita.clientes ? cita.clientes.nombre : 'Clienta', cita.hora, cita.servicios);
+                }
+            });
+        }
+
+        function dispararAlertaVisualSonora(nombreCliente, hora, servicios) {
+            const alertaBox = document.getElementById('alerta-cita-proxima');
+            const detalle = document.getElementById('alerta-cita-detalle');
+            detalle.innerHTML = `<strong>${nombreCliente}</strong><br>${servicios}<br>Hora programada: ${hora}`;
+            alertaBox.classList.remove('hidden');
+
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+            } catch (e) {
+                console.log("Audio no soportado automáticamente");
+            }
+        }
+
+        function cerrarAlertaCita() {
+            document.getElementById('alerta-cita-proxima').classList.add('hidden');
+        }
+
+        async function cargarServiciosBaseDatos() {
+            if (!supabaseClient || !usuarioSesion) return;
+            const { data, error } = await supabaseClient
+                .from('servicios')
+                .select('*')
+                .eq('usuario_id', usuarioSesion.id)
+                .order('created_at', { ascending: true });
+
+            if (!error) {
+                listaServiciosEstudio = data || [];
+            }
+        }
+
+        async function cargarProductosBaseDatos() {
+            if (!supabaseClient || !usuarioSesion || !usuarioSesion.modulo_inventario) return;
+            const { data, error } = await supabaseClient
+                .from('productos')
+                .select('*')
+                .eq('usuario_id', usuarioSesion.id)
+                .order('nombre', { ascending: true });
+
+            if (!error) {
+                listaProductosEstudio = data || [];
+            }
+        }
+
+        async function cargarTemaEstudio() {
+            if (!usuarioSesion) return;
+
+            const { data: config } = await supabaseClient
+                .from('configuracion_estudio')
+                .select('*')
+                .eq('usuario_id', usuarioSesion.id)
+                .single();
+
+            if (config) {
+                aplicarEstilosVisuales(config.color_primario, config.color_secundario, config.color_fondo, config.url_fondo, config.opacidad_fondo);
+                document.getElementById('input-url-fondo').value = config.url_fondo || '';
+                document.getElementById('input-opacidad-fondo').value = config.opacidad_fondo || 0.15;
+                if (config.url_fondo) {
+                    document.getElementById('lbl-estado-fondo').innerText = "✓ Imagen de fondo activa";
+                }
+            }
+        }
+
+        function aplicarEstilosVisuales(primario, secundario, fondo, urlFondo, opacidad) {
+            document.documentElement.style.setProperty('--color-primario', primario || '#7C5C43');
+            document.documentElement.style.setProperty('--color-secundario', secundario || '#8C6D58');
+            document.documentElement.style.setProperty('--color-fondo', fondo || '#FBF9F5');
+
+            document.getElementById('header-app').style.backgroundColor = primario || '#7C5C43';
+
+            const bgOverlay = document.getElementById('bg-overlay');
+            if (urlFondo && urlFondo.trim() !== "") {
+                bgOverlay.style.backgroundImage = `url('${urlFondo}')`;
+                bgOverlay.style.opacity = opacidad || 0.15;
+            } else {
+                bgOverlay.style.backgroundImage = 'none';
+            }
+
+            temaTemporal = { primario, secundario, fondo };
+        }
+
+        function abrirModalPersonalizacion() {
+            document.getElementById('modal-personalizacion').classList.remove('hidden');
+        }
+
+        function cerrarModalPersonalizacion() {
+            document.getElementById('modal-personalizacion').classList.add('hidden');
+        }
+
+        function seleccionarPaleta(p, s, f) {
+            temaTemporal = { primario: p, secundario: s, fondo: f };
+            mostrarNotificacion("Paleta seleccionada. Haz clic en Guardar.");
+        }
+
+        async function subirFondoCelular(inputElement) {
+            const file = inputElement.files[0];
+            if (!file) return;
+
+            mostrarNotificacion("Subiendo imagen de fondo...");
+            const fileName = `fondo_${usuarioSesion.id}_${Date.now()}.jpg`;
+            const { error } = await supabaseClient.storage.from('fotos-estudio').upload(fileName, file);
+
+            if (error) {
+                mostrarNotificacion("Error al subir imagen");
+                return;
+            }
+
+            const { data: publicUrlData } = supabaseClient.storage.from('fotos-estudio').getPublicUrl(fileName);
+            document.getElementById('input-url-fondo').value = publicUrlData.publicUrl;
+            document.getElementById('lbl-estado-fondo').innerText = "✓ Imagen cargada con éxito";
+            mostrarNotificacion("✓ Imagen lista. Guarda los cambios.");
+        }
+
+        function quitarFondo() {
+            document.getElementById('input-url-fondo').value = '';
+            document.getElementById('lbl-estado-fondo').innerText = "Sin imagen seleccionada";
+            mostrarNotificacion("Fondo removido. Guarda para aplicar.");
+        }
+
+        async function guardarPersonalizacion() {
+            if (!usuarioSesion) return;
+
+            const urlFondo = document.getElementById('input-url-fondo').value;
+            const opacidad = document.getElementById('input-opacidad-fondo').value;
+
+            const { error } = await supabaseClient
+                .from('configuracion_estudio')
+                .upsert({
+                    usuario_id: usuarioSesion.id,
+                    color_primario: temaTemporal.primario,
+                    color_secundario: temaTemporal.secundario,
+                    color_fondo: temaTemporal.fondo,
+                    url_fondo: urlFondo,
+                    opacidad_fondo: Number(opacidad)
+                }, { onConflict: 'usuario_id' });
+
+            if (error) {
+                mostrarNotificacion("Error al guardar diseño");
+                console.error(error);
+            } else {
+                aplicarEstilosVisuales(temaTemporal.primario, temaTemporal.secundario, temaTemporal.fondo, urlFondo, opacidad);
+                cerrarModalPersonalizacion();
+                mostrarNotificacion("✓ Apariencia actualizada en todo el estudio");
+            }
+        }
+
+        function solicitarPermisoNotificaciones() {
+            if (!("Notification" in window)) return;
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    document.getElementById('btn-estado-alertas').innerHTML = `<span>✓ Alertas</span>`;
+                    mostrarNotificacion("✓ Alertas activadas con éxito");
+                }
+            });
         }
 
         function cambiarSeccion(seccion) {
-            ['agenda', 'historial', 'agendar', 'cobrar', 'clientes', 'inventario'].forEach(s => {
-                document.getElementById(`seccion-${s}`).classList.add('hidden');
-            });
-            document.getElementById(`seccion-${seccion}`).classList.remove('hidden');
-            if (seccion === 'agenda') cargarCitasYResumen();
-            if (seccion === 'cobrar') inicializarCalculadora();
-            if (seccion === 'inventario') cargarInventarioVista();
-            if (seccion === 'clientes') cargarClientes();
+            document.getElementById('seccion-agenda').classList.add('hidden');
+            document.getElementById('seccion-historial').classList.add('hidden');
+            document.getElementById('seccion-agendar').classList.add('hidden');
+            document.getElementById('seccion-cobrar').classList.add('hidden');
+            document.getElementById('seccion-clientes').classList.add('hidden');
+            document.getElementById('seccion-gastos').classList.add('hidden');
+            document.getElementById('seccion-fotos').classList.add('hidden');
+            document.getElementById('seccion-inventario').classList.add('hidden');
+
+            if (seccion === 'agenda') {
+                document.getElementById('seccion-agenda').classList.remove('hidden');
+                cargarCitasYResumen();
+            } else if (seccion === 'historial') {
+                document.getElementById('seccion-historial').classList.remove('hidden');
+                cargarHistorialCitas();
+            } else if (seccion === 'agendar') {
+                document.getElementById('seccion-agendar').classList.remove('hidden');
+            } else if (seccion === 'cobrar') {
+                document.getElementById('seccion-cobrar').classList.remove('hidden');
+                if (!window.citaCobrandoId) {
+                    inicializarCalculadora();
+                }
+            } else if (seccion === 'clientes') {
+                document.getElementById('seccion-clientes').classList.remove('hidden');
+                cargarClientes();
+            } else if (seccion === 'gastos') {
+                document.getElementById('seccion-gastos').classList.remove('hidden');
+                document.getElementById('gasto-fecha').value = new Date().toISOString().split('T')[0];
+                cargarGastos();
+            } else if (seccion === 'fotos') {
+                document.getElementById('seccion-fotos').classList.remove('hidden');
+            } else if (seccion === 'inventario') {
+                document.getElementById('seccion-inventario').classList.remove('hidden');
+                cargarInventarioVista();
+            }
+        }
+
+        async function cargarDatosIniciales() {
+            await obtenerClientesGlobales();
+            await cargarCitasYResumen();
+        }
+
+        async function obtenerClientesGlobales() {
+            if (!supabaseClient || !usuarioSesion) return;
+            const { data } = await supabaseClient.from('clientes').select('id, nombre, telefono').eq('usuario_id', usuarioSesion.id).order('nombre');
+            if (data) listaClientesCache = data;
         }
 
         async function cargarCitasYResumen() {
             if (!supabaseClient || !usuarioSesion) return;
 
-            const { data: citas } = await supabaseClient.from('citas').select('*, clientes(nombre, telefono)').eq('usuario_id', usuarioSesion.id).order('fecha', { ascending: true }).order('hora', { ascending: true });
-            const { data: gastos } = await supabaseClient.from('gastos').select('*').eq('usuario_id', usuarioSesion.id);
+            const { data: citas } = await supabaseClient
+                .from('citas')
+                .select('*, clientes(nombre, telefono)')
+                .eq('usuario_id', usuarioSesion.id)
+                .order('fecha', { ascending: true })
+                .order('hora', { ascending: true });
+
+            const { data: gastos } = await supabaseClient
+                .from('gastos')
+                .select('*')
+                .eq('usuario_id', usuarioSesion.id);
 
             let totalIngresosMes = 0;
+            let totalGastosMes = 0;
+            
             const listaPendientesHtml = document.getElementById('lista-citas-pendientes');
             const listaPedidosHtml = document.getElementById('lista-pedidos-pendientes');
             const panelPedidos = document.getElementById('panel-pedidos-pendientes');
@@ -334,7 +984,10 @@
                         hayPendientes = true;
                         const totalCita = Number(cita.total) || 0;
                         const anticipoVal = Number(cita.anticipo) || 0;
-                        let restante = Math.max(0, totalCita - anticipoVal);
+                        let restanteCobrar = totalCita - anticipoVal;
+                        if (restanteCobrar < 0) restanteCobrar = 0;
+
+                        const anticipoBadge = anticipoVal > 0 ? `<span class="text-xs text-amber-800 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Anticipo: $${anticipoVal.toFixed(2)}</span>` : '';
                         
                         listaPendientesHtml.innerHTML += `
                             <div class="border-b border-[#EFE7DE] pb-3 mb-2 flex justify-between items-center">
@@ -342,10 +995,17 @@
                                     <p class="font-semibold text-stone-800 text-sm">${nombreCliente} — <span class="texto-dinamico-primario font-bold">$${totalCita.toFixed(2)}</span></p>
                                     <p class="text-xs text-stone-500 font-medium">📅 ${cita.fecha} | ⏰ <span class="text-stone-800 font-bold">${cita.hora || '10:00'}</span></p>
                                     <p class="text-xs text-stone-500 mt-0.5">${cita.servicios}</p>
+                                    <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                                        <span class="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">PENDIENTE</span>
+                                        ${anticipoBadge}
+                                        <button onclick="abrirSeccionFotos('${cita.id}', '${nombreCliente}', '${cita.servicios}')" class="text-[10px] bg-[#FBF9F5] border border-[#D8C8BC] text-[#7C5C43] px-2 py-0.5 rounded-md font-medium">📷 Fotos</button>
+                                    </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <button onclick="prepararCobroDesdeAgenda('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${encodeURIComponent(cita.servicios)}', ${totalCita}, ${anticipoVal})" class="btn-dinamico-primario text-white text-[10px] px-2.5 py-1 rounded-md">Cobrar $${restante.toFixed(2)}</button>
-                                    <button onclick="eliminarCita('${cita.id}')" class="bg-rose-50 text-rose-700 text-[10px] px-2.5 py-0.5 rounded-md">Eliminar</button>
+                                    <button onclick="prepararCobroDesdeAgenda('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${encodeURIComponent(cita.servicios)}', ${totalCita}, ${anticipoVal})" class="btn-dinamico-primario text-white text-[10px] px-2.5 py-1 rounded-md shadow-xs transition text-center font-medium">Cobrar $${restanteCobrar.toFixed(2)}</button>
+                                    <button onclick="prepararEdicionCita('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${cita.fecha}', '${cita.hora || '10:00'}', '${encodeURIComponent(cita.servicios)}', '${anticipoVal}')" class="btn-dinamico-secundario text-white text-[10px] px-2.5 py-1 rounded-md transition text-center font-medium">Editar</button>
+                                    <button onclick="marcarNoAsistio('${cita.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 text-[10px] px-2 py-0.5 rounded-md transition text-center font-medium" title="No asistió (Conserva anticipo)">No Asistió</button>
+                                    <button onclick="eliminarCita('${cita.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-0.5 rounded-md transition text-center font-medium">Eliminar</button>
                                 </div>
                             </div>
                         `;
@@ -363,8 +1023,8 @@
                                     </div>
                                     <div class="flex flex-col gap-1 items-end">
                                         <span class="text-base font-bold text-emerald-700 font-serif-luxury">$${totalPedido.toFixed(2)}</span>
-                                        <button onclick="prepararCobroDesdeAgenda('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${encodeURIComponent(cita.servicios)}', ${totalPedido}, 0)" class="bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold">Entregar y Cobrar</button>
-                                        <button onclick="cancelarPedidoProducto('${cita.id}')" class="text-rose-600 text-[10px] font-semibold underline">Cancelar y Devolver Stock</button>
+                                        <button onclick="prepararCobroDesdeAgenda('${cita.id}', '${cita.cliente_id}', '${nombreCliente}', '${encodeURIComponent(cita.servicios)}', ${totalPedido}, 0)" class="bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold shadow-xs">Entregar y Cobrar</button>
+                                        <button onclick="cancelarPedidoProducto('${cita.id}')" class="text-rose-600 text-[10px] font-semibold underline mt-1">Cancelar y Devolver Stock</button>
                                     </div>
                                 </div>
                             `;
@@ -375,21 +1035,26 @@
                 });
             }
 
-            if (!hayPendientes) listaPendientesHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-3">Sin citas pendientes</p>`;
+            if (!hayPendientes) listaPendientesHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-3">Sin citas pendientes por atender</p>`;
+            
             if (panelPedidos) {
-                if (hayPedidos) panelPedidos.classList.remove('hidden');
-                else panelPedidos.classList.add('hidden');
+                if (hayPedidos) {
+                    panelPedidos.classList.remove('hidden');
+                } else {
+                    panelPedidos.classList.add('hidden');
+                }
             }
 
+            if (gastos) gastos.forEach(g => totalGastosMes += Number(g.monto));
+
             document.getElementById('lbl-ingresos-mes').innerText = `$${totalIngresosMes.toFixed(2)}`;
-            document.getElementById('lbl-gastos-mes').innerText = `$0.00`;
-            document.getElementById('lbl-profit-mes').innerText = `$${totalIngresosMes.toFixed(2)}`;
+            document.getElementById('lbl-gastos-mes').innerText = `$${totalGastosMes.toFixed(2)}`;
+            document.getElementById('lbl-profit-mes').innerText = `$${(totalIngresosMes - totalGastosMes).toFixed(2)}`;
         }
 
         async function cancelarPedidoProducto(citaId) {
             const { data: cita } = await supabaseClient.from('citas').select('productos_ids').eq('id', citaId).single();
             
-            // Devolver stock a los productos si se cancela
             if (cita && cita.productos_ids && Array.isArray(cita.productos_ids)) {
                 for (let pId of cita.productos_ids) {
                     const { data: pObj } = await supabaseClient.from('productos').select('stock').eq('id', pId).single();
@@ -404,21 +1069,25 @@
             mostrarNotificacion("✓ Pedido cancelado y stock devuelto al inventario");
         }
 
+        async function marcarNoAsistio(citaId) {
+            const { data } = await supabaseClient.from('citas').select('anticipo').eq('id', citaId).single();
+            const montoRetenido = data && data.anticipo ? Number(data.anticipo) : 0;
+
+            await supabaseClient.from('citas').update({ 
+                estado: 'retenido', 
+                total: montoRetenido,
+                metodo_pago: 'anticipo_retenido',
+                servicios: 'CANCELADA - Anticipo Retenido'
+            }).eq('id', citaId);
+
+            cargarCitasYResumen();
+            mostrarNotificacion("✓ Anticipo retenido como cobro de cancelación");
+        }
+
         async function eliminarCita(citaId) {
             await supabaseClient.from('citas').delete().eq('id', citaId);
             cargarCitasYResumen();
-            mostrarNotificacion("✓ Cita eliminada");
-        }
-
-        async function cargarServiciosBaseDatos() {
-            const { data } = await supabaseClient.from('servicios').select('*').eq('usuario_id', usuarioSesion.id);
-            listaServiciosEstudio = data || [];
-        }
-
-        async function cargarProductosBaseDatos() {
-            if (!usuarioSesion || !usuarioSesion.modulo_inventario) return;
-            const { data } = await supabaseClient.from('productos').select('*').eq('usuario_id', usuarioSesion.id);
-            listaProductosEstudio = data || [];
+            mostrarNotificacion("✓ Cita eliminada al instante");
         }
 
         async function abrirSeccionAgendarNueva() {
@@ -427,16 +1096,148 @@
             await inicializarFormularioAgendar();
         }
 
+        async function prepararEdicionCita(citaId, clienteId, clienteNombre, fecha, hora, serviciosEncoded, anticipoVal) {
+            document.getElementById('editar-cita-id').value = citaId;
+            cambiarSeccion('agendar');
+            await inicializarFormularioAgendar();
+
+            document.getElementById('titulo-modo-agenda').innerText = "✏️ Editar Cita";
+            document.getElementById('agendar-buscar-cliente').value = clienteNombre;
+            document.getElementById('agendar-cliente-id').value = clienteId;
+            document.getElementById('agendar-fecha').value = fecha;
+            document.getElementById('agendar-hora').value = hora;
+            document.getElementById('agendar-anticipo').value = anticipoVal || 0;
+
+            const serviciosActualesStr = decodeURIComponent(serviciosEncoded).toLowerCase();
+            const listaServiciosCita = serviciosActualesStr.split(',').map(s => s.trim());
+            
+            serviciosSeleccionadosAgendar = [];
+            document.querySelectorAll('#agendar-botones-servicios button').forEach(btn => {
+                const nombreServicio = btn.getAttribute('data-nombre');
+                const precioServicio = Number(btn.getAttribute('data-precio'));
+                
+                const esMatchExacto = nombreServicio && listaServiciosCita.some(sServicio => sServicio === nombreServicio.toLowerCase());
+
+                if (esMatchExacto) {
+                    serviciosSeleccionadosAgendar.push({ nombre: nombreServicio, precio: precioServicio });
+                    btn.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
+                } else {
+                    btn.className = "p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs";
+                }
+            });
+
+            if (serviciosSeleccionadosAgendar.length === 0 && serviciosActualesStr) {
+                serviciosSeleccionadosAgendar.push({ nombre: decodeURIComponent(serviciosEncoded), precio: 0 });
+            }
+
+            actualizarTotalAgendar();
+        }
+
+        async function cargarHistorialCitas() {
+            const { data: citas } = await supabaseClient.from('citas').select('*, clientes(nombre)').eq('usuario_id', usuarioSesion.id).in('estado', ['atendida', 'retenido']).order('fecha', { ascending: false });
+            const listaAtendidasHtml = document.getElementById('lista-citas-atendidas');
+            listaAtendidasHtml.innerHTML = '';
+            if (!citas || citas.length === 0) {
+                listaAtendidasHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay historial</p>`;
+                return;
+            }
+            citas.forEach(cita => {
+                const nombreCliente = cita.clientes ? cita.clientes.nombre : 'Cliente general';
+                listaAtendidasHtml.innerHTML += `
+                    <div class="item-historial border-b border-[#EFE7DE] pb-3 mb-2 flex justify-between items-center" data-texto="${nombreCliente.toLowerCase()} ${cita.servicios.toLowerCase()} ${cita.fecha}">
+                        <div>
+                            <p class="font-semibold text-stone-800 text-sm">${nombreCliente} — <span class="texto-dinamico-primario font-bold">$${cita.total}</span></p>
+                            <p class="text-xs text-stone-500">${cita.fecha} | ${cita.servicios}</p>
+                            <button onclick="abrirSeccionFotos('${cita.id}', '${nombreCliente}', '${cita.servicios}')" class="text-[10px] bg-[#FBF9F5] border border-[#D8C8BC] text-[#7C5C43] px-2 py-0.5 rounded-md font-medium mt-1">📷 Fotos</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filtrarHistorial() {
+            const textoFiltro = document.getElementById('buscar-historial').value.toLowerCase();
+            document.querySelectorAll('.item-historial').forEach(item => {
+                item.style.display = item.getAttribute('data-texto').includes(textoFiltro) ? 'flex' : 'none';
+            });
+        }
+
+        async function abrirSeccionFotos(citaId, clienteNombre, servicios) {
+            document.getElementById('foto-cita-id').value = citaId;
+            document.getElementById('fotos-info-cita').innerText = `Clienta: ${clienteNombre} | ${servicios}`;
+            cambiarSeccion('fotos');
+            const { data } = await supabaseClient.from('citas').select('foto_antes, foto_despues').eq('id', citaId).single();
+            if (data) {
+                document.getElementById('preview-antes').innerHTML = data.foto_antes ? `<img src="${data.foto_antes}" onclick="abrirVisorFoto('${data.foto_antes}')" class="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-95 transition" title="Haz clic para ver en grande">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
+                document.getElementById('preview-despues').innerHTML = data.foto_despues ? `<img src="${data.foto_despues}" onclick="abrirVisorFoto('${data.foto_despues}')" class="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-95 transition" title="Haz clic para ver en grande">` : `<span class="text-stone-400 text-[11px]">Sin imagen</span>`;
+            }
+        }
+
+        function abrirVisorFoto(url) {
+            document.getElementById('imagen-visor-zoom').src = url;
+            document.getElementById('btn-descargar-foto').href = url;
+            document.getElementById('modal-visor-foto').classList.remove('hidden');
+        }
+
+        function cerrarVisorFoto() {
+            document.getElementById('modal-visor-foto').classList.add('hidden');
+        }
+
+        async function subirFotoServicio(tipo, inputElement) {
+            const file = inputElement.files[0];
+            if (!file) return;
+            const citaId = document.getElementById('foto-cita-id').value;
+            mostrarNotificacion("Subiendo imagen...");
+            const fileName = `cita_${citaId}_${tipo}_${Date.now()}.jpg`;
+            await supabaseClient.storage.from('fotos-estudio').upload(fileName, file);
+            const { data: publicUrlData } = supabaseClient.storage.from('fotos-estudio').getPublicUrl(fileName);
+            await supabaseClient.from('citas').update(tipo === 'antes' ? { foto_antes: publicUrlData.publicUrl } : { foto_despues: publicUrlData.publicUrl }).eq('id', citaId);
+            mostrarNotificacion("✓ Foto guardada");
+            abrirSeccionFotos(citaId, document.getElementById('fotos-info-cita').innerText.split('|')[0].replace('Clienta:', '').trim(), '');
+        }
+
+        function filtrarClientesEnAutocomplete(modo) {
+            const query = document.getElementById(`${modo}-buscar-cliente`).value.toLowerCase().trim();
+            const listaSugerencias = document.getElementById(`${modo}-lista-sugerencias`);
+            document.getElementById(`${modo}-cliente-id`).value = "";
+            if (!query) { listaSugerencias.classList.add('hidden'); return; }
+            const resultados = listaClientesCache.filter(c => c.nombre.toLowerCase().includes(query));
+            listaSugerencias.innerHTML = resultados.length === 0 ? `<div class="p-3 text-stone-400 text-xs">No encontrada</div>` : '';
+            resultados.forEach(c => {
+                listaSugerencias.innerHTML += `<div onclick="seleccionarClienteAutocomplete('${modo}', '${c.id}', '${c.nombre}')" class="p-2.5 hover:bg-[#F2EAE1] cursor-pointer border-b border-[#EFE7DE] font-medium">${c.nombre}</div>`;
+            });
+            listaSugerencias.classList.remove('hidden');
+        }
+
+        function seleccionarClienteAutocomplete(modo, id, nombre) {
+            document.getElementById(`${modo}-buscar-cliente`).value = nombre;
+            document.getElementById(`${modo}-cliente-id`).value = id;
+            document.getElementById(`${modo}-lista-sugerencias`).classList.add('hidden');
+        }
+
         async function inicializarFormularioAgendar() {
             await obtenerClientesGlobales();
-            document.getElementById('agendar-fecha').value = new Date().toISOString().split('T')[0];
+            await cargarServiciosBaseDatos();
+            if (!document.getElementById('editar-cita-id').value) {
+                document.getElementById('titulo-modo-agenda').innerText = "📅 Programar Cita";
+                document.getElementById('agendar-buscar-cliente').value = '';
+                document.getElementById('agendar-cliente-id').value = '';
+                document.getElementById('agendar-fecha').value = new Date().toISOString().split('T')[0];
+                document.getElementById('agendar-hora').value = '';
+                document.getElementById('agendar-anticipo').value = '';
+                serviciosSeleccionadosAgendar = [];
+            }
             const contenedorBotones = document.getElementById('agendar-botones-servicios');
             contenedorBotones.innerHTML = '';
-            serviciosSeleccionadosAgendar = [];
+            
+            if (listaServiciosEstudio.length === 0) {
+                contenedorBotones.innerHTML = `<p class="text-[11px] text-stone-400 col-span-2 py-2 text-center">Sin servicios en la base de datos.</p>`;
+                return;
+            }
 
             listaServiciosEstudio.forEach(s => {
                 contenedorBotones.innerHTML += `
-                    <button type="button" data-nombre="${s.nombre_servicio}" data-precio="${s.precio}" onclick="toggleServicioAgendar('${s.nombre_servicio}', ${s.precio}, this)" class="p-2.5 text-xs font-medium border rounded-xl bg-[#FBF9F5] text-stone-700 text-left flex justify-between items-center shadow-xs">
+                    <button type="button" data-nombre="${s.nombre_servicio}" data-precio="${s.precio}" onclick="toggleServicioAgendar('${s.nombre_servicio}', ${s.precio}, this)" class="p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs">
                         <span>${s.nombre_servicio}</span><span class="font-bold text-[#7C5C43]">$${Number(s.precio).toFixed(2)}</span>
                     </button>
                 `;
@@ -448,10 +1249,10 @@
             const index = serviciosSeleccionadosAgendar.findIndex(s => s.nombre === nombre);
             if (index > -1) {
                 serviciosSeleccionadosAgendar.splice(index, 1);
-                btnElement.className = "p-2.5 text-xs font-medium border rounded-xl bg-[#FBF9F5] text-stone-700 text-left flex justify-between items-center shadow-xs";
+                btnElement.className = "p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs";
             } else {
                 serviciosSeleccionadosAgendar.push({ nombre, precio });
-                btnElement.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left flex justify-between items-center shadow-xs";
+                btnElement.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
             }
             actualizarTotalAgendar();
         }
@@ -463,6 +1264,7 @@
         }
 
         async function guardarCitaAgendada() {
+            const citaId = document.getElementById('editar-cita-id').value;
             const clienteId = document.getElementById('agendar-cliente-id').value;
             const fecha = document.getElementById('agendar-fecha').value;
             const hora = document.getElementById('agendar-hora').value;
@@ -476,11 +1278,44 @@
             }
 
             const nombresServicios = serviciosSeleccionadosAgendar.map(s => s.nombre).join(', ');
-            await supabaseClient.from('citas').insert([{ 
-                usuario_id: usuarioSesion.id, cliente_id: clienteId, fecha, hora: hora || '10:00', servicios: nombresServicios, total: suma, anticipo: anticipoVal, metodo_pago: 'pendiente', estado: 'pendiente' 
-            }]);
+            
+            if (citaId) {
+                const { error } = await supabaseClient.from('citas').update({ 
+                    cliente_id: clienteId, 
+                    fecha, 
+                    hora: hora || '10:00', 
+                    servicios: nombresServicios, 
+                    total: suma, 
+                    anticipo: anticipoVal 
+                }).eq('id', citaId);
+
+                if (error) {
+                    mostrarNotificacion("Error al actualizar la cita");
+                    console.error(error);
+                    return;
+                }
+                mostrarNotificacion("✓ Cita actualizada al instante");
+            } else {
+                const { error } = await supabaseClient.from('citas').insert([{ 
+                    usuario_id: usuarioSesion.id, 
+                    cliente_id: clienteId, 
+                    fecha, 
+                    hora: hora || '10:00', 
+                    servicios: nombresServicios, 
+                    total: suma, 
+                    anticipo: anticipoVal, 
+                    metodo_pago: 'pendiente', 
+                    estado: 'pendiente' 
+                }]);
+
+                if (error) {
+                    mostrarNotificacion("Error al guardar la cita");
+                    console.error(error);
+                    return;
+                }
+                mostrarNotificacion("✓ Cita agendada al instante");
+            }
             cambiarSeccion('agenda');
-            mostrarNotificacion("✓ Cita agendada con éxito");
         }
 
         async function inicializarCalculadora() {
@@ -497,38 +1332,72 @@
             window.citaCobrandoId = null;
             window.anticipoCobrandoVal = 0;
 
-            listaServiciosEstudio.forEach(s => {
-                contenedorBotones.innerHTML += `
-                    <button type="button" data-nombre="${s.nombre_servicio}" data-precio="${s.precio}" onclick="toggleServicioCobro('${s.nombre_servicio}', ${s.precio}, this)" class="p-2.5 text-xs font-medium border rounded-xl bg-[#FBF9F5] text-stone-700 text-left flex justify-between items-center shadow-xs">
-                        <span>${s.nombre_servicio}</span><span class="font-bold text-[#7C5C43]">$${Number(s.precio).toFixed(2)}</span>
-                    </button>
-                `;
-            });
-
-            const secProdsCobro = document.getElementById('seccion-cobro-productos-extra');
-            const contenedorProdsCobro = document.getElementById('botones-productos-cobro');
-            if (usuarioSesion.modulo_inventario && listaProductosEstudio.length > 0) {
-                secProdsCobro.classList.remove('hidden');
-                contenedorProdsCobro.innerHTML = '';
-                listaProductosEstudio.forEach(p => {
-                    contenedorProdsCobro.innerHTML += `
-                        <div class="p-2 border rounded-xl bg-white text-xs flex justify-between items-center">
-                            <span>${p.nombre}</span><span class="font-bold text-emerald-700">$${p.precio}</span>
-                        </div>
+            if (listaServiciosEstudio.length === 0) {
+                contenedorBotones.innerHTML = `<p class="text-[11px] text-stone-400 col-span-2 py-3 text-center italic">Sin servicios. Haz clic en "Editar Servicios".</p>`;
+            } else {
+                listaServiciosEstudio.forEach(s => {
+                    contenedorBotones.innerHTML += `
+                        <button type="button" data-nombre="${s.nombre_servicio}" data-precio="${s.precio}" onclick="toggleServicioCobro('${s.nombre_servicio}', ${s.precio}, this)" class="p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs">
+                            <span>${s.nombre_servicio}</span><span class="font-bold text-[#7C5C43]">$${Number(s.precio).toFixed(2)}</span>
+                        </button>
                     `;
                 });
+            }
+
+            // Renderizar productos si la cuenta tiene activo el modulo
+            const secProdsCobro = document.getElementById('seccion-cobro-productos-extra');
+            const contenedorProdsCobro = document.getElementById('botones-productos-cobro');
+            
+            if (usuarioSesion.modulo_inventario) {
+                secProdsCobro.classList.remove('hidden');
+                contenedorProdsCobro.innerHTML = '';
+                
+                if (listaProductosEstudio.length === 0) {
+                    contenedorProdsCobro.innerHTML = `<p class="text-[10px] text-stone-400 col-span-2 py-2 text-center italic">Sin productos en inventario.</p>`;
+                } else {
+                    listaProductosEstudio.forEach(p => {
+                        contenedorProdsCobro.innerHTML += `
+                            <button type="button" data-id="${p.id}" data-nombre="${p.nombre}" data-precio="${p.precio}" onclick="toggleProductoCobro('${p.id}', '${p.nombre}', ${p.precio}, this)" class="p-2.5 text-xs font-medium border border-[#D8C8BC] rounded-xl bg-white text-stone-700 text-left transition flex justify-between items-center shadow-xs">
+                                <div><p class="font-bold leading-none">${p.nombre}</p><span class="text-[9px] text-stone-400">Stock: ${p.stock}</span></div>
+                                <span class="font-bold text-emerald-700">$${Number(p.precio).toFixed(2)}</span>
+                            </button>
+                        `;
+                    });
+                }
             } else {
                 secProdsCobro.classList.add('hidden');
             }
+
             actualizarTotalCobro();
         }
 
         async function prepararCobroDesdeAgenda(citaId, clienteId, clienteNombre, serviciosEncoded, totalCita, anticipoVal) {
             cambiarSeccion('cobrar');
             await inicializarCalculadora();
+
             document.getElementById('cobro-buscar-cliente').value = clienteNombre;
             document.getElementById('cobro-cliente-id').value = clienteId;
-            serviciosSeleccionadosCobro = [{ nombre: decodeURIComponent(serviciosEncoded), precio: totalCita }];
+            
+            const serviciosStr = decodeURIComponent(serviciosEncoded).toLowerCase();
+            const listaServiciosCita = serviciosStr.split(',').map(s => s.trim());
+            serviciosSeleccionadosCobro = [];
+
+            document.querySelectorAll('#botones-servicios button').forEach(btn => {
+                const nombreServicio = btn.getAttribute('data-nombre');
+                const precioServicio = Number(btn.getAttribute('data-precio'));
+
+                const esMatchExacto = nombreServicio && listaServiciosCita.some(sServicio => sServicio === nombreServicio.toLowerCase());
+
+                if (esMatchExacto) {
+                    serviciosSeleccionadosCobro.push({ nombre: nombreServicio, precio: precioServicio });
+                    btn.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
+                }
+            });
+
+            if (serviciosSeleccionadosCobro.length === 0 && totalCita > 0) {
+                serviciosSeleccionadosCobro.push({ nombre: decodeURIComponent(serviciosEncoded) || "Servicio General", precio: totalCita + (Number(anticipoVal) || 0) });
+            }
+
             window.citaCobrandoId = citaId;
             window.anticipoCobrandoVal = Number(anticipoVal) || 0;
             actualizarTotalCobro();
@@ -538,10 +1407,22 @@
             const index = serviciosSeleccionadosCobro.findIndex(s => s.nombre === nombre);
             if (index > -1) {
                 serviciosSeleccionadosCobro.splice(index, 1);
-                btnElement.className = "p-2.5 text-xs font-medium border rounded-xl bg-[#FBF9F5] text-stone-700 text-left flex justify-between items-center shadow-xs";
+                btnElement.className = "p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs";
             } else {
                 serviciosSeleccionadosCobro.push({ nombre, precio });
-                btnElement.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left flex justify-between items-center shadow-xs";
+                btnElement.className = "p-2.5 text-xs font-medium border rounded-xl btn-dinamico-secundario text-left transition flex justify-between items-center shadow-xs";
+            }
+            actualizarTotalCobro();
+        }
+
+        function toggleProductoCobro(id, nombre, precio, btnElement) {
+            const index = productosSeleccionadosCobro.findIndex(p => p.id === id);
+            if (index > -1) {
+                productosSeleccionadosCobro.splice(index, 1);
+                btnElement.className = "p-2.5 text-xs font-medium border border-[#D8C8BC] rounded-xl bg-white text-stone-700 text-left transition flex justify-between items-center shadow-xs";
+            } else {
+                productosSeleccionadosCobro.push({ id, nombre, precio });
+                btnElement.className = "p-2.5 text-xs font-medium border border-emerald-600 rounded-xl bg-emerald-50 text-emerald-900 text-left transition flex justify-between items-center shadow-xs";
             }
             actualizarTotalCobro();
         }
@@ -549,63 +1430,368 @@
         function actualizarTotalCobro() {
             let subtotal = 0;
             serviciosSeleccionadosCobro.forEach(s => subtotal += s.precio);
-            const totalFinal = Math.max(0, subtotal - (window.anticipoCobrandoVal || 0));
+            productosSeleccionadosCobro.forEach(p => subtotal += p.precio);
+
+            const anticipo = window.anticipoCobrandoVal || 0;
+            let totalFinal = subtotal - anticipo;
+            if (totalFinal < 0) totalFinal = 0;
+
             document.getElementById('cobro-subtotal').innerText = `$${subtotal.toFixed(2)}`;
-            document.getElementById('cobro-anticipo-descontado').innerText = `-$${(window.anticipoCobrandoVal || 0).toFixed(2)}`;
+            document.getElementById('cobro-anticipo-descontado').innerText = `-$${anticipo.toFixed(2)}`;
             document.getElementById('cobro-total').innerText = `$${totalFinal.toFixed(2)}`;
+        }
+
+        function abrirModalServicios() {
+            const modal = document.getElementById('modal-servicios');
+            if (modal) {
+                modal.classList.remove('hidden');
+                renderizarServiciosEditableModal();
+            }
+        }
+
+        function cerrarModalServicios() {
+            const modal = document.getElementById('modal-servicios');
+            if (modal) {
+                modal.classList.add('hidden');
+                inicializarCalculadora();
+            }
+        }
+
+        function renderizarServiciosEditableModal() {
+            const container = document.getElementById('container-servicios-editar');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (listaServiciosEstudio.length === 0) {
+                container.innerHTML = `<p class="text-xs text-stone-400 text-center py-2">Sin servicios registrados en tu cuenta.</p>`;
+                return;
+            }
+
+            listaServiciosEstudio.forEach(s => {
+                container.innerHTML += `
+                    <div class="flex items-center gap-2 bg-stone-50 p-2 rounded-xl border border-stone-200">
+                        <input type="text" id="edit-nombre-${s.id}" value="${s.nombre_servicio}" class="flex-1 bg-white border border-stone-300 p-1.5 rounded-lg text-xs">
+                        <input type="number" step="0.01" id="edit-precio-${s.id}" value="${s.precio}" class="w-20 bg-white border border-stone-300 p-1.5 rounded-lg text-xs font-mono">
+                        <button onclick="guardarEdicionServicio('${s.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Guardar">💾</button>
+                        <button onclick="eliminarServicioDirecto('${s.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Eliminar">🗑️</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function guardarEdicionServicio(id) {
+            const nuevoNombre = document.getElementById(`edit-nombre-${id}`).value.trim();
+            const nuevoPrecio = document.getElementById(`edit-precio-${id}`).value;
+
+            if (!nuevoNombre || !nuevoPrecio) {
+                mostrarNotificacion("Completa ambos campos");
+                return;
+            }
+
+            const { error } = await supabaseClient.from('servicios').update({
+                nombre_servicio: nuevoNombre,
+                precio: parseFloat(nuevoPrecio)
+            }).eq('id', id);
+
+            if (error) {
+                mostrarNotificacion("Error al actualizar");
+            } else {
+                mostrarNotificacion("✓ Servicio actualizado al instante");
+                await cargarServiciosBaseDatos();
+                renderizarServiciosEditableModal();
+            }
+        }
+
+        async function eliminarServicioDirecto(id) {
+            const { error } = await supabaseClient.from('servicios').delete().eq('id', id);
+            if (error) {
+                mostrarNotificacion("Error al eliminar");
+            } else {
+                mostrarNotificacion("✓ Servicio eliminado al instante");
+                await cargarServiciosBaseDatos();
+                renderizarServiciosEditableModal();
+            }
+        }
+
+        async function crearNuevoServicio() {
+            const nombre = document.getElementById('nuevo-nombre-servicio').value.trim();
+            const precio = document.getElementById('nuevo-precio-servicio').value;
+
+            if (!nombre || !precio || !usuarioSesion) {
+                mostrarNotificacion("Ingresa nombre y precio válidos");
+                return;
+            }
+
+            const { error } = await supabaseClient.from('servicios').insert([{
+                usuario_id: usuarioSesion.id,
+                nombre_servicio: nombre,
+                precio: parseFloat(precio)
+            }]);
+
+            if (error) {
+                mostrarNotificacion("Error al crear servicio");
+            } else {
+                document.getElementById('nuevo-nombre-servicio').value = '';
+                document.getElementById('nuevo-precio-servicio').value = '';
+                mostrarNotificacion("✓ Servicio añadido al instante");
+                await cargarServiciosBaseDatos();
+                renderizarServiciosEditableModal();
+            }
         }
 
         async function guardarCobro() {
             const clienteId = document.getElementById('cobro-cliente-id').value;
             const metodoPago = document.getElementById('metodo-pago').value;
+            const nota = document.getElementById('nota-servicio').value;
+            
             let subtotal = 0;
             serviciosSeleccionadosCobro.forEach(s => subtotal += s.precio);
-            const totalFinal = Math.max(0, subtotal - (window.anticipoCobrandoVal || 0));
+            productosSeleccionadosCobro.forEach(p => subtotal += p.precio);
 
-            if (!clienteId || serviciosSeleccionadosCobro.length === 0) {
-                mostrarNotificacion("Selecciona clienta y servicios");
+            const anticipo = window.anticipoCobrandoVal || 0;
+            let totalFinal = subtotal - anticipo;
+            if (totalFinal < 0) totalFinal = 0;
+
+            if (!clienteId || (serviciosSeleccionadosCobro.length === 0 && productosSeleccionadosCobro.length === 0)) {
+                mostrarNotificacion("Selecciona clienta y al menos un servicio o producto");
                 return;
             }
 
-            const textoItems = serviciosSeleccionadosCobro.map(s => s.nombre).join(', ');
+            let textoItems = serviciosSeleccionadosCobro.map(s => s.nombre).join(', ');
+            if (productosSeleccionadosCobro.length > 0) {
+                const textoProds = " [Prod: " + productosSeleccionadosCobro.map(p => p.nombre).join(', ') + "]";
+                textoItems += textoItems ? textoProds : productosSeleccionadosCobro.map(p => p.nombre).join(', ');
+            }
+
+            // Descontar stock de productos vendidos
+            for (let p of productosSeleccionadosCobro) {
+                const prodActual = listaProductosEstudio.find(item => item.id === p.id);
+                if (prodActual) {
+                    const nuevoStock = Math.max(0, prodActual.stock - 1);
+                    await supabaseClient.from('productos').update({ stock: nuevoStock }).eq('id', p.id);
+                }
+            }
 
             if (window.citaCobrandoId) {
                 await supabaseClient.from('citas').update({
-                    estado: 'atendida', metodo_pago: metodoPago, total: totalFinal, servicios: textoItems
+                    estado: 'atendida',
+                    metodo_pago: metodoPago,
+                    total: totalFinal,
+                    servicios: textoItems,
+                    nota_servicio: nota
                 }).eq('id', window.citaCobrandoId);
+                window.citaCobrandoId = null;
+                window.anticipoCobrandoVal = 0;
+            } else {
+                await supabaseClient.from('citas').insert([{ 
+                    usuario_id: usuarioSesion.id, 
+                    cliente_id: clienteId, 
+                    fecha: new Date().toISOString().split('T')[0], 
+                    hora: new Date().toTimeString().split(' ')[0], 
+                    servicios: textoItems, 
+                    total: totalFinal, 
+                    anticipo: 0,
+                    metodo_pago: metodoPago, 
+                    estado: 'atendida', 
+                    nota_servicio: nota 
+                }]);
             }
 
-            mostrarNotificacion("✓ Cobro guardado con éxito");
+            mostrarNotificacion("✓ Cobro guardado y cita cerrada");
             cambiarSeccion('agenda');
         }
 
-        async function obtenerClientesGlobales() {
-            const { data } = await supabaseClient.from('clientes').select('id, nombre, telefono').eq('usuario_id', usuarioSesion.id).order('nombre');
-            if (data) listaClientesCache = data;
+        function toggleFormularioProducto() {
+            document.getElementById('form-nuevo-producto').classList.toggle('hidden');
         }
 
-        function filtrarClientesEnAutocomplete(modo) {
-            const query = document.getElementById(`${modo}-buscar-cliente`).value.toLowerCase().trim();
-            const listaSugerencias = document.getElementById(`${modo}-lista-sugerencias`);
-            if (!query) { listaSugerencias.classList.add('hidden'); return; }
-            const resultados = listaClientesCache.filter(c => c.nombre.toLowerCase().includes(query));
-            listaSugerencias.innerHTML = resultados.length === 0 ? `<div class="p-3 text-stone-400 text-xs">No encontrada</div>` : '';
-            resultados.forEach(c => {
-                listaSugerencias.innerHTML += `<div onclick="seleccionarClienteAutocomplete('${modo}', '${c.id}', '${c.nombre}')" class="p-2.5 hover:bg-[#F2EAE1] cursor-pointer border-b">${c.nombre}</div>`;
+        async function cargarInventarioVista() {
+            await cargarProductosBaseDatos();
+            const contenedor = document.getElementById('lista-productos-inventario');
+            contenedor.innerHTML = '';
+
+            if (listaProductosEstudio.length === 0) {
+                contenedor.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay productos en inventario</p>`;
+                return;
+            }
+
+            listaProductosEstudio.forEach(p => {
+                contenedor.innerHTML += `
+                    <div class="border border-[#EFE7DE] p-3 bg-[#FBF9F5] rounded-xl mb-2 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="edit-prod-nombre-${p.id}" value="${p.nombre}" class="flex-1 bg-white border border-stone-300 p-1.5 rounded-lg text-xs font-semibold text-stone-800">
+                            <input type="number" step="0.01" id="edit-prod-precio-${p.id}" value="${p.precio}" class="w-20 bg-white border border-stone-300 p-1.5 rounded-lg text-xs font-mono">
+                            <input type="number" id="edit-prod-stock-${p.id}" value="${p.stock}" class="w-16 bg-white border border-stone-300 p-1.5 rounded-lg text-xs font-bold text-center">
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button onclick="guardarEdicionProducto('${p.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition">💾 Guardar</button>
+                            <button onclick="eliminarProductoDirecto('${p.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition">🗑️ Eliminar</button>
+                        </div>
+                    </div>
+                `;
             });
-            listaSugerencias.classList.remove('hidden');
         }
 
-        function seleccionarClienteAutocomplete(modo, id, nombre) {
-            document.getElementById(`${modo}-buscar-cliente`).value = nombre;
-            document.getElementById(`${modo}-cliente-id`).value = id;
-            document.getElementById(`${modo}-lista-sugerencias`).classList.add('hidden');
+        async function guardarNuevoProducto() {
+            const nombre = document.getElementById('input-nombre-producto').value.trim();
+            const precio = document.getElementById('input-precio-producto').value;
+            const stock = document.getElementById('input-stock-producto').value || 0;
+
+            if (!nombre || !precio || !usuarioSesion) {
+                mostrarNotificacion("Completa nombre y precio");
+                return;
+            }
+
+            const { error } = await supabaseClient.from('productos').insert([{
+                usuario_id: usuarioSesion.id,
+                nombre,
+                precio: parseFloat(precio),
+                stock: parseInt(stock)
+            }]);
+
+            if (error) {
+                mostrarNotificacion("Error al guardar producto");
+            } else {
+                document.getElementById('input-nombre-producto').value = '';
+                document.getElementById('input-precio-producto').value = '';
+                document.getElementById('input-stock-producto').value = '';
+                toggleFormularioProducto();
+                cargarInventarioVista();
+                mostrarNotificacion("✓ Producto añadido al inventario");
+            }
         }
 
-        function toggleFormularioProducto() { document.getElementById('form-nuevo-producto').classList.toggle('hidden'); }
-        function toggleFormularioCliente() { document.getElementById('form-nuevo-cliente').classList.toggle('hidden'); }
-        async function cargarInventarioVista() { await cargarProductosBaseDatos(); }
-        async function cargarClientes() { await obtenerClientesGlobales(); }
+        async function guardarEdicionProducto(id) {
+            const nombre = document.getElementById(`edit-prod-nombre-${id}`).value.trim();
+            const precio = document.getElementById(`edit-prod-precio-${id}`).value;
+            const stock = document.getElementById(`edit-prod-stock-${id}`).value;
+
+            const { error } = await supabaseClient.from('productos').update({
+                nombre,
+                precio: parseFloat(precio),
+                stock: parseInt(stock)
+            }).eq('id', id);
+
+            if (!error) {
+                mostrarNotificacion("✓ Producto actualizado");
+                cargarInventarioVista();
+            }
+        }
+
+        async function eliminarProductoDirecto(id) {
+            const { error } = await supabaseClient.from('productos').delete().eq('id', id);
+            if (!error) {
+                mostrarNotificacion("✓ Producto eliminado");
+                cargarInventarioVista();
+            }
+        }
+
+        async function guardarGasto() {
+            const concepto = document.getElementById('gasto-concepto').value.trim();
+            const categoria = document.getElementById('gasto-categoria').value;
+            const fechaGasto = document.getElementById('gasto-fecha').value || new Date().toISOString().split('T')[0];
+            const monto = document.getElementById('gasto-monto').value;
+            if (!concepto || !monto) { mostrarNotificacion("Completa los campos"); return; }
+            await supabaseClient.from('gastos').insert([{ usuario_id: usuarioSesion.id, fecha: fechaGasto, concepto, categoria, monto: Number(monto), metodo_pago: 'efectivo' }]);
+            document.getElementById('gasto-concepto').value = '';
+            document.getElementById('gasto-monto').value = '';
+            document.getElementById('gasto-fecha').value = new Date().toISOString().split('T')[0];
+            cargarGastos();
+            mostrarNotificacion("✓ Gasto guardado");
+        }
+
+        async function cargarGastos() {
+            const { data: gastos } = await supabaseClient.from('gastos').select('*').eq('usuario_id', usuarioSesion.id).order('fecha', { ascending: false });
+            const listaGastosHtml = document.getElementById('lista-gastos');
+            listaGastosHtml.innerHTML = '';
+            if (!gastos || gastos.length === 0) { listaGastosHtml.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay gastos</p>`; return; }
+            gastos.forEach(g => {
+                listaGastosHtml.innerHTML += `
+                    <div class="border-b border-[#EFE7DE] pb-2.5 mb-2 flex justify-between items-center text-xs">
+                        <div><p class="font-semibold text-stone-800">${g.concepto} <span class="text-[10px] text-stone-500">(${g.categoria})</span></p><p class="text-[10px] text-stone-400">📅 ${g.fecha}</p></div>
+                        <span class="font-bold text-stone-700 text-sm">-$${Number(g.monto).toFixed(2)}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleFormularioCliente() {
+            const form = document.getElementById('form-nuevo-cliente');
+            form.classList.toggle('hidden');
+        }
+
+        async function cargarClientes() {
+            await obtenerClientesGlobales();
+            renderizarListaClientes(listaClientesCache);
+        }
+
+        function renderizarListaClientes(clientes) {
+            const lista = document.getElementById('lista-clientes');
+            lista.innerHTML = clientes.length === 0 ? `<p class="text-stone-400 text-xs text-center py-4">No hay clientas</p>` : '';
+            clientes.forEach(c => {
+                lista.innerHTML += `
+                    <div class="border border-[#EFE7DE] p-3 bg-[#FBF9F5] rounded-xl mb-2 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="edit-cliente-nombre-${c.id}" value="${c.nombre}" class="flex-1 bg-white border border-stone-300 p-1.5 rounded-lg text-xs font-semibold text-stone-800">
+                            <input type="tel" id="edit-cliente-tel-${c.id}" value="${c.telefono || ''}" placeholder="Teléfono" class="w-28 bg-white border border-stone-300 p-1.5 rounded-lg text-xs">
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button onclick="guardarEdicionCliente('${c.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition">💾 Guardar</button>
+                            <button onclick="eliminarClienteDirecto('${c.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition">🗑️ Eliminar</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function guardarEdicionCliente(id) {
+            const nuevoNombre = document.getElementById(`edit-cliente-nombre-${id}`).value.trim();
+            const nuevoTel = document.getElementById(`edit-cliente-tel-${id}`).value.trim();
+
+            if (!nuevoNombre) {
+                mostrarNotificacion("El nombre es obligatorio");
+                return;
+            }
+
+            const { error } = await supabaseClient.from('clientes').update({
+                nombre: nuevoNombre,
+                telefono: nuevoTel
+            }).eq('id', id);
+
+            if (error) {
+                mostrarNotificacion("Error al actualizar clienta");
+            } else {
+                mostrarNotificacion("✓ Clienta actualizada al instante");
+                await cargarClientes();
+            }
+        }
+
+        async function eliminarClienteDirecto(id) {
+            const { error } = await supabaseClient.from('clientes').delete().eq('id', id);
+            if (error) {
+                mostrarNotificacion("Error al eliminar clienta");
+            } else {
+                mostrarNotificacion("✓ Clienta eliminada al instante");
+                await cargarClientes();
+            }
+        }
+
+        function filtrarListaClientes() {
+            const texto = document.getElementById('buscar-cliente').value.toLowerCase().trim();
+            renderizarListaClientes(listaClientesCache.filter(c => c.nombre.toLowerCase().includes(texto)));
+        }
+
+        async function guardarNuevoCliente() {
+            const nombre = document.getElementById('input-nombre-cliente').value.trim();
+            const telefono = document.getElementById('input-telefono-cliente').value.trim();
+            if (!nombre) { mostrarNotificacion("Ingresa el nombre"); return; }
+            await supabaseClient.from('clientes').insert([{ usuario_id: usuarioSesion.id, nombre, telefono }]);
+            document.getElementById('input-nombre-cliente').value = '';
+            document.getElementById('input-telefono-cliente').value = '';
+            toggleFormularioCliente();
+            cargarClientes();
+            mostrarNotificacion("✓ Clienta guardada");
+        }
     </script>
 </body>
 </html>
