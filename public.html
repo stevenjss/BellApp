@@ -520,7 +520,7 @@
             document.getElementById('publico-total-productos').innerText = `$${total.toFixed(2)}`;
         }
 
-        function enviarPedidoProductoWhatsApp() {
+        async function enviarPedidoProductoWhatsApp() {
             const nombre = document.getElementById('producto-cliente-nombre').value.trim();
             const telefono = document.getElementById('producto-cliente-telefono').value.trim();
 
@@ -529,19 +529,64 @@
                 return;
             }
 
+            let { data: clienteExistente } = await supabaseClient
+                .from('clientes')
+                .select('id')
+                .eq('usuario_id', usuarioActualObj.id)
+                .ilike('nombre', nombre)
+                .single();
+
+            let clienteId = clienteExistente ? clienteExistente.id : null;
+
+            if (!clienteId) {
+                const { data: nuevoCliente, error: errCliente } = await supabaseClient
+                    .from('clientes')
+                    .insert([{ usuario_id: usuarioActualObj.id, nombre, telefono }])
+                    .select('id')
+                    .single();
+
+                if (!errCliente && nuevoCliente) {
+                    clienteId = nuevoCliente.id;
+                }
+            }
+
             let sumaTotal = 0;
-            const listaNombres = productosSeleccionadosPublico.map(p => {
+            const listaDetalle = productosSeleccionadosPublico.map(p => {
                 sumaTotal += p.precio;
                 return `• ${p.nombre} ($${p.precio.toFixed(2)})`;
             }).join('\n');
 
+            const listaNombresResumida = "Pedido: " + productosSeleccionadosPublico.map(p => p.nombre).join(', ');
+            const fechaHoy = new Date().toISOString().split('T')[0];
+            const horaActual = new Date().toTimeString().split(' ')[0];
+
+            const { error: errPedido } = await supabaseClient.from('citas').insert([{
+                usuario_id: usuarioActualObj.id,
+                cliente_id: clienteId,
+                fecha: fechaHoy,
+                hora: horaActual,
+                servicios: listaNombresResumida,
+                total: sumaTotal,
+                anticipo: 0.00,
+                metodo_pago: 'pendiente',
+                estado: 'pedido_pendiente'
+            }]);
+
+            if (errPedido) {
+                mostrarToast("Error al registrar el pedido en el sistema.");
+                console.error(errPedido);
+                return;
+            }
+
             let telLimpio = (usuarioActualObj.telefono_estudio || '').replace(/\D/g, '');
-            const textoMensaje = `Hola ${usuarioActualObj.nombre_estudio}, me gustaría comprar los siguientes productos:\n\n👤 *Cliente:* ${nombre}\n📱 *Teléfono:* ${telefono || 'No provisto'}\n\n🛍️ *PRODUCTOS:* \n${listaNombres}\n\n💵 *TOTAL:* $${sumaTotal.toFixed(2)}`;
+            const textoMensaje = `Hola ${usuarioActualObj.nombre_estudio}, me gustaría comprar los siguientes productos:\n\n👤 *Cliente:* ${nombre}\n📱 *Teléfono:* ${telefono || 'No provisto'}\n\n🛍️ *PRODUCTOS:* \n${listaDetalle}\n\n💵 *TOTAL:* $${sumaTotal.toFixed(2)}`;
+
+            mostrarToast("✓ Pedido registrado. Abriendo WhatsApp...");
 
             if (telLimpio) {
-                window.location.href = `https://wa.me/${telLimpio}?text=${encodeURIComponent(textoMensaje)}`;
-            } else {
-                mostrarToast("El estudio no tiene registrado número de WhatsApp.");
+                setTimeout(() => {
+                    window.location.href = `https://wa.me/${telLimpio}?text=${encodeURIComponent(textoMensaje)}`;
+                }, 800);
             }
         }
 
