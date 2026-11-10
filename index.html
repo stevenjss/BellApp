@@ -297,7 +297,7 @@
 
                     <div class="border-t border-[#EFE7DE] pt-3 mb-3 mt-3">
                         <div class="flex justify-between items-center mb-2.5">
-                            <p class="text-xs font-medium text-stone-500 uppercase tracking-wider">Toca los servicios realizados:</p>
+                            <p class="text-xs font-medium text-stone-500 uppercase tracking-wider">Toca los servicios / productos:</p>
                             <button onclick="abrirModalServicios()" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber-300 transition flex items-center gap-1 shadow-xs">
                                 ⚙️ Editar Servicios
                             </button>
@@ -305,9 +305,17 @@
                         <div id="botones-servicios" class="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto mb-3 pr-1"></div>
                     </div>
 
+                    <!-- SECCIÓN INVENTARIO EN COBRO (DINÁMICA) -->
+                    <div id="seccion-cobro-productos-extra" class="hidden border-t border-[#EFE7DE] pt-3 mb-3">
+                        <p class="text-xs font-medium text-[#7C5C43] uppercase tracking-wider mb-2 font-bold">📦 Añadir Productos de Inventario al Cobro:</p>
+                        <div id="botones-productos-cobro" class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+                            <!-- Carga dinámica si el módulo está activo -->
+                        </div>
+                    </div>
+
                     <div class="bg-[#F9F5F0] p-3.5 rounded-xl mb-3 space-y-2 border border-[#E8DDD1]">
                         <div class="flex justify-between items-center text-xs text-stone-600">
-                            <span>Subtotal Servicios:</span>
+                            <span>Subtotal Ítems:</span>
                             <span id="cobro-subtotal" class="font-mono">$0.00</span>
                         </div>
                         <div class="flex justify-between items-center text-xs text-amber-800 font-medium">
@@ -330,6 +338,33 @@
                     <textarea id="nota-servicio" placeholder="Nota opcional..." class="w-full border border-[#D8C8BC] p-3 rounded-xl mb-3 text-sm bg-[#FBF9F5] text-stone-700"></textarea>
 
                     <button onclick="guardarCobro()" class="w-full btn-dinamico-primario hover:opacity-90 text-white py-3.5 rounded-xl font-medium shadow-md transition text-sm">Guardar y Cerrar Cita</button>
+                </div>
+            </section>
+
+            <!-- VISTA INVENTARIO (EXTRA) -->
+            <section id="seccion-inventario" class="hidden space-y-4">
+                <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-[#EFE7DE]">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-base font-semibold text-[#5C4231] font-serif-luxury">📦 Inventario de Productos</h2>
+                        <button onclick="toggleFormularioProducto()" class="btn-dinamico-secundario text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">＋ Nuevo Producto</button>
+                    </div>
+
+                    <div id="form-nuevo-producto" class="hidden bg-[#FBF9F5] p-4 rounded-xl border border-[#D8C8BC] mb-4 space-y-3">
+                        <h3 class="text-xs font-semibold text-[#7C5C43] uppercase tracking-wider">Registrar Producto</h3>
+                        <input type="text" id="input-nombre-producto" placeholder="Nombre (ej. Aceite de Argán)" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-white text-stone-700 focus:outline-none focus:border-[#8C6D58]">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="number" step="0.01" id="input-precio-producto" placeholder="Precio ($)" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-white text-stone-700 focus:outline-none focus:border-[#8C6D58] font-mono">
+                            <input type="number" id="input-stock-producto" placeholder="Stock Inicial" class="w-full border border-[#D8C8BC] p-2.5 rounded-xl text-sm bg-white text-stone-700 focus:outline-none focus:border-[#8C6D58]">
+                        </div>
+                        <div class="flex gap-2 pt-1">
+                            <button onclick="guardarNuevoProducto()" class="flex-1 btn-dinamico-primario text-white py-2.5 rounded-xl text-xs font-medium shadow-sm">Guardar Producto</button>
+                            <button onclick="toggleFormularioProducto()" class="px-4 bg-stone-200 text-stone-700 py-2.5 rounded-xl text-xs font-medium">Cancelar</button>
+                        </div>
+                    </div>
+
+                    <div id="lista-productos-inventario" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+                        <p class="text-stone-400 text-xs text-center py-4">Cargando productos...</p>
+                    </div>
                 </div>
             </section>
 
@@ -458,10 +493,11 @@
             </div>
         </div>
 
-        <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-[#EFE7DE] flex justify-around p-2.5 shadow-lg max-w-md mx-auto z-40">
+        <nav id="nav-inferior" class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-[#EFE7DE] flex justify-around p-2.5 shadow-lg max-w-md mx-auto z-40">
             <button onclick="cambiarSeccion('agenda')" class="flex flex-col items-center text-xs texto-dinamico-primario font-medium">📅 Agenda</button>
             <button onclick="cambiarSeccion('historial')" class="flex flex-col items-center text-xs text-stone-500">📜 Historial</button>
             <button onclick="cambiarSeccion('cobrar')" class="flex flex-col items-center text-xs text-stone-500">🧾 Cobrar</button>
+            <button id="btn-nav-inventario" onclick="cambiarSeccion('inventario')" class="hidden flex-col items-center text-xs text-stone-500">📦 Productos</button>
             <button onclick="cambiarSeccion('clientes')" class="flex flex-col items-center text-xs text-stone-500">👩 Clientas</button>
             <button onclick="cambiarSeccion('gastos')" class="flex flex-col items-center text-xs text-stone-500">💰 Gastos</button>
         </nav>
@@ -477,6 +513,8 @@
         let citasNotificadas = new Set();
         let temaTemporal = { primario: '#7C5C43', secundario: '#8C6D58', fondo: '#FBF9F5' };
         let listaServiciosEstudio = [];
+        let listaProductosEstudio = [];
+        let productosSeleccionadosCobro = [];
 
         try {
             if (window.supabase) {
@@ -550,8 +588,14 @@
                 document.getElementById('header-logo-iniciales').innerText = iniciales;
             }
 
+            if (usuario.modulo_inventario) {
+                document.getElementById('btn-nav-inventario').classList.remove('hidden');
+                document.getElementById('btn-nav-inventario').classList.add('flex');
+            }
+
             await cargarTemaEstudio();
             await cargarServiciosBaseDatos();
+            await cargarProductosBaseDatos();
             await cargarDatosIniciales();
             await cargarDiasNoLaborables();
 
@@ -719,6 +763,19 @@
             }
         }
 
+        async function cargarProductosBaseDatos() {
+            if (!supabaseClient || !usuarioSesion || !usuarioSesion.modulo_inventario) return;
+            const { data, error } = await supabaseClient
+                .from('productos')
+                .select('*')
+                .eq('usuario_id', usuarioSesion.id)
+                .order('nombre', { ascending: true });
+
+            if (!error) {
+                listaProductosEstudio = data || [];
+            }
+        }
+
         async function cargarTemaEstudio() {
             if (!usuarioSesion) return;
 
@@ -839,6 +896,7 @@
             document.getElementById('seccion-clientes').classList.add('hidden');
             document.getElementById('seccion-gastos').classList.add('hidden');
             document.getElementById('seccion-fotos').classList.add('hidden');
+            document.getElementById('seccion-inventario').classList.add('hidden');
 
             if (seccion === 'agenda') {
                 document.getElementById('seccion-agenda').classList.remove('hidden');
@@ -862,6 +920,9 @@
                 cargarGastos();
             } else if (seccion === 'fotos') {
                 document.getElementById('seccion-fotos').classList.remove('hidden');
+            } else if (seccion === 'inventario') {
+                document.getElementById('seccion-inventario').classList.remove('hidden');
+                cargarInventarioVista();
             }
         }
 
@@ -1195,27 +1256,53 @@
         async function inicializarCalculadora() {
             await obtenerClientesGlobales();
             await cargarServiciosBaseDatos();
+            await cargarProductosBaseDatos();
+
             document.getElementById('cobro-buscar-cliente').value = '';
             document.getElementById('cobro-cliente-id').value = '';
             const contenedorBotones = document.getElementById('botones-servicios');
             contenedorBotones.innerHTML = '';
             serviciosSeleccionadosCobro = [];
+            productosSeleccionadosCobro = [];
             window.citaCobrandoId = null;
             window.anticipoCobrandoVal = 0;
 
             if (listaServiciosEstudio.length === 0) {
                 contenedorBotones.innerHTML = `<p class="text-[11px] text-stone-400 col-span-2 py-3 text-center italic">Sin servicios. Haz clic en "Editar Servicios".</p>`;
-                actualizarTotalCobro();
-                return;
+            } else {
+                listaServiciosEstudio.forEach(s => {
+                    contenedorBotones.innerHTML += `
+                        <button type="button" data-nombre="${s.nombre_servicio}" data-precio="${s.precio}" onclick="toggleServicioCobro('${s.nombre_servicio}', ${s.precio}, this)" class="p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs">
+                            <span>${s.nombre_servicio}</span><span class="font-bold text-[#7C5C43]">$${Number(s.precio).toFixed(2)}</span>
+                        </button>
+                    `;
+                });
             }
 
-            listaServiciosEstudio.forEach(s => {
-                contenedorBotones.innerHTML += `
-                    <button type="button" data-nombre="${s.nombre_servicio}" data-precio="${s.precio}" onclick="toggleServicioCobro('${s.nombre_servicio}', ${s.precio}, this)" class="p-2.5 text-xs font-medium border border-[#E8DDD1] rounded-xl bg-[#FBF9F5] hover:bg-[#F2EAE1] text-stone-700 text-left transition flex justify-between items-center shadow-xs">
-                        <span>${s.nombre_servicio}</span><span class="font-bold text-[#7C5C43]">$${Number(s.precio).toFixed(2)}</span>
-                    </button>
-                `;
-            });
+            // Renderizar productos si la cuenta tiene activo el modulo
+            const secProdsCobro = document.getElementById('seccion-cobro-productos-extra');
+            const contenedorProdsCobro = document.getElementById('botones-productos-cobro');
+            
+            if (usuarioSesion.modulo_inventario) {
+                secProdsCobro.classList.remove('hidden');
+                contenedorProdsCobro.innerHTML = '';
+                
+                if (listaProductosEstudio.length === 0) {
+                    contenedorProdsCobro.innerHTML = `<p class="text-[10px] text-stone-400 col-span-2 py-2 text-center italic">Sin productos en inventario.</p>`;
+                } else {
+                    listaProductosEstudio.forEach(p => {
+                        contenedorProdsCobro.innerHTML += `
+                            <button type="button" data-id="${p.id}" data-nombre="${p.nombre}" data-precio="${p.precio}" onclick="toggleProductoCobro('${p.id}', '${p.nombre}', ${p.precio}, this)" class="p-2.5 text-xs font-medium border border-[#D8C8BC] rounded-xl bg-white text-stone-700 text-left transition flex justify-between items-center shadow-xs">
+                                <div><p class="font-bold leading-none">${p.nombre}</p><span class="text-[9px] text-stone-400">Stock: ${p.stock}</span></div>
+                                <span class="font-bold text-emerald-700">$${Number(p.precio).toFixed(2)}</span>
+                            </button>
+                        `;
+                    });
+                }
+            } else {
+                secProdsCobro.classList.add('hidden');
+            }
+
             actualizarTotalCobro();
         }
 
@@ -1263,9 +1350,23 @@
             actualizarTotalCobro();
         }
 
+        function toggleProductoCobro(id, nombre, precio, btnElement) {
+            const index = productosSeleccionadosCobro.findIndex(p => p.id === id);
+            if (index > -1) {
+                productosSeleccionadosCobro.splice(index, 1);
+                btnElement.className = "p-2.5 text-xs font-medium border border-[#D8C8BC] rounded-xl bg-white text-stone-700 text-left transition flex justify-between items-center shadow-xs";
+            } else {
+                productosSeleccionadosCobro.push({ id, nombre, precio });
+                btnElement.className = "p-2.5 text-xs font-medium border border-emerald-600 rounded-xl bg-emerald-50 text-emerald-900 text-left transition flex justify-between items-center shadow-xs";
+            }
+            actualizarTotalCobro();
+        }
+
         function actualizarTotalCobro() {
             let subtotal = 0;
             serviciosSeleccionadosCobro.forEach(s => subtotal += s.precio);
+            productosSeleccionadosCobro.forEach(p => subtotal += p.precio);
+
             const anticipo = window.anticipoCobrandoVal || 0;
             let totalFinal = subtotal - anticipo;
             if (totalFinal < 0) totalFinal = 0;
@@ -1380,23 +1481,38 @@
             
             let subtotal = 0;
             serviciosSeleccionadosCobro.forEach(s => subtotal += s.precio);
+            productosSeleccionadosCobro.forEach(p => subtotal += p.precio);
+
             const anticipo = window.anticipoCobrandoVal || 0;
             let totalFinal = subtotal - anticipo;
             if (totalFinal < 0) totalFinal = 0;
 
-            if (!clienteId || serviciosSeleccionadosCobro.length === 0) {
-                mostrarNotificacion("Selecciona clienta y servicio");
+            if (!clienteId || (serviciosSeleccionadosCobro.length === 0 && productosSeleccionadosCobro.length === 0)) {
+                mostrarNotificacion("Selecciona clienta y al menos un servicio o producto");
                 return;
             }
 
-            const nombresServicios = serviciosSeleccionadosCobro.map(s => s.nombre).join(', ');
+            let textoItems = serviciosSeleccionadosCobro.map(s => s.nombre).join(', ');
+            if (productosSeleccionadosCobro.length > 0) {
+                const textoProds = " [Prod: " + productosSeleccionadosCobro.map(p => p.nombre).join(', ') + "]";
+                textoItems += textoItems ? textoProds : productosSeleccionadosCobro.map(p => p.nombre).join(', ');
+            }
+
+            // Descontar stock de productos vendidos
+            for (let p of productosSeleccionadosCobro) {
+                const prodActual = listaProductosEstudio.find(item => item.id === p.id);
+                if (prodActual) {
+                    const nuevoStock = Math.max(0, prodActual.stock - 1);
+                    await supabaseClient.from('productos').update({ stock: nuevoStock }).eq('id', p.id);
+                }
+            }
 
             if (window.citaCobrandoId) {
                 await supabaseClient.from('citas').update({
                     estado: 'atendida',
                     metodo_pago: metodoPago,
                     total: totalFinal,
-                    servicios: nombresServicios,
+                    servicios: textoItems,
                     nota_servicio: nota
                 }).eq('id', window.citaCobrandoId);
                 window.citaCobrandoId = null;
@@ -1407,7 +1523,7 @@
                     cliente_id: clienteId, 
                     fecha: new Date().toISOString().split('T')[0], 
                     hora: new Date().toTimeString().split(' ')[0], 
-                    servicios: nombresServicios, 
+                    servicios: textoItems, 
                     total: totalFinal, 
                     anticipo: 0,
                     metodo_pago: metodoPago, 
@@ -1418,6 +1534,91 @@
 
             mostrarNotificacion("✓ Cobro guardado y cita cerrada");
             cambiarSeccion('agenda');
+        }
+
+        function toggleFormularioProducto() {
+            document.getElementById('form-nuevo-producto').classList.toggle('hidden');
+        }
+
+        async function cargarInventarioVista() {
+            await cargarProductosBaseDatos();
+            const contenedor = document.getElementById('lista-productos-inventario');
+            contenedor.innerHTML = '';
+
+            if (listaProductosEstudio.length === 0) {
+                contenedor.innerHTML = `<p class="text-stone-400 text-xs text-center py-4">No hay productos en inventario</p>`;
+                return;
+            }
+
+            listaProductosEstudio.forEach(p => {
+                contenedor.innerHTML += `
+                    <div class="border border-[#EFE7DE] p-3 bg-[#FBF9F5] rounded-xl mb-2 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="edit-prod-nombre-${p.id}" value="${p.nombre}" class="flex-1 bg-white border border-stone-300 p-1.5 rounded-lg text-xs font-semibold text-stone-800">
+                            <input type="number" step="0.01" id="edit-prod-precio-${p.id}" value="${p.precio}" class="w-20 bg-white border border-stone-300 p-1.5 rounded-lg text-xs font-mono">
+                            <input type="number" id="edit-prod-stock-${p.id}" value="${p.stock}" class="w-16 bg-white border border-stone-300 p-1.5 rounded-lg text-xs font-bold text-center">
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button onclick="guardarEdicionProducto('${p.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition">💾 Guardar</button>
+                            <button onclick="eliminarProductoDirecto('${p.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition">🗑️ Eliminar</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function guardarNuevoProducto() {
+            const nombre = document.getElementById('input-nombre-producto').value.trim();
+            const precio = document.getElementById('input-precio-producto').value;
+            const stock = document.getElementById('input-stock-producto').value || 0;
+
+            if (!nombre || !precio || !usuarioSesion) {
+                mostrarNotificacion("Completa nombre y precio");
+                return;
+            }
+
+            const { error } = await supabaseClient.from('productos').insert([{
+                usuario_id: usuarioSesion.id,
+                nombre,
+                precio: parseFloat(precio),
+                stock: parseInt(stock)
+            }]);
+
+            if (error) {
+                mostrarNotificacion("Error al guardar producto");
+            } else {
+                document.getElementById('input-nombre-producto').value = '';
+                document.getElementById('input-precio-producto').value = '';
+                document.getElementById('input-stock-producto').value = '';
+                toggleFormularioProducto();
+                cargarInventarioVista();
+                mostrarNotificacion("✓ Producto añadido al inventario");
+            }
+        }
+
+        async function guardarEdicionProducto(id) {
+            const nombre = document.getElementById(`edit-prod-nombre-${id}`).value.trim();
+            const precio = document.getElementById(`edit-prod-precio-${id}`).value;
+            const stock = document.getElementById(`edit-prod-stock-${id}`).value;
+
+            const { error } = await supabaseClient.from('productos').update({
+                nombre,
+                precio: parseFloat(precio),
+                stock: parseInt(stock)
+            }).eq('id', id);
+
+            if (!error) {
+                mostrarNotificacion("✓ Producto actualizado");
+                cargarInventarioVista();
+            }
+        }
+
+        async function eliminarProductoDirecto(id) {
+            const { error } = await supabaseClient.from('productos').delete().eq('id', id);
+            if (!error) {
+                mostrarNotificacion("✓ Producto eliminado");
+                cargarInventarioVista();
+            }
         }
 
         async function guardarGasto() {
@@ -1483,7 +1684,7 @@
             const nuevoTel = document.getElementById(`edit-cliente-tel-${id}`).value.trim();
 
             if (!nuevoNombre) {
-                mostrarNotificacion("El nombre es obligatorio");
+                mostrarNotificacion("El nombre me es obligatorio");
                 return;
             }
 
