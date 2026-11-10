@@ -481,7 +481,7 @@
             const fechaHoy = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
             const horaActual = `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
 
-            await supabaseClient.from('citas').insert([{
+            const { error: errInsert } = await supabaseClient.from('citas').insert([{
                 usuario_id: usuarioActualObj.id,
                 cliente_id: clienteId,
                 fecha: fechaHoy,
@@ -493,6 +493,10 @@
                 estado: 'pedido_pendiente',
                 productos_ids: idsProductos
             }]);
+
+            if (errInsert) {
+                console.error("Error al registrar pedido:", errInsert);
+            }
 
             let telLimpio = (usuarioActualObj.telefono_estudio || '').replace(/\D/g, '');
             const textoMensaje = `Hola ${usuarioActualObj.nombre_estudio}, me gustaría comprar los siguientes productos:\n\n*Cliente:* ${nombre}\n*Teléfono:* ${telefono || 'No provisto'}\n\n*PRODUCTOS:*\n${listaDetalleWA}\n\n*TOTAL:* $${sumaTotal.toFixed(2)}`;
