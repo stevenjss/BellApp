@@ -400,7 +400,7 @@
                         <div class="flex items-center gap-3">
                             <span class="font-bold text-base" style="color: ${colorPrimarioEstudio}">$${Number(p.precio).toFixed(2)}</span>
                             <button type="button" 
-                                ${sinStock ? 'disabled' : `onclick="toggleProductoPublico('${p.id}', '${p.nombre}', ${p.precio},${p.stock}, this)"`} 
+                                ${sinStock ? 'disabled' : `onclick="toggleProductoPublico('${p.id}', '${p.nombre}', ${p.precio}, ${p.stock}, this)"`} 
                                 class="btn-prod-seleccionar px-3 py-1.5 rounded-lg font-bold transition ${sinStock ? 'bg-stone-200 text-stone-400 cursor-not-allowed border border-stone-300' : 'bg-stone-100 text-stone-700 border border-stone-300'}">
                                 ${sinStock ? 'Agotado' : '＋ Añadir'}
                             </button>
@@ -436,7 +436,6 @@
                 return;
             }
 
-            // 1. Validar stock actual
             for (let prod of productosSeleccionadosPublico) {
                 const { data: pData } = await supabaseClient.from('productos').select('stock, nombre').eq('id', prod.id).single();
                 if (!pData || pData.stock <= 0) {
@@ -446,14 +445,13 @@
                 }
             }
 
-            // 2. Crear o buscar cliente (Asegurando ID obligatorio)
             let clienteId = null;
             let { data: clienteExistente } = await supabaseClient.from('clientes').select('id').eq('usuario_id', usuarioActualObj.id).ilike('nombre', nombre).limit(1);
             
             if (clienteExistente && clienteExistente.length > 0) {
                 clienteId = clienteExistente[0].id;
             } else {
-                const { data: nuevoCliente, error: errCliente } = await supabaseClient.from('clientes').insert([{ 
+                const { data: nuevoCliente } = await supabaseClient.from('clientes').insert([{ 
                     usuario_id: usuarioActualObj.id, 
                     nombre: nombre, 
                     telefono: telefono || null 
@@ -465,12 +463,12 @@
             let sumaTotal = 0;
             const listaDetalleWA = productosSeleccionadosPublico.map(p => {
                 sumaTotal += p.precio;
-                return `• ${p.nombre} ($${p.precio.toFixed(2)})`;
+                return `- ${p.nombre} ($${p.precio.toFixed(2)})`;
             }).join('\n');
 
             const textoProductosResumido = "Pedido: " + productosSeleccionadosPublico.map(p => p.nombre).join(', ');
+            const idsProductos = productosSeleccionadosPublico.map(p => p.id);
 
-            // 3. Descontar stock inmediatamente
             for (let prod of productosSeleccionadosPublico) {
                 const { data: pActual } = await supabaseClient.from('productos').select('stock').eq('id', prod.id).single();
                 if (pActual) {
@@ -479,12 +477,11 @@
                 }
             }
 
-            // 4. Inserción garantizada en la tabla citas
             const ahora = new Date();
             const fechaHoy = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
             const horaActual = `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
 
-            const { error: errInsert } = await supabaseClient.from('citas').insert([{
+            await supabaseClient.from('citas').insert([{
                 usuario_id: usuarioActualObj.id,
                 cliente_id: clienteId,
                 fecha: fechaHoy,
@@ -493,21 +490,18 @@
                 total: sumaTotal,
                 anticipo: 0.00,
                 metodo_pago: 'pendiente',
-                estado: 'pedido_pendiente'
+                estado: 'pedido_pendiente',
+                productos_ids: idsProductos
             }]);
 
-            if (errInsert) {
-                console.error("Error al registrar pedido:", errInsert);
-            }
-
             let telLimpio = (usuarioActualObj.telefono_estudio || '').replace(/\D/g, '');
-            const textoMensaje = `Hola ${usuarioActualObj.nombre_estudio}, me gustaría comprar los siguientes productos:\n\n👤 *Cliente:* ${nombre}\n📱 *Teléfono:* ${telefono || 'No provisto'}\n\n🛍️ *PRODUCTOS:*\n${listaDetalleWA}\n\n💵 *TOTAL:* $${sumaTotal.toFixed(2)}`;
+            const textoMensaje = `Hola ${usuarioActualObj.nombre_estudio}, me gustaría comprar los siguientes productos:\n\n*Cliente:* ${nombre}\n*Teléfono:* ${telefono || 'No provisto'}\n\n*PRODUCTOS:*\n${listaDetalleWA}\n\n*TOTAL:* $${sumaTotal.toFixed(2)}`;
 
             mostrarToast("✓ Pedido registrado con éxito. Abriendo WhatsApp...");
 
             setTimeout(() => {
                 if (telLimpio) {
-                    window.location.href = `https://wa.me/${telLimpio}?text=${encodeURIComponent(textoMensaje)}`;
+                    window.open(`https://api.whatsapp.com/send?phone=${telLimpio}&text=${encodeURIComponent(textoMensaje)}`, '_blank');
                 }
             }, 600);
         }
@@ -548,10 +542,10 @@
             }]);
 
             let telLimpio = (usuarioActualObj.telefono_estudio || '').replace(/\D/g, '');
-            const textoMensaje = `Hola ${usuarioActualObj.nombre_estudio}, acabo de agendar una cita.\n\n👤 *Cliente:* ${nombre}\n📱 *Teléfono:* ${telefono || 'No provisto'}\n📅 *Fecha:* ${fecha}\n⏰ *Hora:* ${hora}\n💅 *Servicios:* ${nombresServicios}\n💵 *Total:* $${sumaTotal.toFixed(2)}`;
+            const textoMensaje = `Hola ${usuarioActualObj.nombre_estudio}, acabo de agendar una cita.\n\n*Cliente:* ${nombre}\n*Teléfono:* ${telefono || 'No provisto'}\n*Fecha:* ${fecha}\n*Hora:* ${hora}\n*Servicios:* ${nombresServicios}\n*Total:* $${sumaTotal.toFixed(2)}`;
 
             if (telLimpio) {
-                window.location.href = `https://wa.me/${telLimpio}?text=${encodeURIComponent(textoMensaje)}`;
+                window.open(`https://api.whatsapp.com/send?phone=${telLimpio}&text=${encodeURIComponent(textoMensaje)}`, '_blank');
             }
         }
     </script>
