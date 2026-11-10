@@ -255,23 +255,36 @@
             for (let dia = 1; dia <= totalDiasMes; dia++) {
                 const fechaConstruida = `${anio}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
                 const esBloqueado = listaDiasNoLaborables.includes(fechaConstruida);
+                const esPasado = fechaConstruida < hoyStr; // VALIDACIÓN: Días anteriores bloqueados
                 const esSeleccionado = fechaConstruida === fechaSeleccionadaStr;
                 const esHoy = fechaConstruida === hoyStr;
 
                 let estilosBoton = "w-8 h-8 rounded-full text-xs font-medium flex items-center justify-center mx-auto transition ";
-                if (esBloqueado) estilosBoton += "bg-rose-500 text-white cursor-not-allowed font-bold opacity-80 shadow-xs";
-                else if (esSeleccionado) estilosBoton += `text-white font-bold shadow-sm`;
-                else if (esHoy) estilosBoton += `border border-stone-400 text-stone-800 hover:bg-stone-100`;
-                else estilosBoton += `text-stone-700 hover:bg-stone-100`;
+                if (esPasado) {
+                    estilosBoton += "bg-stone-100 text-stone-300 cursor-not-allowed font-medium opacity-60";
+                } else if (esBloqueado) {
+                    estilosBoton += "bg-rose-500 text-white cursor-not-allowed font-bold opacity-80 shadow-xs";
+                } else if (esSeleccionado) {
+                    estilosBoton += `text-white font-bold shadow-sm`;
+                } else if (esHoy) {
+                    estilosBoton += `border border-stone-400 text-stone-800 hover:bg-stone-100`;
+                } else {
+                    estilosBoton += `text-stone-700 hover:bg-stone-100`;
+                }
 
                 const btn = document.createElement('button');
                 btn.type = "button";
                 btn.className = estilosBoton;
-                if (esSeleccionado && !esBloqueado) btn.style.backgroundColor = colorPrimarioEstudio;
+                if (esSeleccionado && !esBloqueado && !esPasado) btn.style.backgroundColor = colorPrimarioEstudio;
                 btn.innerText = dia;
                 
-                if (!esBloqueado) btn.onclick = () => seleccionarFechaCalendario(fechaConstruida);
-                else btn.onclick = () => mostrarToast("⚠️ El estudio no labora en esta fecha.");
+                if (esPasado) {
+                    btn.onclick = () => mostrarToast("⚠️ No puedes agendar en fechas pasadas.");
+                } else if (!esBloqueado) {
+                    btn.onclick = () => seleccionarFechaCalendario(fechaConstruida);
+                } else {
+                    btn.onclick = () => mostrarToast("⚠️ El estudio no labora en esta fecha.");
+                }
                 cuadricula.appendChild(btn);
             }
         }
@@ -307,10 +320,25 @@
             }
             franjasHorarias.push("19:00");
 
+            // VALIDACIÓN DE HORAS PASADAS SI ES EL DÍA DE HOY
+            const ahora = new Date();
+            const hoyStr = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
+            const esHoy = (fechaSeleccionadaStr === hoyStr);
+            const horaActualMinutos = ahora.getHours() * 60 + ahora.getMinutes();
+
             contenedorHoras.innerHTML = '';
             let contadorLibres = 0;
 
             franjasHorarias.forEach(franja => {
+                // Verificar si la hora ya pasó en el día de hoy
+                if (esHoy) {
+                    let [h, m] = franja.split(':').map(Number);
+                    let franjaMinutos = h * 60 + m;
+                    if (franjaMinutos <= horaActualMinutos) {
+                        return; // Omitir esta hora porque ya pasó
+                    }
+                }
+
                 let ocupada = false;
                 if (citasExistentes) {
                     for (let c of citasExistentes) {
@@ -324,7 +352,7 @@
                 }
             });
 
-            if (contadorLibres === 0) contenedorHoras.innerHTML = `<p class="col-span-2 text-xs text-rose-700 font-medium text-center py-6">No hay horas libres.</p>`;
+            if (contadorLibres === 0) contenedorHoras.innerHTML = `<p class="col-span-2 text-xs text-rose-700 font-medium text-center py-6">No hay horas libres disponibles.</p>`;
         }
 
         function seleccionarHoraLibre(hora, elemento) {
