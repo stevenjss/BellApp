@@ -436,35 +436,41 @@
                 return;
             }
 
-            // 1. Validar stock actual en tiempo real antes de descontar
+            // 1. Validar stock actual
             for (let prod of productosSeleccionadosPublico) {
                 const { data: pData } = await supabaseClient.from('productos').select('stock, nombre').eq('id', prod.id).single();
                 if (!pData || pData.stock <= 0) {
-                    mostrarToast(`❌ Lo sentimos, el producto "${prod.nombre}" se acaba de agotar.`);
+                    mostrarToast(`❌ Lo sentimos, "${prod.nombre}" se acaba de agotar.`);
                     await cargarProductosPublicos(usuarioActualObj.id);
                     return;
                 }
             }
 
-            // 2. Buscar o crear cliente
-            let { data: clienteExistente } = await supabaseClient.from('clientes').select('id').eq('usuario_id', usuarioActualObj.id).ilike('nombre', nombre).single();
-            let clienteId = clienteExistente ? clienteExistente.id : null;
-
-            if (!clienteId) {
-                const { data: nuevoCliente } = await supabaseClient.from('clientes').insert([{ usuario_id: usuarioActualObj.id, nombre, telefono }]).select('id').single();
+            // 2. Crear o buscar cliente (Asegurando ID obligatorio)
+            let clienteId = null;
+            let { data: clienteExistente } = await supabaseClient.from('clientes').select('id').eq('usuario_id', usuarioActualObj.id).ilike('nombre', nombre).limit(1);
+            
+            if (clienteExistente && clienteExistente.length > 0) {
+                clienteId = clienteExistente[0].id;
+            } else {
+                const { data: nuevoCliente, error: errCliente } = await supabaseClient.from('clientes').insert([{ 
+                    usuario_id: usuarioActualObj.id, 
+                    nombre: nombre, 
+                    telefono: telefono || null 
+                }]).select('id').single();
+                
                 if (nuevoCliente) clienteId = nuevoCliente.id;
             }
 
             let sumaTotal = 0;
-            const listaDetalle = productosSeleccionadosPublico.map(p => {
+            const listaDetalleWA = productosSeleccionadosPublico.map(p => {
                 sumaTotal += p.precio;
                 return `• ${p.nombre} ($${p.precio.toFixed(2)})`;
             }).join('\n');
 
-            const listaNombresResumida = "Pedido: " + productosSeleccionadosPublico.map(p => p.nombre).join(', ');
-            const idsProductosArray = productosSeleccionadosPublico.map(p => p.id);
+            const textoProductosResumido = "Pedido: " + productosSeleccionadosPublico.map(p => p.nombre).join(', ');
 
-            // 3. Descontar stock en Supabase inmediatamente
+            // 3. Descontar stock inmediatamente
             for (let prod of productosSeleccionadosPublico) {
                 const { data: pActual } = await supabaseClient.from('productos').select('stock').eq('id', prod.id).single();
                 if (pActual) {
@@ -473,33 +479,37 @@
                 }
             }
 
-            // 4. Guardar pedido en citas
-            const fechaHoy = new Date().toISOString().split('T')[0];
-            const horaActual = new Date().toTimeString().split(' ')[0];
+            // 4. Inserción garantizada en la tabla citas
+            const ahora = new Date();
+            const fechaHoy = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
+            const horaActual = `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
 
-            await supabaseClient.from('citas').insert([{
+            const { error: errInsert } = await supabaseClient.from('citas').insert([{
                 usuario_id: usuarioActualObj.id,
                 cliente_id: clienteId,
                 fecha: fechaHoy,
                 hora: horaActual,
-                servicios: listaNombresResumida,
+                servicios: textoProductosResumido,
                 total: sumaTotal,
                 anticipo: 0.00,
                 metodo_pago: 'pendiente',
-                estado: 'pedido_pendiente',
-                productos_ids: idsProductosArray // Guardamos los IDs para devolver stock si se cancela
+                estado: 'pedido_pendiente'
             }]);
 
-            let telLimpio = (usuarioActualObj.telefono_estudio || '').replace(/\D/g, '');
-            const textoMensaje = `Hola ${usuarioActualObj.nombre_estudio}, me gustaría comprar los siguientes productos:\n\n👤 *Cliente:* ${nombre}\n📱 *Teléfono:* ${telefono || 'No provisto'}\n\n🛍️ *PRODUCTOS:* \n${listaDetalle}\n\n💵 *TOTAL:* $${sumaTotal.toFixed(2)}`;
-
-            mostrarToast("✓ Pedido registrado y stock descontado. Abriendo WhatsApp...");
-
-            if (telLimpio) {
-                setTimeout(() => {
-                    window.location.href = `https://wa.me/${telLimpio}?text=${encodeURIComponent(textoMensaje)}`;
-                }, 800);
+            if (errInsert) {
+                console.error("Error al registrar pedido:", errInsert);
             }
+
+            let telLimpio = (usuarioActualObj.telefono_estudio || '').replace(/\D/g, '');
+            const textoMensaje = `Hola ${usuarioActualObj.nombre_estudio}, me gustaría comprar los siguientes productos:\n\n👤 *Cliente:* ${nombre}\n📱 *Teléfono:* ${telefono || 'No provisto'}\n\n🛍️ *PRODUCTOS:*\n${listaDetalleWA}\n\n💵 *TOTAL:* $${sumaTotal.toFixed(2)}`;
+
+            mostrarToast("✓ Pedido registrado con éxito. Abriendo WhatsApp...");
+
+            setTimeout(() => {
+                if (telLimpio) {
+                    window.location.href = `https://wa.me/${telLimpio}?text=${encodeURIComponent(textoMensaje)}`;
+                }
+            }, 600);
         }
 
         async function enviarReservaPublica() {
@@ -513,8 +523,8 @@
                 return;
             }
 
-            let { data: clienteExistente } = await supabaseClient.from('clientes').select('id').eq('usuario_id', usuarioActualObj.id).ilike('nombre', nombre).single();
-            let clienteId = clienteExistente ? clienteExistente.id : null;
+            let { data: clienteExistente } = await supabaseClient.from('clientes').select('id').eq('usuario_id', usuarioActualObj.id).ilike('nombre', nombre).limit(1);
+            let clienteId = clienteExistente && clienteExistente.length > 0 ? clienteExistente[0].id : null;
 
             if (!clienteId) {
                 const { data: nuevoCliente } = await supabaseClient.from('clientes').insert([{ usuario_id: usuarioActualObj.id, nombre, telefono }]).select('id').single();
